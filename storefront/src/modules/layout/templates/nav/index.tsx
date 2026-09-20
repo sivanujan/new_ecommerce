@@ -15,12 +15,12 @@ export default async function Nav() {
   ])
 
   return (
-    <header className="sticky top-0 inset-x-0 z-50 w-full glass-dark border-b border-white/10 transition-all duration-300">
+    <header className="sticky top-0 inset-x-0 z-50 w-full bg-[#F7F6F3]/95 backdrop-blur-md border-b border-neutral-300/80 transition-all duration-300">
       <nav className="content-container h-20 flex items-center justify-between">
-        {/* Left: Brand Identity with Crown/Emblem */}
+        {/* Left: Brand Identity with Tiger/Lion Emblem + Tamil Tagline */}
         <div className="flex items-center gap-4">
           {/* Mobile drawer trigger */}
-          <div className="flex md:hidden items-center">
+          <div className="flex md:hidden items-center text-neutral-900">
             <SideMenu regions={regions} locales={locales} currentLocale={currentLocale} />
           </div>
 
@@ -29,10 +29,10 @@ export default async function Nav() {
             className="group flex items-center gap-3.5 focus:outline-none"
             data-testid="nav-store-link"
           >
-            {/* TamZen Crown Emblem Mark */}
-            <div className="relative w-9 h-9 rounded-full border border-white/20 bg-gradient-to-b from-white/15 to-white/5 flex items-center justify-center transition-all duration-300 group-hover:border-white/40 group-hover:shadow-[0_0_15px_rgba(255,255,255,0.2)]">
+            {/* Cultural Tiger/Lion Emblem Mark */}
+            <div className="relative w-10 h-10 rounded-full border border-amber-800/30 bg-neutral-950 text-[#C59B51] flex items-center justify-center shadow-sm transition-all duration-300 group-hover:scale-105 group-hover:border-[#C59B51]">
               <svg
-                className="w-5 h-5 text-white transition-transform duration-300 group-hover:scale-105"
+                className="w-5 h-5 text-[#C59B51]"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -40,60 +40,60 @@ export default async function Nav() {
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
-                {/* Cultural Crown & Sun Crest */}
+                {/* Stylized lion/tiger cultural crest */}
                 <path d="M4 18h16M5 14h14M3 8l4 5 5-7 5 7 4-5v10H3z" />
-                <circle cx="12" cy="5" r="1" fill="currentColor" />
+                <circle cx="12" cy="5" r="1.2" fill="currentColor" />
               </svg>
             </div>
 
             <div className="flex flex-col">
-              <span className="font-display text-xl font-bold tracking-[0.22em] text-white uppercase leading-none group-hover:text-neutral-200 transition-colors">
-                TamZen
+              <span className="font-display text-xl sm:text-2xl font-black tracking-[0.2em] text-neutral-950 uppercase leading-none group-hover:text-amber-900 transition-colors">
+                TAMZEN
               </span>
-              <span className="text-[8px] uppercase tracking-[0.28em] text-neutral-400 font-sans mt-1">
-                More Than Jewellery
+              <span className="text-[9px] sm:text-[10px] tracking-wider text-[#A07428] font-medium mt-1 font-sans">
+                எங்கள் வேர் எங்கள் அடையாளம்
               </span>
             </div>
           </LocalizedClientLink>
         </div>
 
         {/* Center: Desktop Navigation */}
-        <div className="hidden md:flex items-center gap-8 lg:gap-12">
+        <div className="hidden md:flex items-center gap-8 lg:gap-11">
           <LocalizedClientLink
             href="/"
-            className="text-[11px] uppercase tracking-[0.22em] font-medium text-white hover:text-neutral-300 transition-colors relative py-1 after:absolute after:bottom-0 after:left-0 after:w-full after:h-[1px] after:bg-white after:transition-all"
+            className="text-[11px] uppercase tracking-[0.22em] font-semibold text-neutral-950 hover:text-amber-900 transition-colors relative py-1 after:absolute after:bottom-0 after:left-0 after:w-full after:h-[1.5px] after:bg-neutral-950 after:transition-all"
           >
             Home
           </LocalizedClientLink>
 
           <LocalizedClientLink
             href="#collection"
-            className="text-[11px] uppercase tracking-[0.22em] font-medium text-neutral-400 hover:text-white transition-colors relative py-1 after:absolute after:bottom-0 after:left-0 after:w-0 hover:after:w-full after:h-[1px] after:bg-white after:transition-all duration-300"
+            className="text-[11px] uppercase tracking-[0.22em] font-semibold text-neutral-600 hover:text-neutral-950 transition-colors relative py-1 after:absolute after:bottom-0 after:left-0 after:w-0 hover:after:w-full after:h-[1.5px] after:bg-neutral-950 after:transition-all duration-300"
           >
             Collection
           </LocalizedClientLink>
 
           <LocalizedClientLink
             href="#story"
-            className="text-[11px] uppercase tracking-[0.22em] font-medium text-neutral-400 hover:text-white transition-colors relative py-1 after:absolute after:bottom-0 after:left-0 after:w-0 hover:after:w-full after:h-[1px] after:bg-white after:transition-all duration-300"
+            className="text-[11px] uppercase tracking-[0.22em] font-semibold text-neutral-600 hover:text-neutral-950 transition-colors relative py-1 after:absolute after:bottom-0 after:left-0 after:w-0 hover:after:w-full after:h-[1.5px] after:bg-neutral-950 after:transition-all duration-300"
           >
             Our Story
           </LocalizedClientLink>
 
           <LocalizedClientLink
             href="#contact"
-            className="text-[11px] uppercase tracking-[0.22em] font-medium text-neutral-400 hover:text-white transition-colors relative py-1 after:absolute after:bottom-0 after:left-0 after:w-0 hover:after:w-full after:h-[1px] after:bg-white after:transition-all duration-300"
+            className="text-[11px] uppercase tracking-[0.22em] font-semibold text-neutral-600 hover:text-neutral-950 transition-colors relative py-1 after:absolute after:bottom-0 after:left-0 after:w-0 hover:after:w-full after:h-[1.5px] after:bg-neutral-950 after:transition-all duration-300"
           >
             Contact
           </LocalizedClientLink>
         </div>
 
         {/* Right: Search + Account + Cart Icons */}
-        <div className="flex items-center gap-3 sm:gap-4">
+        <div className="flex items-center gap-3 sm:gap-3.5">
           {/* Search Icon */}
           <LocalizedClientLink
             href="/store"
-            className="w-9 h-9 rounded-full border border-white/10 hover:border-white/30 bg-white/[0.03] hover:bg-white/[0.08] flex items-center justify-center text-neutral-300 hover:text-white transition-all"
+            className="w-9 h-9 rounded-full border border-neutral-300/90 hover:border-neutral-800 bg-white/80 hover:bg-white flex items-center justify-center text-neutral-700 hover:text-neutral-950 transition-all shadow-sm"
             aria-label="Search Collection"
             title="Search Collection"
           >
@@ -114,7 +114,7 @@ export default async function Nav() {
           {/* Account Icon */}
           <LocalizedClientLink
             href="/account"
-            className="w-9 h-9 rounded-full border border-white/10 hover:border-white/30 bg-white/[0.03] hover:bg-white/[0.08] flex items-center justify-center text-neutral-300 hover:text-white transition-all"
+            className="w-9 h-9 rounded-full border border-neutral-300/90 hover:border-neutral-800 bg-white/80 hover:bg-white flex items-center justify-center text-neutral-700 hover:text-neutral-950 transition-all shadow-sm"
             data-testid="nav-account-link"
             aria-label="My Account"
             title="Account"
@@ -137,7 +137,7 @@ export default async function Nav() {
           <Suspense
             fallback={
               <LocalizedClientLink
-                className="flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/10 bg-white/[0.04] text-neutral-300"
+                className="flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-neutral-300 bg-white text-neutral-800 shadow-sm"
                 href="/cart"
                 data-testid="nav-cart-link"
               >
@@ -154,10 +154,10 @@ export default async function Nav() {
                   <path d="M3 6h18" />
                   <path d="M16 10a4 4 0 0 1-8 0" />
                 </svg>
-                <span className="text-[11px] font-medium tracking-[0.15em] uppercase hidden sm:inline">
+                <span className="text-[11px] font-semibold tracking-[0.15em] uppercase hidden sm:inline">
                   Cart
                 </span>
-                <span className="w-4 h-4 rounded-full bg-white text-black text-[10px] font-bold flex items-center justify-center">
+                <span className="w-4 h-4 rounded-full bg-black text-white text-[10px] font-bold flex items-center justify-center">
                   0
                 </span>
               </LocalizedClientLink>

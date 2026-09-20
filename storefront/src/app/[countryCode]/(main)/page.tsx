@@ -2,17 +2,18 @@ import { Metadata } from "next"
 import { getRegion } from "@lib/data/regions"
 import Hero from "@modules/home/components/hero"
 import TrustBar from "@modules/home/components/trust-bar"
+import RootedInPurpose from "@modules/home/components/rooted-in-purpose"
 import SignatureDesigns from "@modules/home/components/signature-designs"
 import BrandStory from "@modules/home/components/brand-story"
 
 export const metadata: Metadata = {
-  title: "TamZen — More Than Jewellery | Culture • Style • Identity",
+  title: "TamZen | More Than Jewellery — எங்கள் வேர் எங்கள் அடையாளம்",
   description:
-    "Bespoke cultural pendants and dog-tag jewelry forged in 316L stainless steel. Symbols that define you. Wear your roots.",
+    "TamZen — Wear your roots. Bespoke cultural pendants and dog-tag jewelry in 316L stainless steel inspired by Tamil-Eelam heritage.",
   openGraph: {
-    title: "TamZen — More Than Jewellery",
+    title: "TamZen | More Than Jewellery",
     description:
-      "Bespoke cultural pendants and dog-tag jewelry forged in 316L stainless steel. Symbols that define you. Wear your roots.",
+      "Symbols that define you. Wear your roots with 316L stainless steel cultural pendants.",
     images: ["/images/tamzen-hero-pendant.jpg"],
   },
 }
@@ -29,17 +30,20 @@ export default async function Home(props: {
   }
 
   return (
-    <div className="w-full flex flex-col bg-[#0B0B0C]">
-      {/* 1. Hero Section */}
+    <div className="w-full flex flex-col bg-[#F7F6F3]">
+      {/* 1. Light Hero Section */}
       <Hero />
 
-      {/* 2. Trust Bar */}
+      {/* 2. Trust Bar (Light Background) */}
       <TrustBar />
 
-      {/* 3. Signature Designs Grid (Light background to contrast dark hero) */}
+      {/* 3. Rooted In Purpose Collection Band (Dark Background) */}
+      <RootedInPurpose />
+
+      {/* 4. Signature Designs Grid (Light Background) */}
       <SignatureDesigns region={region} />
 
-      {/* 4. Brand Story & Values Band */}
+      {/* 5. Brand Story & Philosophy Band (Dark Background) */}
       <BrandStory />
     </div>
   )

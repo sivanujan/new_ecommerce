@@ -2,111 +2,112 @@ import Image from "next/image"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
 export default function Hero() {
+  const verticalMenu = ["PEOPLE", "HERITAGE", "IDENTITY", "STYLE", "FOREVER"]
+
   return (
-    <section className="relative w-full overflow-hidden bg-[#0B0B0C] border-b border-white/10 pt-8 pb-16 lg:py-24">
-      {/* Background ambient lighting effects */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-tr from-white/[0.03] via-white/[0.06] to-transparent rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-slate-500/[0.04] rounded-full blur-3xl pointer-events-none" />
+    <section className="relative w-full bg-[#F7F6F3] border-b border-neutral-300/80 pt-8 pb-16 lg:py-20 overflow-hidden">
+      <div className="content-container">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-6 items-center">
+          {/* Left Column: Headline, Tamil line, CTA */}
+          <div className="lg:col-span-6 xl:col-span-6 flex flex-col items-start justify-center pr-0 lg:pr-6">
+            {/* Eyebrow */}
+            <span className="text-xs uppercase tracking-[0.3em] font-bold text-neutral-500 mb-4 block font-sans">
+              Wear Your Roots
+            </span>
 
-      <div className="content-container relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center min-h-[70vh]">
-          {/* Left Column: Headline, subtext, CTA */}
-          <div className="lg:col-span-7 flex flex-col items-start justify-center">
-            {/* Elegant Accent Script / Kicker */}
-            <div className="inline-flex items-center gap-3 px-3.5 py-1.5 rounded-full border border-white/15 bg-white/[0.03] backdrop-blur-sm mb-6">
-              <span className="w-1.5 h-1.5 rounded-full bg-neutral-300 animate-pulse" />
-              <span className="text-[11px] uppercase tracking-[0.25em] font-medium text-neutral-300">
-                Culture • Style • Identity
-              </span>
-            </div>
-
-            {/* Big bold headline */}
-            <h1 className="font-display font-black text-4xl sm:text-6xl md:text-7xl lg:text-[76px] tracking-[-0.02em] leading-[1.04] text-white uppercase mb-6">
+            {/* Huge bold serif headline */}
+            <h1 className="font-display font-black text-5xl sm:text-6xl md:text-7xl lg:text-[74px] tracking-tight leading-[0.96] text-neutral-950 uppercase mb-4">
               More Than
               <br />
-              <span className="metallic-text-gradient">
+              <span className="text-[#C59B51] drop-shadow-sm">
                 Jewellery
               </span>
             </h1>
 
-            {/* Subtext */}
-            <p className="text-base sm:text-lg lg:text-xl text-neutral-300 font-light leading-relaxed max-w-xl mb-10 tracking-wide">
-              Symbols that define you. Wear your roots.
-              <span className="block mt-1 text-sm text-neutral-400 font-normal">
-                Bespoke dog-tag pendants forged in 316L stainless steel, embodying ancient strength and modern elegance.
+            {/* Tamil tagline */}
+            <div className="inline-flex items-center gap-2 mb-6">
+              <span className="w-2 h-[1px] bg-[#A07428]" />
+              <span className="text-sm sm:text-base font-medium text-[#A07428] font-sans tracking-wide">
+                எங்கள் வேர் எங்கள் அடையாளம்
               </span>
-            </p>
-
-            {/* CTA Buttons */}
-            <div className="flex flex-wrap items-center gap-4 sm:gap-6">
-              <LocalizedClientLink
-                href="#collection"
-                className="pill-btn-primary"
-              >
-                <span>Shop Now</span>
-                <svg
-                  className="w-4 h-4 ml-2 transition-transform duration-300 group-hover:translate-x-1"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M5 12h14M12 5l7 7-7 7" />
-                </svg>
-              </LocalizedClientLink>
-
-              <LocalizedClientLink
-                href="#story"
-                className="pill-btn-outline"
-              >
-                Our Story
-              </LocalizedClientLink>
             </div>
 
-            {/* Micro spec note */}
-            <div className="mt-12 flex items-center gap-6 pt-6 border-t border-white/10 text-xs text-neutral-400 uppercase tracking-widest font-sans">
-              <div className="flex items-center gap-2">
-                <span className="text-white font-semibold">316L</span>
-                <span>Stainless Steel</span>
+            {/* Short subtext paragraph */}
+            <p className="text-sm sm:text-base text-neutral-600 font-sans leading-relaxed max-w-md mb-8">
+              Symbols that define you. Forged in solid 316L stainless steel, carrying timeless cultural memory and personal strength for the modern diaspora.
+            </p>
+
+            {/* Dark pill button */}
+            <LocalizedClientLink
+              href="#purpose"
+              className="inline-flex items-center justify-center gap-3 px-8 py-4 rounded-full text-xs uppercase tracking-[0.2em] font-bold text-white bg-black hover:bg-neutral-800 transition-all shadow-md hover:shadow-xl active:scale-95 group"
+            >
+              <span>Explore Collection</span>
+              <span className="transition-transform duration-300 group-hover:translate-x-1 font-sans">
+                &rarr;
+              </span>
+            </LocalizedClientLink>
+          </div>
+
+          {/* Right Column: Large dark product hero image */}
+          <div className="lg:col-span-5 xl:col-span-5 flex justify-center">
+            <div className="relative w-full max-w-[440px] aspect-[4/5] rounded-2xl overflow-hidden bg-neutral-950 border border-neutral-300/80 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.25)] group">
+              <Image
+                src="/images/tamzen-hero-pendant.jpg"
+                alt="TamZen Cultural Pendant Hero Visual"
+                fill
+                priority
+                unoptimized
+                sizes="(max-width: 768px) 100vw, 440px"
+                className="object-cover object-center transform transition-transform duration-700 ease-out group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+
+              {/* In-image caption tag */}
+              <div className="absolute bottom-5 left-5 right-5 p-3.5 rounded-xl bg-black/60 backdrop-blur-md border border-white/15 flex items-center justify-between">
+                <div>
+                  <div className="text-[10px] uppercase tracking-widest text-neutral-400 font-medium">
+                    Signature Drop
+                  </div>
+                  <div className="text-xs font-display font-semibold text-white tracking-wider uppercase mt-0.5">
+                    The Lion Pendant &bull; 316L
+                  </div>
+                </div>
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-full bg-[#C59B51] text-black">
+                  Core
+                </span>
               </div>
-              <span className="w-1 h-1 rounded-full bg-neutral-600" />
-              <div>Non-Tarnish</div>
-              <span className="w-1 h-1 rounded-full bg-neutral-600" />
-              <div>Water-Resistant</div>
             </div>
           </div>
 
-          {/* Right Column: Large showcase product visual */}
-          <div className="lg:col-span-5 flex justify-center lg:justify-end">
-            <div className="relative w-full max-w-[460px] lg:max-w-[500px] aspect-square rounded-2xl p-2.5 bg-gradient-to-b from-white/15 via-white/5 to-transparent border border-white/15 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.8)] group">
-              <div className="relative w-full h-full rounded-xl overflow-hidden bg-neutral-950">
-                <Image
-                  src="/images/tamzen-hero-pendant.jpg"
-                  alt="TamZen Cultural Lion Emblem Pendant in 316L Stainless Steel"
-                  fill
-                  priority
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 500px"
-                  className="object-cover object-center transform transition-transform duration-700 ease-out group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent pointer-events-none" />
+          {/* Far Right Column: Vertical menu list & slider counter */}
+          <div className="hidden lg:flex lg:col-span-1 flex-col items-center justify-between h-[420px] py-4 pl-4 border-l border-neutral-300">
+            {/* Vertical Menu List */}
+            <div className="flex flex-col items-center gap-6">
+              {verticalMenu.map((item, idx) => (
+                <span
+                  key={idx}
+                  className={`text-[9px] font-bold tracking-[0.25em] uppercase transition-colors cursor-pointer ${
+                    idx === 1
+                      ? "text-neutral-950 font-black"
+                      : "text-neutral-400 hover:text-neutral-700"
+                  }`}
+                  style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
+                >
+                  {item}
+                </span>
+              ))}
+            </div>
 
-                {/* Floating cultural badge */}
-                <div className="absolute bottom-5 left-5 right-5 p-4 rounded-xl glass-dark border border-white/15 flex items-center justify-between">
-                  <div>
-                    <div className="text-[10px] uppercase tracking-[0.2em] text-neutral-400 font-medium">
-                      Featured Piece
-                    </div>
-                    <div className="text-sm font-display font-semibold tracking-wide text-white mt-0.5">
-                      The Lion Emblem Pendant
-                    </div>
-                  </div>
-                  <span className="px-2.5 py-1 rounded-full bg-white/10 border border-white/20 text-[10px] font-semibold uppercase tracking-wider text-neutral-200">
-                    Signature
-                  </span>
-                </div>
-              </div>
+            {/* Slider Counter 01 / 03 */}
+            <div className="flex flex-col items-center gap-2 text-center pt-6">
+              <span className="text-xs font-bold text-neutral-950 font-sans">
+                01
+              </span>
+              <span className="w-[1.5px] h-8 bg-neutral-300" />
+              <span className="text-[10px] font-medium text-neutral-400 font-sans">
+                03
+              </span>
             </div>
           </div>
         </div>
