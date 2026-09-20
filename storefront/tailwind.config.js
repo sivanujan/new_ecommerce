@@ -60,6 +60,7 @@ module.exports = {
       },
       fontFamily: {
         sans: [
+          "var(--font-montserrat)",
           "Inter",
           "-apple-system",
           "BlinkMacSystemFont",
@@ -68,6 +69,12 @@ module.exports = {
           "Helvetica Neue",
           "Ubuntu",
           "sans-serif",
+        ],
+        display: [
+          "var(--font-cinzel)",
+          "Cinzel",
+          "Georgia",
+          "serif",
         ],
       },
       keyframes: {

@@ -109,4 +109,49 @@
   .text-3xl-semi {
     @apply text-[32px] leading-[44px] font-semibold;
   }
+
+  /* TamZen Luxury System */
+  .font-display {
+    font-family: var(--font-cinzel), Georgia, serif;
+  }
+
+  .font-sans {
+    font-family: var(--font-montserrat), Inter, sans-serif;
+  }
+
+  .glass-dark {
+    background: rgba(11, 11, 12, 0.82);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  .metallic-border {
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+
+  .metallic-border-highlight {
+    border-color: rgba(226, 232, 240, 0.35);
+  }
+
+  .metallic-text-gradient {
+    background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 50%, #94a3b8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .pill-btn-primary {
+    @apply inline-flex items-center justify-center px-8 py-3.5 rounded-full text-xs uppercase tracking-[0.2em] font-semibold text-black bg-white hover:bg-neutral-200 transition-all duration-300 shadow-[0_0_25px_rgba(255,255,255,0.15)] hover:shadow-[0_0_35px_rgba(255,255,255,0.3)] active:scale-[0.98];
+  }
+
+  .pill-btn-outline {
+    @apply inline-flex items-center justify-center px-6 py-2.5 rounded-full text-xs uppercase tracking-[0.18em] font-semibold text-white border border-white/30 hover:border-white hover:bg-white/10 transition-all duration-300 active:scale-[0.98];
+  }
+
+  .pill-btn-dark {
+    @apply inline-flex items-center justify-center px-6 py-2.5 rounded-full text-xs uppercase tracking-[0.18em] font-semibold text-white bg-black hover:bg-neutral-900 border border-black/80 transition-all duration-300 active:scale-[0.98];
+  }
+}
+
+html {
+  scroll-behavior: smooth;
 }

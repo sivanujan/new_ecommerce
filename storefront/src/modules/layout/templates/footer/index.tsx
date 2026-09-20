@@ -1,155 +1,182 @@
 import { listCategories } from "@lib/data/categories"
 import { listCollections } from "@lib/data/collections"
-import { Text, clx } from "@medusajs/ui"
-
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
-import MedusaCTA from "@modules/layout/components/medusa-cta"
 
 export default async function Footer() {
   const { collections } = await listCollections({
-    fields: "*products",
-  })
-  const productCategories = await listCategories()
+    fields: "id, title, handle",
+  }).catch(() => ({ collections: [] }))
+  
+  const productCategories = await listCategories().catch(() => [])
 
   return (
-    <footer className="border-t border-ui-border-base w-full">
-      <div className="content-container flex flex-col w-full">
-        <div className="flex flex-col gap-y-6 xsmall:flex-row items-start justify-between py-40">
-          <div>
-            <LocalizedClientLink
-              href="/"
-              className="txt-compact-xlarge-plus text-ui-fg-subtle hover:text-ui-fg-base uppercase"
-            >
-              Medusa Store
+    <footer className="w-full bg-[#080809] border-t border-white/10 text-neutral-400 text-xs font-sans">
+      <div className="content-container py-16 lg:py-24">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 lg:gap-8 pb-16 border-b border-white/10">
+          {/* Brand Mark Column */}
+          <div className="lg:col-span-2 flex flex-col items-start pr-0 lg:pr-8">
+            <LocalizedClientLink href="/" className="group flex items-center gap-3.5 mb-5">
+              <div className="w-9 h-9 rounded-full border border-white/20 bg-gradient-to-b from-white/15 to-white/5 flex items-center justify-center transition-all duration-300 group-hover:border-white/40">
+                <svg
+                  className="w-5 h-5 text-white"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M4 18h16M5 14h14M3 8l4 5 5-7 5 7 4-5v10H3z" />
+                  <circle cx="12" cy="5" r="1" fill="currentColor" />
+                </svg>
+              </div>
+
+              <div className="flex flex-col">
+                <span className="font-display text-xl font-bold tracking-[0.22em] text-white uppercase leading-none">
+                  TamZen
+                </span>
+                <span className="text-[8px] uppercase tracking-[0.28em] text-neutral-400 mt-1">
+                  More Than Jewellery
+                </span>
+              </div>
             </LocalizedClientLink>
-          </div>
-          <div className="text-small-regular gap-10 md:gap-x-16 grid grid-cols-2 sm:grid-cols-3">
-            {productCategories && productCategories?.length > 0 && (
-              <div className="flex flex-col gap-y-2">
-                <span className="txt-small-plus txt-ui-fg-base">
-                  Categories
-                </span>
-                <ul
-                  className="grid grid-cols-1 gap-2"
-                  data-testid="footer-categories"
-                >
-                  {productCategories?.slice(0, 6).map((c) => {
-                    if (c.parent_category) {
-                      return
-                    }
 
-                    const children =
-                      c.category_children?.map((child) => ({
-                        name: child.name,
-                        handle: child.handle,
-                        id: child.id,
-                      })) || null
+            {/* Tagline */}
+            <p className="font-display text-sm tracking-widest text-neutral-200 uppercase mb-3">
+              Culture Lives On
+            </p>
 
-                    return (
-                      <li
-                        className="flex flex-col gap-2 text-ui-fg-subtle txt-small"
-                        key={c.id}
-                      >
-                        <LocalizedClientLink
-                          className={clx(
-                            "hover:text-ui-fg-base",
-                            children && "txt-small-plus"
-                          )}
-                          href={`/categories/${c.handle}`}
-                          data-testid="category-link"
-                        >
-                          {c.name}
-                        </LocalizedClientLink>
-                        {children && (
-                          <ul className="grid grid-cols-1 ml-3 gap-2">
-                            {children &&
-                              children.map((child) => (
-                                <li key={child.id}>
-                                  <LocalizedClientLink
-                                    className="hover:text-ui-fg-base"
-                                    href={`/categories/${child.handle}`}
-                                    data-testid="category-link"
-                                  >
-                                    {child.name}
-                                  </LocalizedClientLink>
-                                </li>
-                              ))}
-                          </ul>
-                        )}
-                      </li>
-                    )
-                  })}
-                </ul>
-              </div>
-            )}
-            {collections && collections.length > 0 && (
-              <div className="flex flex-col gap-y-2">
-                <span className="txt-small-plus txt-ui-fg-base">
-                  Collections
-                </span>
-                <ul
-                  className={clx(
-                    "grid grid-cols-1 gap-2 text-ui-fg-subtle txt-small",
-                    {
-                      "grid-cols-2": (collections?.length || 0) > 3,
-                    }
-                  )}
-                >
-                  {collections?.slice(0, 6).map((c) => (
-                    <li key={c.id}>
-                      <LocalizedClientLink
-                        className="hover:text-ui-fg-base"
-                        href={`/collections/${c.handle}`}
-                      >
-                        {c.title}
-                      </LocalizedClientLink>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            <div className="flex flex-col gap-y-2">
-              <span className="txt-small-plus txt-ui-fg-base">Medusa</span>
-              <ul className="grid grid-cols-1 gap-y-2 text-ui-fg-subtle txt-small">
-                <li>
-                  <a
-                    href="https://github.com/medusajs"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="hover:text-ui-fg-base"
-                  >
-                    GitHub
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="https://docs.medusajs.com"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="hover:text-ui-fg-base"
-                  >
-                    Documentation
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="https://github.com/medusajs/nextjs-starter-medusa"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="hover:text-ui-fg-base"
-                  >
-                    Source code
-                  </a>
-                </li>
-              </ul>
+            <p className="text-neutral-400 text-xs leading-relaxed max-w-sm mb-6">
+              Handcrafted stainless steel pendants embodying Tamil-Eelam symbols of resilience, heritage, and pride. Built to withstand time and trends.
+            </p>
+
+            <div className="flex items-center gap-2 text-[11px] text-neutral-400 font-medium">
+              <span className="w-2 h-2 rounded-full bg-emerald-500/80 inline-block" />
+              <span>Worldwide Shipping Available</span>
             </div>
           </div>
+
+          {/* Quick Nav / Collections */}
+          <div className="flex flex-col gap-3">
+            <h4 className="font-display text-xs uppercase tracking-[0.2em] font-bold text-white mb-2">
+              Collections
+            </h4>
+            <ul className="flex flex-col gap-2.5">
+              <li>
+                <LocalizedClientLink
+                  href="/store"
+                  className="hover:text-white transition-colors"
+                >
+                  All Creations
+                </LocalizedClientLink>
+              </li>
+              {collections && collections.length > 0 ? (
+                collections.slice(0, 4).map((c) => (
+                  <li key={c.id}>
+                    <LocalizedClientLink
+                      href={`/collections/${c.handle}`}
+                      className="hover:text-white transition-colors"
+                    >
+                      {c.title}
+                    </LocalizedClientLink>
+                  </li>
+                ))
+              ) : (
+                <>
+                  <li>
+                    <LocalizedClientLink href="#collection" className="hover:text-white transition-colors">
+                      Signature Pendants
+                    </LocalizedClientLink>
+                  </li>
+                  <li>
+                    <LocalizedClientLink href="#collection" className="hover:text-white transition-colors">
+                      Heritage Dog-Tags
+                    </LocalizedClientLink>
+                  </li>
+                </>
+              )}
+            </ul>
+          </div>
+
+          {/* Heritage & Values */}
+          <div className="flex flex-col gap-3">
+            <h4 className="font-display text-xs uppercase tracking-[0.2em] font-bold text-white mb-2">
+              Brand & Story
+            </h4>
+            <ul className="flex flex-col gap-2.5">
+              <li>
+                <LocalizedClientLink href="#story" className="hover:text-white transition-colors">
+                  Our Story
+                </LocalizedClientLink>
+              </li>
+              <li>
+                <LocalizedClientLink href="#story" className="hover:text-white transition-colors">
+                  316L Stainless Steel
+                </LocalizedClientLink>
+              </li>
+              <li>
+                <LocalizedClientLink href="#story" className="hover:text-white transition-colors">
+                  Cultural Symbols
+                </LocalizedClientLink>
+              </li>
+              <li>
+                <LocalizedClientLink href="/account" className="hover:text-white transition-colors">
+                  My Account
+                </LocalizedClientLink>
+              </li>
+            </ul>
+          </div>
+
+          {/* Contact & Support */}
+          <div className="flex flex-col gap-3" id="contact-info">
+            <h4 className="font-display text-xs uppercase tracking-[0.2em] font-bold text-white mb-2">
+              Contact
+            </h4>
+            <ul className="flex flex-col gap-2.5">
+              <li className="text-neutral-400">
+                Email:{" "}
+                <a
+                  href="mailto:contact@tamzen.com"
+                  className="hover:text-white transition-colors"
+                >
+                  contact@tamzen.com
+                </a>
+              </li>
+              <li className="text-neutral-400">
+                Support: Mon &ndash; Fri (9:00 &ndash; 18:00 CET)
+              </li>
+              <li>
+                <LocalizedClientLink href="/cart" className="hover:text-white transition-colors">
+                  View Bag
+                </LocalizedClientLink>
+              </li>
+              <li className="pt-2">
+                <span className="inline-block px-3 py-1 rounded-full border border-white/10 text-[10px] uppercase tracking-wider text-neutral-300 bg-white/[0.03]">
+                  Europe • France / EUR
+                </span>
+              </li>
+            </ul>
+          </div>
         </div>
-        <div className="flex w-full mb-16 justify-between text-ui-fg-muted">
-          <Text className="txt-compact-small">
-            © {new Date().getFullYear()} Medusa Store. All rights reserved.
-          </Text>
-          <MedusaCTA />
+
+        {/* Bottom Bar */}
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-neutral-400">
+          <p>
+            © {new Date().getFullYear()} TamZen. All rights reserved. &bull; More Than Jewellery
+          </p>
+          <div className="flex items-center gap-6">
+            <span className="hover:text-neutral-300 transition-colors cursor-pointer">
+              Privacy Policy
+            </span>
+            <span>&bull;</span>
+            <span className="hover:text-neutral-300 transition-colors cursor-pointer">
+              Terms of Service
+            </span>
+            <span>&bull;</span>
+            <span className="hover:text-neutral-300 transition-colors cursor-pointer">
+              Shipping Policy
+            </span>
+          </div>
         </div>
       </div>
     </footer>
