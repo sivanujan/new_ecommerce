@@ -5,7 +5,7 @@ export default function Hero() {
   const verticalMenu = ["PEOPLE", "HERITAGE", "IDENTITY", "STYLE", "FOREVER"]
 
   return (
-    <section className="relative w-full overflow-hidden min-h-[640px] sm:min-h-[720px] lg:min-h-[85vh] flex items-center">
+    <section className="relative w-full overflow-hidden min-h-[100dvh] lg:min-h-screen flex items-center justify-center">
       {/* Full-bleed Traditional Heritage Background Image */}
       <div className="absolute inset-0 z-0">
         <Image
@@ -29,8 +29,8 @@ export default function Hero() {
         <div className="absolute inset-0 bg-[#A07428]/10 mix-blend-overlay pointer-events-none" />
       </div>
 
-      {/* Hero Content Container */}
-      <div className="content-container relative z-10 w-full py-12 sm:py-16 lg:py-20">
+      {/* Hero Content Container - Vertically Centered */}
+      <div className="content-container relative z-10 w-full py-12 sm:py-16 lg:py-20 my-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-6 items-center">
           {/* Left Column: Eyebrow, Headline, Tamil tagline, Subtext, CTA Button */}
           <div className="lg:col-span-6 xl:col-span-6 flex flex-col items-start justify-center pr-0 lg:pr-4">
@@ -76,9 +76,9 @@ export default function Hero() {
             </LocalizedClientLink>
           </div>
 
-          {/* Right Column: Featured Lion Pendant Card */}
+          {/* Right Column: Clean Featured Lion Pendant Card (No Overlays) */}
           <div className="lg:col-span-5 xl:col-span-5 flex justify-center lg:justify-end">
-            <div className="relative w-full max-w-[360px] sm:max-w-[420px] aspect-[4/5] rounded-2xl overflow-hidden bg-neutral-950/80 border border-white/25 shadow-[0_30px_70px_-15px_rgba(0,0,0,0.8)] backdrop-blur-sm group">
+            <div className="relative w-full max-w-[360px] sm:max-w-[420px] aspect-[4/5] rounded-2xl overflow-hidden bg-neutral-950/80 border border-white/20 shadow-[0_30px_70px_-15px_rgba(0,0,0,0.8)] backdrop-blur-sm group">
               <Image
                 src="/images/tamzen-hero-pendant.jpg"
                 alt="TamZen Cultural Lion Pendant in 316L Stainless Steel"
@@ -88,22 +88,6 @@ export default function Hero() {
                 sizes="(max-width: 640px) 100vw, 420px"
                 className="object-cover object-center transform transition-transform duration-700 ease-out group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
-
-              {/* In-image caption pill */}
-              <div className="absolute bottom-4 sm:bottom-5 left-4 sm:left-5 right-4 sm:right-5 p-3.5 sm:p-4 rounded-xl bg-black/70 backdrop-blur-md border border-white/20 flex items-center justify-between">
-                <div>
-                  <div className="text-[9px] sm:text-[10px] uppercase tracking-widest text-neutral-300 font-medium">
-                    Signature Drop
-                  </div>
-                  <div className="text-xs sm:text-sm font-display font-semibold text-white tracking-wider uppercase mt-0.5">
-                    The Lion Pendant &bull; 316L
-                  </div>
-                </div>
-                <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-full bg-[#E5C378] text-black">
-                  Core
-                </span>
-              </div>
             </div>
           </div>
 
