@@ -32,7 +32,7 @@ export default async function Home(props: {
   return (
     <div className="w-full flex flex-col bg-[#0B0B0C]">
       {/* 1. Light Hero Section */}
-      <Hero />
+      <Hero countryCode={countryCode} region={region} />
 
       {/* 2. Trust Bar (Light Background) */}
       <TrustBar />
