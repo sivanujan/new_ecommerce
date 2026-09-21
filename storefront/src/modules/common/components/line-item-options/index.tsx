@@ -1,5 +1,4 @@
 import { HttpTypes } from "@medusajs/types"
-import { Text } from "@medusajs/ui"
 
 type LineItemOptionsProps = {
   variant: HttpTypes.StoreProductVariant | undefined
@@ -12,14 +11,18 @@ const LineItemOptions = ({
   "data-testid": dataTestid,
   "data-value": dataValue,
 }: LineItemOptionsProps) => {
+  if (!variant?.title || variant.title === "Default Variant" || variant.title === "Unique") {
+    return null
+  }
+
   return (
-    <Text
+    <span
       data-testid={dataTestid}
       data-value={dataValue}
-      className="inline-block txt-medium text-ui-fg-subtle w-full overflow-hidden text-ellipsis"
+      className="inline-block text-xs font-mono text-neutral-400 truncate mt-0.5"
     >
-      Variant: {variant?.title}
-    </Text>
+      Variant: <span className="text-neutral-300 font-semibold">{variant.title}</span>
+    </span>
   )
 }
 

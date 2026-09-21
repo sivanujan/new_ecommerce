@@ -1,5 +1,5 @@
 import { Disclosure } from "@headlessui/react"
-import { Badge, Button, clx } from "@medusajs/ui"
+import { clx } from "@medusajs/ui"
 import { useEffect } from "react"
 
 import useToggleState from "@lib/hooks/use-toggle-state"
@@ -13,7 +13,7 @@ type AccountInfoProps = {
   errorMessage?: string
   clearState: () => void
   children?: React.ReactNode
-  'data-testid'?: string
+  "data-testid"?: string
 }
 
 const AccountInfo = ({
@@ -24,10 +24,9 @@ const AccountInfo = ({
   clearState,
   errorMessage = "An error occurred, please try again",
   children,
-  'data-testid': dataTestid
+  "data-testid": dataTestid,
 }: AccountInfoProps) => {
   const { state, close, toggle } = useToggleState()
-
   const { pending } = useFormStatus()
 
   const handleToggle = () => {
@@ -42,30 +41,38 @@ const AccountInfo = ({
   }, [isSuccess, close])
 
   return (
-    <div className="text-small-regular" data-testid={dataTestid}>
-      <div className="flex items-end justify-between">
-        <div className="flex flex-col">
-          <span className="uppercase text-ui-fg-base">{label}</span>
-          <div className="flex items-center flex-1 basis-0 justify-end gap-x-4">
+    <div
+      className="rounded-2xl bg-[#121215] border border-white/10 p-5 sm:p-6 shadow-lg font-sans text-white"
+      data-testid={dataTestid}
+    >
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-col min-w-0">
+          <span className="text-[11px] uppercase tracking-wider font-mono text-neutral-400 font-medium">
+            {label}
+          </span>
+          <div className="flex items-center gap-x-4 mt-1">
             {typeof currentInfo === "string" ? (
-              <span className="font-semibold" data-testid="current-info">{currentInfo}</span>
+              <span
+                className="font-display font-bold text-base sm:text-lg text-white truncate"
+                data-testid="current-info"
+              >
+                {currentInfo}
+              </span>
             ) : (
               currentInfo
             )}
           </div>
         </div>
-        <div>
-          <Button
-            variant="secondary"
-            className="w-[100px] min-h-[25px] py-1"
-            onClick={handleToggle}
-            type={state ? "reset" : "button"}
-            data-testid="edit-button"
-            data-active={state}
-          >
-            {state ? "Cancel" : "Edit"}
-          </Button>
-        </div>
+
+        <button
+          className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#E5C378]/50 text-xs font-semibold text-neutral-200 hover:text-[#E5C378] transition-all cursor-pointer shrink-0"
+          onClick={handleToggle}
+          type={state ? "reset" : "button"}
+          data-testid="edit-button"
+          data-active={state}
+        >
+          {state ? "Cancel" : "Edit"}
+        </button>
       </div>
 
       {/* Success state */}
@@ -81,13 +88,14 @@ const AccountInfo = ({
           )}
           data-testid="success-message"
         >
-          <Badge className="p-2 my-4" color="green">
-            <span>{label} updated succesfully</span>
-          </Badge>
+          <div className="p-3 my-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-400" />
+            <span>{label} updated successfully</span>
+          </div>
         </Disclosure.Panel>
       </Disclosure>
 
-      {/* Error state  */}
+      {/* Error state */}
       <Disclosure>
         <Disclosure.Panel
           static
@@ -100,12 +108,14 @@ const AccountInfo = ({
           )}
           data-testid="error-message"
         >
-          <Badge className="p-2 my-4" color="red">
+          <div className="p-3 my-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-mono flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-rose-400" />
             <span>{errorMessage}</span>
-          </Badge>
+          </div>
         </Disclosure.Panel>
       </Disclosure>
 
+      {/* Edit Form Accordion */}
       <Disclosure>
         <Disclosure.Panel
           static
@@ -113,21 +123,21 @@ const AccountInfo = ({
             "transition-[max-height,opacity] duration-300 ease-in-out overflow-visible",
             {
               "max-h-[1000px] opacity-100": state,
-              "max-h-0 opacity-0": !state,
+              "max-h-0 opacity-0 pointer-events-none": !state,
             }
           )}
         >
-          <div className="flex flex-col gap-y-2 py-4">
+          <div className="flex flex-col gap-y-4 pt-4 mt-4 border-t border-white/10">
             <div>{children}</div>
-            <div className="flex items-center justify-end mt-2">
-              <Button
-                isLoading={pending}
-                className="w-full small:max-w-[140px]"
+            <div className="flex items-center justify-end">
+              <button
+                disabled={pending}
+                className="w-full sm:w-auto px-6 py-2.5 rounded-full bg-gradient-to-r from-[#F3D798] via-[#E5C378] to-[#C99C47] text-neutral-950 font-bold text-xs uppercase tracking-wider shadow-[0_2px_15px_rgba(229,195,120,0.3)] hover:brightness-105 transition-all disabled:opacity-50 cursor-pointer"
                 type="submit"
                 data-testid="save-button"
               >
-                Save changes
-              </Button>
+                {pending ? "Saving..." : "Save changes"}
+              </button>
             </div>
           </div>
         </Disclosure.Panel>

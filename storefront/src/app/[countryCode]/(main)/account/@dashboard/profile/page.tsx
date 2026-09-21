@@ -1,18 +1,17 @@
 import { Metadata } from "next"
 
-import ProfilePhone from "@modules/account//components/profile-phone"
+import ProfilePhone from "@modules/account/components/profile-phone"
 import ProfileBillingAddress from "@modules/account/components/profile-billing-address"
 import ProfileEmail from "@modules/account/components/profile-email"
 import ProfileName from "@modules/account/components/profile-name"
-import ProfilePassword from "@modules/account/components/profile-password"
 
 import { notFound } from "next/navigation"
 import { listRegions } from "@lib/data/regions"
 import { retrieveCustomer } from "@lib/data/customer"
 
 export const metadata: Metadata = {
-  title: "Profile",
-  description: "View and edit your Medusa Store profile.",
+  title: "Profile | TamZen Atelier",
+  description: "View and edit your TamZen profile information.",
 }
 
 export default async function Profile() {
@@ -24,31 +23,28 @@ export default async function Profile() {
   }
 
   return (
-    <div className="w-full" data-testid="profile-page-wrapper">
-      <div className="mb-8 flex flex-col gap-y-4">
-        <h1 className="text-2xl-semi">Profile</h1>
-        <p className="text-base-regular">
-          View and update your profile information, including your name, email,
-          and phone number. You can also update your billing address, or change
-          your password.
+    <div className="w-full font-sans" data-testid="profile-page-wrapper">
+      <div className="mb-6 pb-6 border-b border-white/10 flex flex-col gap-y-2">
+        <div className="flex items-center gap-2">
+          <span className="w-3 h-px bg-[#E5C378]/60" />
+          <span className="text-[10px] uppercase tracking-widest font-mono text-[#E5C378]">
+            Client Credentials
+          </span>
+        </div>
+        <h1 className="font-display font-serif text-2xl sm:text-3xl font-bold text-white tracking-tight">
+          Personal Profile
+        </h1>
+        <p className="text-xs sm:text-sm text-neutral-300 max-w-xl leading-relaxed">
+          Manage your personal details, email credentials, phone contact, and default billing address.
         </p>
       </div>
-      <div className="flex flex-col gap-y-8 w-full">
+
+      <div className="flex flex-col gap-y-4 w-full">
         <ProfileName customer={customer} />
-        <Divider />
         <ProfileEmail customer={customer} />
-        <Divider />
         <ProfilePhone customer={customer} />
-        <Divider />
-        {/* <ProfilePassword customer={customer} />
-        <Divider /> */}
         <ProfileBillingAddress customer={customer} regions={regions} />
       </div>
     </div>
   )
 }
-
-const Divider = () => {
-  return <div className="w-full h-px bg-gray-200" />
-}
-;``

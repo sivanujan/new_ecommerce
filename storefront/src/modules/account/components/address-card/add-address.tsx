@@ -1,7 +1,6 @@
 "use client"
 
 import { Plus } from "@medusajs/icons"
-import { Button, Heading } from "@medusajs/ui"
 import { useEffect, useState, useActionState } from "react"
 
 import useToggleState from "@lib/hooks/use-toggle-state"
@@ -49,22 +48,29 @@ const AddAddress = ({
   return (
     <>
       <button
-        className="border border-ui-border-base rounded-rounded p-5 min-h-[220px] h-full w-full flex flex-col justify-between"
+        className="border-2 border-dashed border-white/20 hover:border-[#E5C378] hover:bg-white/[0.02] rounded-2xl p-6 min-h-[220px] h-full w-full flex flex-col items-center justify-center gap-3 transition-all group cursor-pointer font-sans text-center"
         onClick={open}
         data-testid="add-address-button"
       >
-        <span className="text-base-semi">New address</span>
-        <Plus />
+        <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 group-hover:border-[#E5C378]/50 group-hover:bg-[#E5C378]/10 flex items-center justify-center text-neutral-400 group-hover:text-[#E5C378] transition-all">
+          <Plus className="w-6 h-6" />
+        </div>
+        <div>
+          <span className="font-display font-bold text-sm sm:text-base text-neutral-200 group-hover:text-white uppercase tracking-wider block transition-colors">
+            Add New Address
+          </span>
+          <span className="text-xs text-neutral-400 mt-1 block">
+            Save shipping destination for expedited checkout
+          </span>
+        </div>
       </button>
 
       <Modal isOpen={state} close={close} data-testid="add-address-modal">
-        <Modal.Title>
-          <Heading className="mb-2">Add address</Heading>
-        </Modal.Title>
-        <form action={formAction}>
+        <Modal.Title>Add New Address</Modal.Title>
+        <form action={formAction} className="font-sans">
           <Modal.Body>
-            <div className="flex flex-col gap-y-2">
-              <div className="grid grid-cols-2 gap-x-2">
+            <div className="flex flex-col gap-y-3 pt-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Input
                   label="First name"
                   name="first_name"
@@ -80,26 +86,30 @@ const AddAddress = ({
                   data-testid="last-name-input"
                 />
               </div>
+
               <Input
-                label="Company"
+                label="Company (Optional)"
                 name="company"
                 autoComplete="organization"
                 data-testid="company-input"
               />
+
               <Input
-                label="Address"
+                label="Street Address"
                 name="address_1"
                 required
                 autoComplete="address-line1"
                 data-testid="address-1-input"
               />
+
               <Input
-                label="Apartment, suite, etc."
+                label="Apartment, suite, unit (Optional)"
                 name="address_2"
                 autoComplete="address-line2"
                 data-testid="address-2-input"
               />
-              <div className="grid grid-cols-[144px_1fr] gap-x-2">
+
+              <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-3">
                 <Input
                   label="Postal code"
                   name="postal_code"
@@ -115,12 +125,14 @@ const AddAddress = ({
                   data-testid="city-input"
                 />
               </div>
+
               <Input
-                label="Province / State"
+                label="Province / State (Optional)"
                 name="province"
                 autoComplete="address-level1"
                 data-testid="state-input"
               />
+
               <CountrySelect
                 region={region}
                 name="country_code"
@@ -128,35 +140,37 @@ const AddAddress = ({
                 autoComplete="country"
                 data-testid="country-select"
               />
+
               <Input
-                label="Phone"
+                label="Phone (For delivery updates)"
                 name="phone"
                 autoComplete="phone"
                 data-testid="phone-input"
               />
             </div>
+
             {formState.error && (
               <div
-                className="text-rose-500 text-small-regular py-2"
+                className="mt-3 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-mono"
                 data-testid="address-error"
               >
                 {formState.error}
               </div>
             )}
           </Modal.Body>
+
           <Modal.Footer>
-            <div className="flex gap-3 mt-6">
-              <Button
-                type="reset"
-                variant="secondary"
-                onClick={close}
-                className="h-10"
-                data-testid="cancel-button"
-              >
-                Cancel
-              </Button>
-              <SubmitButton data-testid="save-button">Save</SubmitButton>
-            </div>
+            <button
+              type="reset"
+              onClick={close}
+              className="px-6 py-2.5 rounded-full border border-white/20 hover:border-white/40 text-neutral-300 hover:text-white text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer"
+              data-testid="cancel-button"
+            >
+              Cancel
+            </button>
+            <SubmitButton data-testid="save-button" className="!w-auto !py-2.5">
+              Save Address
+            </SubmitButton>
           </Modal.Footer>
         </form>
       </Modal>

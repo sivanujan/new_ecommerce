@@ -51,14 +51,14 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
     }
   }
 
-  // Preview Mode (e.g. In Checkout Table)
+  // Preview Mode (e.g. In Checkout Summary)
   if (type === "preview") {
     return (
-      <Table.Row className="w-full text-white border-b border-white/10" data-testid="product-row">
-        <Table.Cell className="!pl-0 p-3 w-20">
+      <div className="flex items-center justify-between gap-3 py-3 text-white bg-transparent" data-testid="product-row">
+        <div className="flex items-center gap-3 min-w-0">
           <LocalizedClientLink
             href={`/products/${item.product_handle}`}
-            className="flex w-16 h-16 rounded-lg overflow-hidden bg-neutral-900 border border-white/10"
+            className="flex w-14 h-14 rounded-lg overflow-hidden bg-neutral-900 border border-white/10 shrink-0 hover:border-[#E5C378]/50 transition-colors"
           >
             <Thumbnail
               thumbnail={item.thumbnail}
@@ -66,27 +66,24 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
               size="square"
             />
           </LocalizedClientLink>
-        </Table.Cell>
 
-        <Table.Cell className="text-left">
-          <Text className="txt-medium-plus text-white font-medium" data-testid="product-title">
-            {item.product_title}
-          </Text>
-          <LineItemOptions variant={item.variant} data-testid="product-variant" />
-        </Table.Cell>
-
-        <Table.Cell className="!pr-0 text-right">
-          <div className="flex flex-col items-end justify-center">
-            <span className="text-xs text-neutral-400">
-              {item.quantity}x{" "}
-              <LineItemUnitPrice item={item} style="tight" currencyCode={currencyCode} />
+          <div className="flex flex-col min-w-0">
+            <span className="text-white font-medium text-xs sm:text-sm truncate uppercase tracking-tight" data-testid="product-title">
+              {item.product_title}
             </span>
-            <span className="font-display font-bold text-[#E5C378]">
-              <LineItemPrice item={item} style="tight" currencyCode={currencyCode} />
-            </span>
+            <LineItemOptions variant={item.variant} data-testid="product-variant" />
           </div>
-        </Table.Cell>
-      </Table.Row>
+        </div>
+
+        <div className="flex flex-col items-end justify-center shrink-0">
+          <span className="text-[11px] text-neutral-400 font-mono">
+            {item.quantity} × <LineItemUnitPrice item={item} style="tight" currencyCode={currencyCode} />
+          </span>
+          <span className="font-mono font-bold text-sm text-[#E5C378]">
+            <LineItemPrice item={item} style="tight" currencyCode={currencyCode} />
+          </span>
+        </div>
+      </div>
     )
   }
 

@@ -1,7 +1,4 @@
-import { Container, Heading, Text } from "@medusajs/ui"
-
 import { isStripeLike, paymentInfoMap } from "@lib/constants"
-import Divider from "@modules/common/components/divider"
 import { convertToLocale } from "@lib/util/money"
 import { HttpTypes } from "@medusajs/types"
 
@@ -10,52 +7,62 @@ type PaymentDetailsProps = {
 }
 
 const PaymentDetails = ({ order }: PaymentDetailsProps) => {
-  const payment = order.payment_collections?.[0].payments?.[0]
+  const payment = order.payment_collections?.[0]?.payments?.[0]
 
   return (
-    <div>
-      <Heading level="h2" className="flex flex-row text-3xl-regular my-6">
-        Payment
-      </Heading>
-      <div>
-        {payment && (
-          <div className="flex items-start gap-x-1 w-full">
-            <div className="flex flex-col w-1/3">
-              <Text className="txt-medium-plus text-ui-fg-base mb-1">
-                Payment method
-              </Text>
-              <Text
-                className="txt-medium text-ui-fg-subtle"
-                data-testid="payment-method"
-              >
-                {paymentInfoMap[payment.provider_id].title}
-              </Text>
-            </div>
-            <div className="flex flex-col w-2/3">
-              <Text className="txt-medium-plus text-ui-fg-base mb-1">
-                Payment details
-              </Text>
-              <div className="flex gap-2 txt-medium text-ui-fg-subtle items-center">
-                <Container className="flex items-center h-7 w-fit p-2 bg-ui-button-neutral-hover">
-                  {paymentInfoMap[payment.provider_id].icon}
-                </Container>
-                <Text data-testid="payment-amount">
-                  {isStripeLike(payment.provider_id) && payment.data?.card_last4
-                    ? `**** **** **** ${payment.data.card_last4}`
-                    : `${convertToLocale({
-                        amount: payment.amount,
-                        currency_code: order.currency_code,
-                      })} paid at ${new Date(
-                        payment.created_at ?? ""
-                      ).toLocaleString()}`}
-                </Text>
-              </div>
-            </div>
-          </div>
-        )}
+    <div className="w-full flex flex-col font-sans text-left">
+      <div className="flex items-center gap-2.5 pb-4 mb-4 border-b border-white/10">
+        <div className="w-7 h-7 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[#E5C378]">
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+          </svg>
+        </div>
+        <h2 className="font-display font-bold text-lg sm:text-xl text-white uppercase tracking-wider">
+          Payment Confirmation
+        </h2>
       </div>
 
-      <Divider className="mt-8" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs sm:text-sm">
+        {/* Payment Method */}
+        <div className="flex flex-col gap-1.5">
+          <span className="text-xs uppercase tracking-wider font-semibold text-neutral-400 font-mono">
+            Payment Method
+          </span>
+          <span className="font-semibold text-white text-base" data-testid="payment-method">
+            {payment?.provider_id
+              ? paymentInfoMap[payment.provider_id]?.title || payment.provider_id
+              : "Direct Settlement"}
+          </span>
+          <span className="text-xs text-emerald-400 font-mono flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse" />
+            <span>Authorized & Captured</span>
+          </span>
+        </div>
+
+        {/* Payment Details */}
+        <div className="flex flex-col gap-1.5">
+          <span className="text-xs uppercase tracking-wider font-semibold text-neutral-400 font-mono">
+            Settlement Summary
+          </span>
+          <div className="flex items-center gap-3 text-neutral-200">
+            {payment?.provider_id && paymentInfoMap[payment.provider_id]?.icon && (
+              <div className="flex items-center h-7 px-2 rounded-lg bg-white/10 border border-white/10 text-[#E5C378]">
+                {paymentInfoMap[payment.provider_id].icon}
+              </div>
+            )}
+            <span className="font-mono text-neutral-200" data-testid="payment-amount">
+              {payment && isStripeLike(payment.provider_id) && payment.data?.card_last4
+                ? `Card ending in ${payment.data.card_last4}`
+                : payment
+                ? `${convertToLocale({
+                    amount: payment.amount,
+                    currency_code: order.currency_code,
+                  })} processed on ${new Date(payment.created_at ?? "").toLocaleDateString()}`
+                : "Payment confirmed"}
+            </span>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

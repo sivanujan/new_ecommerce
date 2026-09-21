@@ -57,7 +57,7 @@ export default function Hero() {
 
           {/* Subtext Paragraph */}
           <p className="text-xs sm:text-sm lg:text-base text-neutral-200 font-sans font-light leading-relaxed max-w-xl mb-6 sm:mb-8 drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
-            Symbols that define you. Forged in solid 316L stainless steel, carrying timeless cultural memory and personal strength for the modern diaspora.
+            Symbols that define you. Crafted in 316L stainless steel, inspired by our roots and designed for a new generation.
           </p>
 
           {/* Explore Collection Pill Button */}
