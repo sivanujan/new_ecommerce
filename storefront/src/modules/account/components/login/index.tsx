@@ -16,7 +16,7 @@ const Login = ({ setCurrentView }: Props) => {
 
   return (
     <div
-      className="relative max-w-md w-full rounded-3xl bg-gradient-to-b from-[#18181D] via-[#121215] to-[#0E0E10] border border-white/10 p-8 sm:p-12 shadow-2xl flex flex-col items-center text-center font-sans overflow-hidden"
+      className="relative max-w-md w-full rounded-3xl bg-[#121215] border border-white/10 p-8 sm:p-12 shadow-[0_20px_60px_rgba(0,0,0,0.6)] flex flex-col items-center text-center font-sans overflow-hidden"
       data-testid="login-page"
     >
       {/* Subtle gold ambient glow */}

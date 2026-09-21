@@ -42,7 +42,7 @@ export default function TransferRequestForm() {
         <form action={formAction} className="flex flex-col gap-y-2 w-full sm:items-end">
           <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
             <input
-              className="w-full h-11 px-4 rounded-xl bg-white/[0.04] border border-white/15 text-white text-xs sm:text-sm placeholder:text-neutral-500 focus:outline-none focus:border-[#E5C378] focus:ring-1 focus:ring-[#E5C378]/30 transition-all font-mono"
+              className="w-full h-11 px-4 rounded-xl bg-[#121215] text-[#FDFBF7] border border-white/15 text-xs sm:text-sm placeholder:text-neutral-500 focus:outline-none focus:bg-[#151519] focus:border-[#E5C378] focus:ring-1 focus:ring-[#E5C378]/40 hover:border-white/30 transition-all font-mono"
               name="order_id"
               placeholder="Enter Order ID (e.g. order_01...)"
               required

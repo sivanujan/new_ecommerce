@@ -47,19 +47,42 @@ body {
     @apply left-0;
   }
 
+  /* Global dark form controls */
+  input,
+  textarea,
+  select {
+    color-scheme: dark;
+  }
+
+  /* Universal Dark Luxury Autofill Override - fixes Bug 1 across all browsers */
   input:-webkit-autofill,
   input:-webkit-autofill:hover,
   input:-webkit-autofill:focus,
+  input:-webkit-autofill:active,
   textarea:-webkit-autofill,
   textarea:-webkit-autofill:hover,
   textarea:-webkit-autofill:focus,
+  textarea:-webkit-autofill:active,
   select:-webkit-autofill,
   select:-webkit-autofill:hover,
-  select:-webkit-autofill:focus {
-    border: 1px solid #212121;
-    -webkit-text-fill-color: #212121;
-    -webkit-box-shadow: 0 0 0px 1000px #fff inset;
-    transition: background-color 5000s ease-in-out 0s;
+  select:-webkit-autofill:focus,
+  select:-webkit-autofill:active {
+    -webkit-text-fill-color: #FDFBF7 !important;
+    -webkit-box-shadow: 0 0 0px 1000px #141418 inset !important;
+    box-shadow: 0 0 0px 1000px #141418 inset !important;
+    border-color: rgba(229, 195, 120, 0.4) !important;
+    transition: background-color 5000000s ease-in-out 0s, color 5000000s ease-in-out 0s;
+    caret-color: #E5C378 !important;
+    color: #FDFBF7 !important;
+  }
+
+  input:autofill,
+  textarea:autofill,
+  select:autofill {
+    background-color: #141418 !important;
+    color: #FDFBF7 !important;
+    border-color: rgba(229, 195, 120, 0.4) !important;
+    -webkit-text-fill-color: #FDFBF7 !important;
   }
 
   input[type="search"]::-webkit-search-decoration,

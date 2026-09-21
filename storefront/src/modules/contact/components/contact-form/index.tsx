@@ -133,7 +133,7 @@ export default function ContactForm() {
               value={formData.name}
               onChange={handleChange}
               placeholder="e.g. Maya Sivan"
-              className="w-full bg-[#0A0A0C] border border-white/15 focus:border-[#E5C378] focus:ring-1 focus:ring-[#E5C378]/30 rounded-xl px-4 py-3 text-sm text-white placeholder-neutral-500 font-sans transition-all outline-none"
+              className="w-full bg-[#0E0E12] text-[#FDFBF7] border border-white/15 focus:border-[#E5C378] focus:ring-1 focus:ring-[#E5C378]/40 hover:border-white/30 rounded-xl px-4 py-3 text-sm placeholder-neutral-500 font-sans transition-all outline-none focus:bg-[#121215]"
               disabled={status === "loading"}
             />
           </div>
@@ -153,7 +153,7 @@ export default function ContactForm() {
               value={formData.email}
               onChange={handleChange}
               placeholder="e.g. maya@example.com"
-              className="w-full bg-[#0A0A0C] border border-white/15 focus:border-[#E5C378] focus:ring-1 focus:ring-[#E5C378]/30 rounded-xl px-4 py-3 text-sm text-white placeholder-neutral-500 font-sans transition-all outline-none"
+              className="w-full bg-[#0E0E12] text-[#FDFBF7] border border-white/15 focus:border-[#E5C378] focus:ring-1 focus:ring-[#E5C378]/40 hover:border-white/30 rounded-xl px-4 py-3 text-sm placeholder-neutral-500 font-sans transition-all outline-none focus:bg-[#121215]"
               disabled={status === "loading"}
             />
           </div>
@@ -174,7 +174,7 @@ export default function ContactForm() {
             value={formData.subject}
             onChange={handleChange}
             placeholder="e.g. Custom pendant inquiry / Order question"
-            className="w-full bg-[#0A0A0C] border border-white/15 focus:border-[#E5C378] focus:ring-1 focus:ring-[#E5C378]/30 rounded-xl px-4 py-3 text-sm text-white placeholder-neutral-500 font-sans transition-all outline-none"
+            className="w-full bg-[#0E0E12] text-[#FDFBF7] border border-white/15 focus:border-[#E5C378] focus:ring-1 focus:ring-[#E5C378]/40 hover:border-white/30 rounded-xl px-4 py-3 text-sm placeholder-neutral-500 font-sans transition-all outline-none focus:bg-[#121215]"
             disabled={status === "loading"}
           />
         </div>
@@ -195,7 +195,7 @@ export default function ContactForm() {
             value={formData.message}
             onChange={handleChange}
             placeholder="Tell us how we can assist you..."
-            className="w-full bg-[#0A0A0C] border border-white/15 focus:border-[#E5C378] focus:ring-1 focus:ring-[#E5C378]/30 rounded-xl px-4 py-3 text-sm text-white placeholder-neutral-500 font-sans transition-all outline-none resize-none"
+            className="w-full bg-[#0E0E12] text-[#FDFBF7] border border-white/15 focus:border-[#E5C378] focus:ring-1 focus:ring-[#E5C378]/40 hover:border-white/30 rounded-xl px-4 py-3 text-sm placeholder-neutral-500 font-sans transition-all outline-none resize-none focus:bg-[#121215]"
             disabled={status === "loading"}
           />
         </div>

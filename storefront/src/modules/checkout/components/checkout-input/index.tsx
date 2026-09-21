@@ -30,8 +30,8 @@ const CheckoutInput = forwardRef<HTMLInputElement, CheckoutInputProps>(
             type={inputType}
             ref={ref}
             required={required}
-            className={`w-full h-11 px-4 rounded-xl bg-white/[0.04] border border-white/15 text-white placeholder:text-neutral-500 text-sm font-sans focus:outline-none focus:border-[#E5C378] focus:ring-1 focus:ring-[#E5C378] hover:border-white/30 transition-all ${
-              error ? "border-rose-500 focus:border-rose-500 focus:ring-rose-500" : ""
+            className={`w-full h-11 px-4 rounded-xl bg-[#121215] text-[#FDFBF7] border border-white/15 placeholder:text-neutral-500 text-sm font-sans focus:outline-none focus:bg-[#151519] focus:border-[#E5C378] focus:ring-1 focus:ring-[#E5C378]/40 hover:border-white/30 transition-all ${
+              error ? "border-rose-500/80 focus:border-rose-500 focus:ring-rose-500/30 text-rose-100" : ""
             } ${className}`}
             {...props}
           />
