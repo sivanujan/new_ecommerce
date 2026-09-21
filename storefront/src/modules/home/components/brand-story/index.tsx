@@ -37,15 +37,15 @@ export default function BrandStory() {
   return (
     <section
       id="contact"
-      className="w-full bg-[#0B0B0C] py-16 sm:py-20 lg:py-24 text-white relative overflow-hidden"
+      className="w-full bg-gradient-to-b from-[#0E0E12] via-[#121216] to-[#0A0A0C] border-t border-white/10 py-16 sm:py-20 lg:py-24 text-white relative overflow-hidden"
     >
-      <div className="content-container relative z-10">
-        {/* Bounded Luxury Card Container */}
-        <div className="relative max-w-3xl mx-auto rounded-3xl p-8 sm:p-12 lg:p-14 overflow-hidden bg-gradient-to-b from-[#141418] via-[#101013] to-[#0D0D10] border border-white/10 hover:border-[#E5C378]/30 transition-all duration-500 shadow-[0_20px_60px_rgba(0,0,0,0.6)] text-center">
-          {/* Ambient inner radial gold glow */}
-          <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full bg-[#E5C378]/10 blur-[90px]" />
-          <div className="pointer-events-none absolute -bottom-20 right-10 w-64 h-64 rounded-full bg-[#C99C47]/5 blur-[80px]" />
+      {/* Full-width ambient glow & lighting */}
+      <div className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[350px] bg-[#E5C378]/[0.07] rounded-full blur-[140px]" />
+      <div className="pointer-events-none absolute bottom-0 left-1/4 w-[500px] h-[250px] bg-[#C99C47]/[0.04] rounded-full blur-[120px]" />
 
+      <div className="content-container relative z-10">
+        {/* Full-width Centered Content Container */}
+        <div className="max-w-3xl mx-auto flex flex-col items-center text-center">
           {/* Eyebrow Label */}
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-[#E5C378]/30 mb-4 backdrop-blur-md">
             <span className="w-1.5 h-1.5 rounded-full bg-[#E5C378] animate-pulse" />
@@ -54,28 +54,30 @@ export default function BrandStory() {
             </span>
           </div>
 
-          {/* Serif Heading */}
-          <h2 className="font-display font-serif font-bold text-2xl sm:text-3xl lg:text-4xl text-[#FDFBF7] uppercase tracking-tight mb-2">
+          {/* Bold Serif Heading */}
+          <h2 className="font-display font-serif font-bold text-3xl sm:text-4xl lg:text-5xl text-[#FDFBF7] uppercase tracking-tight mb-2">
             Stay Connected
           </h2>
 
           {/* Tamil Decorative Gold Divider */}
-          <div className="flex items-center justify-center gap-3 my-3 w-40 mx-auto">
+          <div className="flex items-center justify-center gap-3 my-4 w-40 mx-auto">
             <span className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-[#E5C378]/60" />
             <div className="w-2 h-2 rotate-45 border border-[#E5C378] bg-[#121215]" />
             <span className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-[#E5C378]/60" />
           </div>
 
           {/* Subtext */}
-          <p className="text-xs sm:text-sm text-neutral-300 font-sans max-w-md mx-auto leading-relaxed mb-8">
-            Receive exclusive early access to limited seasonal runs, heritage archive releases, and private community drops.
+          <p className="text-xs sm:text-sm lg:text-base text-neutral-300 font-sans max-w-lg mx-auto leading-relaxed mb-8 sm:mb-10">
+            Receive exclusive early access to limited seasonal runs, heritage archive releases, and private diaspora community drops.
           </p>
 
           {/* Functional Pill Form */}
-          <NewsletterForm />
+          <div className="w-full max-w-xl mx-auto">
+            <NewsletterForm />
+          </div>
 
-          {/* Social Icons Row */}
-          <div className="mt-8 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+          {/* Social Links Row */}
+          <div className="mt-12 pt-8 border-t border-white/10 w-full max-w-xl flex flex-col sm:flex-row items-center justify-between gap-4">
             <span className="text-[11px] uppercase tracking-widest text-neutral-400 font-mono">
               Follow Our Journey
             </span>
