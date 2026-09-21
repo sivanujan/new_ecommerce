@@ -165,6 +165,11 @@ export default async function Footer() {
             </h4>
             <ul className="flex flex-col gap-2.5">
               <li>
+                <LocalizedClientLink href="/faq" className="text-neutral-300 hover:text-[#E5C378] transition-colors">
+                  FAQ &amp; Care
+                </LocalizedClientLink>
+              </li>
+              <li>
                 <LocalizedClientLink href="#story" className="text-neutral-300 hover:text-[#E5C378] transition-colors">
                   Our Story
                 </LocalizedClientLink>
@@ -172,11 +177,6 @@ export default async function Footer() {
               <li>
                 <LocalizedClientLink href="#story" className="text-neutral-300 hover:text-[#E5C378] transition-colors">
                   316L Stainless Steel
-                </LocalizedClientLink>
-              </li>
-              <li>
-                <LocalizedClientLink href="#story" className="text-neutral-300 hover:text-[#E5C378] transition-colors">
-                  Cultural Symbols
                 </LocalizedClientLink>
               </li>
               <li>

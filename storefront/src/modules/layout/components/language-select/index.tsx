@@ -156,14 +156,14 @@ const LanguageSelect = ({
             leaveTo="opacity-0"
           >
             <ListboxOptions
-              className="absolute -bottom-[calc(100%-36px)] left-0 xsmall:left-auto xsmall:right-0 max-h-[442px] overflow-y-scroll z-[900] bg-white drop-shadow-md text-small-regular uppercase text-black no-scrollbar rounded-rounded w-full"
+              className="absolute -bottom-[calc(100%-36px)] left-0 xsmall:left-auto xsmall:right-0 max-h-[442px] overflow-y-scroll z-[900] bg-[#121215] border border-white/15 shadow-2xl text-xs uppercase text-[#FDFBF7] no-scrollbar rounded-xl w-full divide-y divide-white/5"
               static
             >
               {options.map((o) => (
                 <ListboxOption
                   key={o.code || "default"}
                   value={o}
-                  className="py-2 hover:bg-gray-200 px-3 cursor-pointer flex items-center gap-x-2"
+                  className="py-2.5 hover:bg-white/[0.06] hover:text-[#E5C378] px-3.5 cursor-pointer flex items-center gap-x-2.5 transition-colors duration-150"
                 >
                   {o.countryCode ? (
                     /* @ts-ignore */
@@ -178,7 +178,7 @@ const LanguageSelect = ({
                   ) : (
                     <span style={{ width: "16px", height: "16px" }} />
                   )}
-                  {o.localizedName}
+                  <span className="font-medium tracking-wide">{o.localizedName}</span>
                 </ListboxOption>
               ))}
             </ListboxOptions>

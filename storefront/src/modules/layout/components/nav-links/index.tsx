@@ -75,20 +75,19 @@ export default function NavLinks() {
   }, [isHomePath, activeHash])
 
   // Determine active item
-  let activeItem: "home" | "collection" | "story" | "contact" | null = null
+  let activeItem: "home" | "collection" | "faq" | "contact" | null = null
 
   const isContact = pathname.includes("/contact")
+  const isFaq = pathname.includes("/faq")
 
   if (isContact) {
     activeItem = "contact"
+  } else if (isFaq) {
+    activeItem = "faq"
   } else if (isCollection) {
     activeItem = "collection"
   } else if (isHomePath) {
-    if (activeHash === "#story") {
-      activeItem = "story"
-    } else {
-      activeItem = "home"
-    }
+    activeItem = "home"
   }
 
   const navItems = [
@@ -105,10 +104,10 @@ export default function NavLinks() {
       onClick: () => setActiveHash(""),
     },
     {
-      name: "Our Story",
-      href: "#story",
-      id: "story" as const,
-      onClick: () => setActiveHash("#story"),
+      name: "FAQ",
+      href: "/faq",
+      id: "faq" as const,
+      onClick: () => setActiveHash(""),
     },
     {
       name: "Contact",

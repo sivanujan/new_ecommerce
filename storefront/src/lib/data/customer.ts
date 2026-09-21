@@ -14,6 +14,7 @@ import {
   removeCartId,
   setAuthToken,
 } from "./cookies"
+import { retrieveCart } from "./cart"
 
 export const retrieveCustomer =
   async (): Promise<HttpTypes.StoreCustomer | null> => {
@@ -135,7 +136,10 @@ export async function signout(countryCode: string) {
   const customerCacheTag = await getCacheTag("customers")
   revalidateTag(customerCacheTag)
 
-  await removeCartId()
+  // NOTE: We intentionally do NOT remove the cart id here. The cart stays
+  // associated with the customer in Medusa, and keeping the `_medusa_cart_id`
+  // cookie lets us restore it on the next login (see `transferCart`). Ending
+  // the session only clears the auth token above.
 
   const cartCacheTag = await getCacheTag("carts")
   revalidateTag(cartCacheTag)
@@ -143,6 +147,19 @@ export async function signout(countryCode: string) {
   redirect(`/${countryCode}/account`)
 }
 
+/**
+ * Restore/associate the customer's cart after a login or signup.
+ *
+ * The cart id is kept in the `_medusa_cart_id` cookie across logout, so on the
+ * next login we already have a reference. This decides what to do with it:
+ *  - Cart is already owned by this customer  -> restore it (just revalidate).
+ *  - Cart is a guest cart (no customer)      -> associate/merge it onto the
+ *                                               customer (also covers the
+ *                                               "guest adds, then logs in" case).
+ *  - Cart belongs to a DIFFERENT customer    -> it isn't ours (e.g. a shared
+ *    (shared browser after logout)              browser); drop the stale cookie
+ *                                               so a fresh cart is created.
+ */
 export async function transferCart() {
   const cartId = await getCartId()
 
@@ -150,11 +167,44 @@ export async function transferCart() {
     return
   }
 
-  const headers = await getAuthHeaders()
+  const customer = await retrieveCustomer()
 
-  await sdk.store.cart.transferCart(cartId, {}, headers)
+  // Not actually authenticated — leave the cart untouched.
+  if (!customer) {
+    return
+  }
+
+  // NOTE: the Store API only returns `customer_id` when the `customer`
+  // relation is expanded, so we must request `*customer` here.
+  const cart = await retrieveCart(cartId, "id,customer_id,*customer")
+
+  // Stale/deleted cart reference — clear it so a new cart gets created.
+  if (!cart) {
+    await removeCartId()
+    return
+  }
+
+  const cartOwnerId =
+    cart.customer_id ?? (cart as { customer?: { id?: string } }).customer?.id
+
+  // Cart belongs to someone else on this browser — don't steal it.
+  if (cartOwnerId && cartOwnerId !== customer.id) {
+    await removeCartId()
+    return
+  }
 
   const cartCacheTag = await getCacheTag("carts")
+
+  // Already ours: nothing to transfer, the cookie already restores it.
+  if (cartOwnerId === customer.id) {
+    revalidateTag(cartCacheTag)
+    return
+  }
+
+  // Guest cart -> associate (and merge line items into) the customer's cart.
+  const headers = await getAuthHeaders()
+  await sdk.store.cart.transferCart(cartId, {}, headers)
+
   revalidateTag(cartCacheTag)
 }
 

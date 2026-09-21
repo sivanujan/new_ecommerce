@@ -50,8 +50,12 @@ body {
   /* Global dark form controls */
   input,
   textarea,
-  select {
+  select,
+  select option,
+  select optgroup {
     color-scheme: dark;
+    background-color: #121215;
+    color: #FDFBF7;
   }
 
   /* Universal Dark Luxury Autofill Override - fixes Bug 1 across all browsers */

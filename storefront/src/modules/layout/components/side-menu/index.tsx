@@ -16,7 +16,7 @@ import { Locale } from "@lib/data/locales"
 const SideMenuItems = {
   Home: "/",
   Collection: "/store",
-  "Our Story": "#story",
+  FAQ: "/faq",
   Contact: "/contact",
   Account: "/account",
   Cart: "/cart",
@@ -43,6 +43,7 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
   const getIsActive = (href: string) => {
     if (href === "/") return isHome
     if (href === "/store") return isCollection
+    if (href === "/faq") return pathname.startsWith(`/${countryCode}/faq`)
     if (href === "/contact") return pathname.startsWith(`/${countryCode}/contact`)
     if (href === "/account") return pathname.startsWith(`/${countryCode}/account`)
     if (href === "/cart") return pathname.startsWith(`/${countryCode}/cart`)

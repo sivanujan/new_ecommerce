@@ -13,6 +13,7 @@ const CountrySelect = forwardRef<HTMLSelectElement, CountrySelectProps>(
       placeholder = "Select Country",
       region,
       defaultValue,
+      value,
       label = "Country",
       required,
       name,
@@ -52,16 +53,16 @@ const CountrySelect = forwardRef<HTMLSelectElement, CountrySelectProps>(
             id={name}
             name={name}
             ref={innerRef}
-            defaultValue={defaultValue}
             required={required}
-            className="w-full h-11 px-4 pr-10 rounded-xl bg-[#121215] border border-white/15 text-white text-sm font-sans appearance-none focus:outline-none focus:border-[#E5C378] focus:ring-1 focus:ring-[#E5C378] hover:border-white/30 transition-all cursor-pointer"
             {...props}
+            {...(value !== undefined ? { value: value ?? "" } : defaultValue !== undefined ? { defaultValue } : { value: "" })}
+            className="w-full h-11 px-4 pr-10 rounded-xl bg-[#121215] border border-white/15 text-white text-sm font-sans appearance-none focus:outline-none focus:border-[#E5C378] focus:ring-1 focus:ring-[#E5C378] hover:border-white/30 transition-all cursor-pointer"
           >
-            <option disabled value="" className="bg-neutral-900 text-neutral-400">
+            <option disabled value="" className="bg-[#121215] text-neutral-500">
               {placeholder}
             </option>
             {countryOptions?.map(({ value, label }, index) => (
-              <option key={index} value={value} className="bg-neutral-900 text-white py-1">
+              <option key={index} value={value} className="bg-[#121215] text-[#FDFBF7] py-1.5">
                 {label}
               </option>
             ))}
