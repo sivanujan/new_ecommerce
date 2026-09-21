@@ -6,19 +6,64 @@ export default async function Footer() {
   const { collections } = await listCollections({
     fields: "id, title, handle",
   }).catch(() => ({ collections: [] }))
-  
-  const productCategories = await listCategories().catch(() => [])
+
+  const socialLinks = [
+    {
+      name: "Instagram",
+      href: "https://instagram.com",
+      icon: (
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
+          <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+          <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+          <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+        </svg>
+      ),
+    },
+    {
+      name: "TikTok",
+      href: "https://tiktok.com",
+      icon: (
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64c.298-.002.595.042.88.13V9.4a6.33 6.33 0 0 0-1-.08A6.34 6.34 0 0 0 3 15.66a6.34 6.34 0 0 0 10.82 4.49 6.27 6.27 0 0 0 1.95-4.49V8.62a8.28 8.28 0 0 0 4.82 1.52V6.69h-1z" />
+        </svg>
+      ),
+    },
+    {
+      name: "YouTube",
+      href: "https://youtube.com",
+      icon: (
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
+          <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19.1c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.43z" />
+          <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02" fill="currentColor" />
+        </svg>
+      ),
+    },
+  ]
 
   return (
-    <footer className="w-full bg-[#080809] border-t border-white/10 text-neutral-400 text-xs font-sans">
-      <div className="content-container py-16 lg:py-24">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 lg:gap-8 pb-16 border-b border-white/10">
-          {/* Brand Mark Column */}
-          <div className="lg:col-span-2 flex flex-col items-start pr-0 lg:pr-8">
+    <footer className="w-full bg-[#08080A] border-t border-white/10 text-neutral-300 text-xs font-sans relative overflow-hidden">
+      {/* Top subtle gold hairline accent */}
+      <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#E5C378]/40 to-transparent" />
+
+      {/* Ambient subtle glow & watermark */}
+      <div className="pointer-events-none absolute bottom-0 right-1/4 w-[600px] h-[300px] bg-[#E5C378]/[0.02] rounded-full blur-[140px]" />
+      
+      {/* Faint luxury watermark symbol in background */}
+      <div className="pointer-events-none absolute -bottom-16 -right-16 text-white/[0.02] select-none">
+        <svg className="w-96 h-96" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="0.75">
+          <path d="M4 18h16M5 14h14M3 8l4 5 5-7 5 7 4-5v10H3z" />
+          <circle cx="12" cy="5" r="1.5" fill="currentColor" />
+        </svg>
+      </div>
+
+      <div className="content-container py-16 lg:py-20 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-8 pb-14 border-b border-white/10">
+          {/* Brand Mark Column (2 cols) */}
+          <div className="lg:col-span-2 flex flex-col items-start pr-0 lg:pr-10">
             <LocalizedClientLink href="/" className="group flex items-center gap-3.5 mb-5">
-              <div className="w-9 h-9 rounded-full border border-white/20 bg-gradient-to-b from-white/15 to-white/5 flex items-center justify-center transition-all duration-300 group-hover:border-white/40">
+              <div className="w-10 h-10 rounded-full border border-[#E5C378]/40 bg-gradient-to-b from-[#E5C378]/15 to-transparent flex items-center justify-center transition-all duration-300 group-hover:border-[#E5C378] group-hover:scale-105 shadow-[0_0_15px_rgba(229,195,120,0.15)]">
                 <svg
-                  className="w-5 h-5 text-white"
+                  className="w-5 h-5 text-[#E5C378]"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -32,40 +77,57 @@ export default async function Footer() {
               </div>
 
               <div className="flex flex-col">
-                <span className="font-display text-xl font-bold tracking-[0.22em] text-white uppercase leading-none">
+                <span className="font-display font-bold text-xl tracking-[0.22em] text-[#FDFBF7] group-hover:text-[#E5C378] transition-colors uppercase leading-none">
                   TamZen
                 </span>
-                <span className="text-[8px] uppercase tracking-[0.28em] text-neutral-400 mt-1">
+                <span className="text-[8px] uppercase tracking-[0.3em] font-mono text-[#E5C378]/80 mt-1">
                   More Than Jewellery
                 </span>
               </div>
             </LocalizedClientLink>
 
             {/* Tagline */}
-            <p className="font-display text-sm tracking-widest text-neutral-200 uppercase mb-3">
+            <p className="font-display font-serif font-bold text-sm tracking-widest text-[#FDFBF7] uppercase mb-2">
               Culture Lives On
             </p>
 
             <p className="text-neutral-400 text-xs leading-relaxed max-w-sm mb-6">
-              Handcrafted stainless steel pendants embodying Tamil-Eelam symbols of resilience, heritage, and pride. Built to withstand time and trends.
+              Bespoke stainless steel cultural jewelry embodying Tamil-Eelam symbols of resilience, heritage, and identity. Forged in 316L steel to endure.
             </p>
 
-            <div className="flex items-center gap-2 text-[11px] text-neutral-400 font-medium">
-              <span className="w-2 h-2 rounded-full bg-emerald-500/80 inline-block" />
+            {/* Worldwide Shipping status badge */}
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[11px] text-emerald-400 font-medium mb-6">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse inline-block" />
               <span>Worldwide Shipping Available</span>
+            </div>
+
+            {/* Social Icons */}
+            <div className="flex items-center gap-3">
+              {socialLinks.map((social) => (
+                <a
+                  key={social.name}
+                  href={social.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-9 h-9 rounded-full border border-white/10 hover:border-[#E5C378] bg-white/[0.03] hover:bg-[#E5C378]/10 flex items-center justify-center text-neutral-400 hover:text-[#E5C378] transition-all duration-300 shadow-sm hover:scale-105"
+                  aria-label={social.name}
+                >
+                  {social.icon}
+                </a>
+              ))}
             </div>
           </div>
 
-          {/* Quick Nav / Collections */}
+          {/* Column 1: Collections */}
           <div className="flex flex-col gap-3">
-            <h4 className="font-display text-xs uppercase tracking-[0.2em] font-bold text-white mb-2">
-              Collections
+            <h4 className="font-display text-xs uppercase tracking-[0.25em] font-bold text-[#E5C378] mb-2 flex items-center gap-1.5">
+              <span>Collections</span>
             </h4>
             <ul className="flex flex-col gap-2.5">
               <li>
                 <LocalizedClientLink
                   href="/store"
-                  className="hover:text-white transition-colors"
+                  className="text-neutral-300 hover:text-[#E5C378] transition-colors"
                 >
                   All Creations
                 </LocalizedClientLink>
@@ -75,7 +137,7 @@ export default async function Footer() {
                   <li key={c.id}>
                     <LocalizedClientLink
                       href={`/collections/${c.handle}`}
-                      className="hover:text-white transition-colors"
+                      className="text-neutral-300 hover:text-[#E5C378] transition-colors"
                     >
                       {c.title}
                     </LocalizedClientLink>
@@ -84,12 +146,12 @@ export default async function Footer() {
               ) : (
                 <>
                   <li>
-                    <LocalizedClientLink href="/store" className="hover:text-white transition-colors">
+                    <LocalizedClientLink href="/store" className="text-neutral-300 hover:text-[#E5C378] transition-colors">
                       Signature Pendants
                     </LocalizedClientLink>
                   </li>
                   <li>
-                    <LocalizedClientLink href="/store" className="hover:text-white transition-colors">
+                    <LocalizedClientLink href="/store" className="text-neutral-300 hover:text-[#E5C378] transition-colors">
                       Heritage Dog-Tags
                     </LocalizedClientLink>
                   </li>
@@ -98,46 +160,46 @@ export default async function Footer() {
             </ul>
           </div>
 
-          {/* Heritage & Values */}
+          {/* Column 2: Brand & Story */}
           <div className="flex flex-col gap-3">
-            <h4 className="font-display text-xs uppercase tracking-[0.2em] font-bold text-white mb-2">
-              Brand & Story
+            <h4 className="font-display text-xs uppercase tracking-[0.25em] font-bold text-[#E5C378] mb-2 flex items-center gap-1.5">
+              <span>Brand & Story</span>
             </h4>
             <ul className="flex flex-col gap-2.5">
               <li>
-                <LocalizedClientLink href="#story" className="hover:text-white transition-colors">
+                <LocalizedClientLink href="#story" className="text-neutral-300 hover:text-[#E5C378] transition-colors">
                   Our Story
                 </LocalizedClientLink>
               </li>
               <li>
-                <LocalizedClientLink href="#story" className="hover:text-white transition-colors">
+                <LocalizedClientLink href="#story" className="text-neutral-300 hover:text-[#E5C378] transition-colors">
                   316L Stainless Steel
                 </LocalizedClientLink>
               </li>
               <li>
-                <LocalizedClientLink href="#story" className="hover:text-white transition-colors">
+                <LocalizedClientLink href="#story" className="text-neutral-300 hover:text-[#E5C378] transition-colors">
                   Cultural Symbols
                 </LocalizedClientLink>
               </li>
               <li>
-                <LocalizedClientLink href="/account" className="hover:text-white transition-colors">
+                <LocalizedClientLink href="/account" className="text-neutral-300 hover:text-[#E5C378] transition-colors">
                   My Account
                 </LocalizedClientLink>
               </li>
             </ul>
           </div>
 
-          {/* Contact & Support */}
+          {/* Column 3: Contact */}
           <div className="flex flex-col gap-3" id="contact-info">
-            <h4 className="font-display text-xs uppercase tracking-[0.2em] font-bold text-white mb-2">
-              Contact
+            <h4 className="font-display text-xs uppercase tracking-[0.25em] font-bold text-[#E5C378] mb-2 flex items-center gap-1.5">
+              <span>Contact</span>
             </h4>
             <ul className="flex flex-col gap-2.5">
               <li className="text-neutral-400">
                 Email:{" "}
                 <a
                   href="mailto:contact@tamzen.com"
-                  className="hover:text-white transition-colors"
+                  className="text-neutral-300 hover:text-[#E5C378] transition-colors"
                 >
                   contact@tamzen.com
                 </a>
@@ -146,34 +208,35 @@ export default async function Footer() {
                 Support: Mon &ndash; Fri (9:00 &ndash; 18:00 CET)
               </li>
               <li>
-                <LocalizedClientLink href="/cart" className="hover:text-white transition-colors">
+                <LocalizedClientLink href="/cart" className="text-neutral-300 hover:text-[#E5C378] transition-colors">
                   View Bag
                 </LocalizedClientLink>
               </li>
               <li className="pt-2">
-                <span className="inline-block px-3 py-1 rounded-full border border-white/10 text-[10px] uppercase tracking-wider text-neutral-300 bg-white/[0.03]">
-                  Europe • France / EUR
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#E5C378]/20 text-[10px] uppercase font-mono tracking-wider text-[#E5C378] bg-[#E5C378]/5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#E5C378]" />
+                  <span>Europe • EUR</span>
                 </span>
               </li>
             </ul>
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-neutral-400">
+        {/* Bottom Copyright Bar */}
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-neutral-400 font-sans">
           <p>
-            © {new Date().getFullYear()} TamZen. All rights reserved. &bull; More Than Jewellery
+            &copy; {new Date().getFullYear()} TamZen. All rights reserved. &bull; More Than Jewellery
           </p>
-          <div className="flex items-center gap-6">
-            <span className="hover:text-neutral-300 transition-colors cursor-pointer">
+          <div className="flex items-center gap-4 sm:gap-6 flex-wrap justify-center">
+            <span className="hover:text-[#E5C378] transition-colors cursor-pointer">
               Privacy Policy
             </span>
             <span>&bull;</span>
-            <span className="hover:text-neutral-300 transition-colors cursor-pointer">
+            <span className="hover:text-[#E5C378] transition-colors cursor-pointer">
               Terms of Service
             </span>
             <span>&bull;</span>
-            <span className="hover:text-neutral-300 transition-colors cursor-pointer">
+            <span className="hover:text-[#E5C378] transition-colors cursor-pointer">
               Shipping Policy
             </span>
           </div>
