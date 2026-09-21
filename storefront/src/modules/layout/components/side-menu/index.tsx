@@ -5,6 +5,7 @@ import { ArrowRightMini, XMark } from "@medusajs/icons"
 import { Text, clx, useToggleState } from "@medusajs/ui"
 import { Fragment } from "react"
 
+import { usePathname, useParams } from "next/navigation"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import CountrySelect from "../country-select"
 import LanguageSelect from "../language-select"
@@ -14,6 +15,8 @@ import { Locale } from "@lib/data/locales"
 const SideMenuItems = {
   Home: "/",
   Collection: "/store",
+  "Our Story": "#story",
+  Contact: "#contact",
   Account: "/account",
   Cart: "/cart",
 }
@@ -27,6 +30,22 @@ type SideMenuProps = {
 const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
   const countryToggleState = useToggleState()
   const languageToggleState = useToggleState()
+  const pathname = usePathname()
+  const { countryCode } = useParams() as { countryCode: string }
+
+  const isHome = pathname === `/${countryCode}` || pathname === `/${countryCode}/`
+  const isCollection =
+    pathname.startsWith(`/${countryCode}/store`) ||
+    pathname.startsWith(`/${countryCode}/collections`) ||
+    pathname.startsWith(`/${countryCode}/products`)
+
+  const getIsActive = (href: string) => {
+    if (href === "/") return isHome
+    if (href === "/store") return isCollection
+    if (href === "/account") return pathname.startsWith(`/${countryCode}/account`)
+    if (href === "/cart") return pathname.startsWith(`/${countryCode}/cart`)
+    return false
+  }
 
   return (
     <div className="h-full">
@@ -73,14 +92,24 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
                     </div>
                     <ul className="flex flex-col gap-6 items-start justify-start">
                       {Object.entries(SideMenuItems).map(([name, href]) => {
+                        const isActive = getIsActive(href)
+
                         return (
                           <li key={name}>
                             <LocalizedClientLink
                               href={href}
-                              className="text-3xl leading-10 hover:text-ui-fg-disabled"
+                              className={clx(
+                                "text-2xl sm:text-3xl leading-10 transition-colors flex items-center gap-3",
+                                isActive
+                                  ? "text-[#E5C378] font-bold"
+                                  : "text-neutral-300 hover:text-white"
+                              )}
                               onClick={close}
                               data-testid={`${name.toLowerCase()}-link`}
                             >
+                              {isActive && (
+                                <span className="w-2 h-2 rounded-full bg-[#E5C378]" />
+                              )}
                               {name}
                             </LocalizedClientLink>
                           </li>

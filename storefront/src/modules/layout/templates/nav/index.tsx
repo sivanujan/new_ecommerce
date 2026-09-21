@@ -6,6 +6,7 @@ import { StoreRegion } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import CartButton from "@modules/layout/components/cart-button"
 import SideMenu from "@modules/layout/components/side-menu"
+import NavLinks from "@modules/layout/components/nav-links"
 
 export default async function Nav() {
   const [regions, locales, currentLocale] = await Promise.all([
@@ -57,36 +58,8 @@ export default async function Nav() {
           </LocalizedClientLink>
         </div>
 
-        {/* Center: Desktop Navigation */}
-        <div className="hidden md:flex items-center gap-8 lg:gap-11">
-          <LocalizedClientLink
-            href="/"
-            className="text-[11px] uppercase tracking-[0.22em] font-semibold text-white hover:text-[#E5C378] transition-colors relative py-1 after:absolute after:bottom-0 after:left-0 after:w-full after:h-[1.5px] after:bg-[#E5C378] after:transition-all"
-          >
-            Home
-          </LocalizedClientLink>
-
-          <LocalizedClientLink
-            href="/store"
-            className="text-[11px] uppercase tracking-[0.22em] font-semibold text-neutral-300 hover:text-white transition-colors relative py-1 after:absolute after:bottom-0 after:left-0 after:w-0 hover:after:w-full after:h-[1.5px] after:bg-[#E5C378] after:transition-all duration-300"
-          >
-            Collection
-          </LocalizedClientLink>
-
-          <LocalizedClientLink
-            href="#story"
-            className="text-[11px] uppercase tracking-[0.22em] font-semibold text-neutral-300 hover:text-white transition-colors relative py-1 after:absolute after:bottom-0 after:left-0 after:w-0 hover:after:w-full after:h-[1.5px] after:bg-[#E5C378] after:transition-all duration-300"
-          >
-            Our Story
-          </LocalizedClientLink>
-
-          <LocalizedClientLink
-            href="#contact"
-            className="text-[11px] uppercase tracking-[0.22em] font-semibold text-neutral-300 hover:text-white transition-colors relative py-1 after:absolute after:bottom-0 after:left-0 after:w-0 hover:after:w-full after:h-[1.5px] after:bg-[#E5C378] after:transition-all duration-300"
-          >
-            Contact
-          </LocalizedClientLink>
-        </div>
+        {/* Center: Dynamic Desktop Navigation with Active State Indicator */}
+        <NavLinks />
 
         {/* Right: Search + Account + Cart Icons */}
         <div className="flex items-center gap-3 sm:gap-3.5">
