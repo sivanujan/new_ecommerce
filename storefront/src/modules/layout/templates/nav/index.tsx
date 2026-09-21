@@ -67,7 +67,7 @@ export default async function Nav() {
           </LocalizedClientLink>
 
           <LocalizedClientLink
-            href="#collection"
+            href="/store"
             className="text-[11px] uppercase tracking-[0.22em] font-semibold text-neutral-300 hover:text-white transition-colors relative py-1 after:absolute after:bottom-0 after:left-0 after:w-0 hover:after:w-full after:h-[1.5px] after:bg-[#E5C378] after:transition-all duration-300"
           >
             Collection

@@ -84,12 +84,12 @@ export default async function Footer() {
               ) : (
                 <>
                   <li>
-                    <LocalizedClientLink href="#collection" className="hover:text-white transition-colors">
+                    <LocalizedClientLink href="/store" className="hover:text-white transition-colors">
                       Signature Pendants
                     </LocalizedClientLink>
                   </li>
                   <li>
-                    <LocalizedClientLink href="#collection" className="hover:text-white transition-colors">
+                    <LocalizedClientLink href="/store" className="hover:text-white transition-colors">
                       Heritage Dog-Tags
                     </LocalizedClientLink>
                   </li>
