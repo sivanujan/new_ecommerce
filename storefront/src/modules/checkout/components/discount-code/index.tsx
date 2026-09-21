@@ -56,48 +56,46 @@ const DiscountCode: React.FC<DiscountCodeProps> = ({ cart }) => {
   }
 
   return (
-    <div className="w-full bg-white flex flex-col">
-      <div className="txt-medium">
-        <form action={(a) => addPromotionCode(a)} className="w-full mb-5">
-          <Label className="flex gap-x-1 my-2 items-center">
+    <div className="w-full bg-transparent flex flex-col">
+      <div className="text-xs font-sans">
+        <form action={(a) => addPromotionCode(a)} className="w-full mb-3">
+          <Label className="flex gap-x-1 my-1 items-center">
             <button
               onClick={() => setIsOpen(!isOpen)}
               type="button"
-              className="txt-medium text-ui-fg-interactive hover:text-ui-fg-interactive-hover"
+              className="text-xs uppercase tracking-wider font-semibold text-[#E5C378] hover:text-white transition-colors cursor-pointer inline-flex items-center gap-1.5"
               data-testid="add-discount-button"
             >
-              Add Promotion Code(s)
+              <span>+ Add Promotion Code</span>
             </button>
-
-            {/* <Tooltip content="You can add multiple promotion codes">
-              <InformationCircleSolid color="var(--fg-muted)" />
-            </Tooltip> */}
           </Label>
 
           {isOpen && (
-            <>
-              <div className="flex w-full gap-x-2">
-                <Input
-                  className="size-full"
+            <div className="pt-2">
+              <div className="flex w-full gap-2">
+                <input
+                  className="flex-1 bg-white/5 border border-white/15 focus:border-[#E5C378] text-white placeholder:text-neutral-500 rounded-full px-4 py-2 text-xs focus:outline-none transition-all font-sans"
                   id="promotion-input"
                   name="code"
                   type="text"
+                  placeholder="Enter code"
                   autoFocus={false}
                   data-testid="discount-input"
                 />
-                <SubmitButton
-                  variant="secondary"
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-semibold uppercase tracking-wider transition-all active:scale-95"
                   data-testid="discount-apply-button"
                 >
                   Apply
-                </SubmitButton>
+                </button>
               </div>
 
               <ErrorMessage
                 error={errorMessage}
                 data-testid="discount-error-message"
               />
-            </>
+            </div>
           )}
         </form>
 
