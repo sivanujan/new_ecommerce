@@ -77,13 +77,15 @@ export default function NavLinks() {
   // Determine active item
   let activeItem: "home" | "collection" | "story" | "contact" | null = null
 
-  if (isCollection) {
+  const isContact = pathname.includes("/contact")
+
+  if (isContact) {
+    activeItem = "contact"
+  } else if (isCollection) {
     activeItem = "collection"
   } else if (isHomePath) {
     if (activeHash === "#story") {
       activeItem = "story"
-    } else if (activeHash === "#contact") {
-      activeItem = "contact"
     } else {
       activeItem = "home"
     }
@@ -110,11 +112,12 @@ export default function NavLinks() {
     },
     {
       name: "Contact",
-      href: "#contact",
+      href: "/contact",
       id: "contact" as const,
-      onClick: () => setActiveHash("#contact"),
+      onClick: () => setActiveHash(""),
     },
   ]
+
 
   return (
     <div className="hidden md:flex items-center gap-8 lg:gap-11">

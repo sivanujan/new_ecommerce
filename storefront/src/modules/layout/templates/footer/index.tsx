@@ -208,10 +208,16 @@ export default async function Footer() {
                 Support: Mon &ndash; Fri (9:00 &ndash; 18:00 CET)
               </li>
               <li>
+                <LocalizedClientLink href="/contact" className="text-neutral-300 hover:text-[#E5C378] transition-colors">
+                  Contact Form &amp; Atelier
+                </LocalizedClientLink>
+              </li>
+              <li>
                 <LocalizedClientLink href="/cart" className="text-neutral-300 hover:text-[#E5C378] transition-colors">
                   View Bag
                 </LocalizedClientLink>
               </li>
+
               <li className="pt-2">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#E5C378]/20 text-[10px] uppercase font-mono tracking-wider text-[#E5C378] bg-[#E5C378]/5">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#E5C378]" />
