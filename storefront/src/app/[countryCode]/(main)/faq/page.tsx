@@ -1,6 +1,7 @@
 import { Metadata } from "next"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
-import FAQAccordion, { faqData } from "@modules/faq/components/faq-accordion"
+import FAQAccordion from "@modules/faq/components/faq-accordion"
+import { faqData } from "@modules/faq/faq-data"
 
 export const metadata: Metadata = {
   title: "Frequently Asked Questions | TamZen — More Than Jewellery",
