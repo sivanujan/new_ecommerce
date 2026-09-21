@@ -1,4 +1,5 @@
 import { Suspense } from "react"
+import Image from "next/image"
 import { listRegions } from "@lib/data/regions"
 import { listLocales } from "@lib/data/locales"
 import { getLocale } from "@lib/data/locale-actions"
@@ -16,9 +17,9 @@ export default async function Nav() {
   ])
 
   return (
-    <header className="sticky top-0 inset-x-0 z-50 w-full bg-[#0B0B0C]/90 backdrop-blur-md border-b border-white/10 transition-all duration-300">
+    <header className="sticky top-0 inset-x-0 z-50 w-full bg-bg-base/90 backdrop-blur-md border-b border-white/10 transition-all duration-300">
       <nav className="content-container h-20 flex items-center justify-between">
-        {/* Left: Brand Identity with Tiger/Lion Emblem + Tamil Tagline */}
+        {/* Left: Brand Identity with Lion Emblem + Wordmark */}
         <div className="flex items-center gap-4">
           {/* Mobile drawer trigger */}
           <div className="flex md:hidden items-center text-white">
@@ -27,33 +28,39 @@ export default async function Nav() {
 
           <LocalizedClientLink
             href="/"
-            className="group flex items-center gap-3.5 focus:outline-none"
+            className="group flex items-center focus:outline-none"
             data-testid="nav-store-link"
           >
-            {/* Cultural Tiger/Lion Emblem Mark */}
-            <div className="relative w-10 h-10 rounded-full border border-[#E5C378]/40 bg-neutral-900 text-[#E5C378] flex items-center justify-center shadow-md transition-all duration-300 group-hover:scale-105 group-hover:border-[#E5C378]">
-              <svg
-                className="w-5 h-5 text-[#E5C378]"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                {/* Stylized lion/tiger cultural crest */}
-                <path d="M4 18h16M5 14h14M3 8l4 5 5-7 5 7 4-5v10H3z" />
-                <circle cx="12" cy="5" r="1.2" fill="currentColor" />
-              </svg>
+            {/* Desktop & Tablet: Full Horizontal Emblem + Wordmark Logo */}
+            <div className="relative hidden sm:block h-12 w-52 md:w-56 transition-transform duration-300 group-hover:scale-[1.02]">
+              <Image
+                src="/logo.svg"
+                alt="TamZen"
+                fill
+                priority
+                className="object-contain object-left"
+              />
             </div>
 
-            <div className="flex flex-col">
-              <span className="font-display text-xl sm:text-2xl font-black tracking-[0.2em] text-white uppercase leading-none group-hover:text-neutral-200 transition-colors">
-                TAMZEN
-              </span>
-              <span className="text-[9px] sm:text-[10px] tracking-wider text-[#E5C378] font-medium mt-1 font-sans">
-                எங்கள் வேர் எங்கள் அடையாளம்
-              </span>
+            {/* Mobile Header: Compact Logo */}
+            <div className="relative flex sm:hidden items-center gap-2">
+              <div className="relative w-8 h-8 shrink-0">
+                <Image
+                  src="/logo-icon.svg"
+                  alt="TamZen"
+                  fill
+                  priority
+                  className="object-contain"
+                />
+              </div>
+              <div className="flex flex-col">
+                <span className="font-display text-base font-black tracking-[0.2em] text-[#E5C378] uppercase leading-none">
+                  TAMZEN
+                </span>
+                <span className="text-[7.5px] tracking-wider text-[#E5C378]/80 font-medium mt-0.5 font-sans">
+                  எங்கள் வேர் எங்கள் அடையாளம்
+                </span>
+              </div>
             </div>
           </LocalizedClientLink>
         </div>

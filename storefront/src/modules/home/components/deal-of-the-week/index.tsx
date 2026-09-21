@@ -125,7 +125,7 @@ export default async function DealOfTheWeek({
   return (
     <section
       id="deal-of-the-week"
-      className="w-full bg-[#0E0E11] py-20 lg:py-28 text-white relative overflow-hidden border-b border-white/10"
+      className="w-full bg-bg-base py-20 lg:py-28 text-white relative overflow-hidden"
     >
       {/* Ambient background gold glow */}
       <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] rounded-full bg-[#E5C378]/5 blur-[140px]" />
@@ -151,7 +151,7 @@ export default async function DealOfTheWeek({
           {/* Tamil Decorative Divider */}
           <div className="flex items-center justify-center gap-3 my-4 w-full max-w-xs mx-auto">
             <span className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-[#E5C378]/60" />
-            <div className="w-2.5 h-2.5 rotate-45 border border-[#E5C378] bg-[#121215]" />
+            <div className="w-2.5 h-2.5 rotate-45 border border-[#E5C378] bg-bg-elevated" />
             <span className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-[#E5C378]/60" />
           </div>
 

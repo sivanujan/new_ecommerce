@@ -25,6 +25,14 @@ export const metadata: Metadata = {
   },
   description:
     "TamZen — More Than Jewellery. Wear your roots with bespoke cultural pendants and jewelry inspired by Tamil-Eelam identity.",
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/logo-icon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/favicon.svg",
+    apple: "/logo-icon.svg",
+  },
 }
 
 export default function RootLayout(props: { children: React.ReactNode }) {
@@ -34,7 +42,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
       className={`${cinzel.variable} ${montserrat.variable}`}
       data-mode="dark"
     >
-      <body className="bg-[#0B0B0C] text-neutral-100 antialiased selection:bg-white/20 selection:text-white">
+      <body className="bg-bg-base text-neutral-100 antialiased selection:bg-white/20 selection:text-white">
         <main className="relative min-h-screen">{props.children}</main>
       </body>
     </html>

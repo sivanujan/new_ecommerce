@@ -32,7 +32,7 @@ export default async function Home(props: {
   }
 
   return (
-    <div className="w-full flex flex-col bg-[#0B0B0C]">
+    <div className="w-full flex flex-col bg-bg-base">
       {/* 1. Full-Height Temple Hero (Fills the entire 100vh viewport) */}
       <Hero />
 

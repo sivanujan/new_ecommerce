@@ -1,3 +1,4 @@
+import Image from "next/image"
 import { listCategories } from "@lib/data/categories"
 import { listCollections } from "@lib/data/collections"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
@@ -41,19 +42,22 @@ export default async function Footer() {
   ]
 
   return (
-    <footer className="w-full bg-[#08080A] border-t border-white/10 text-neutral-300 text-xs font-sans relative overflow-hidden">
+    <footer className="w-full bg-bg-base text-neutral-300 text-xs font-sans relative overflow-hidden">
       {/* Top subtle gold hairline accent */}
-      <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#E5C378]/40 to-transparent" />
+      <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#E5C378]/25 to-transparent" />
 
       {/* Ambient subtle glow & watermark */}
       <div className="pointer-events-none absolute bottom-0 right-1/4 w-[600px] h-[300px] bg-[#E5C378]/[0.02] rounded-full blur-[140px]" />
       
-      {/* Faint luxury watermark symbol in background */}
-      <div className="pointer-events-none absolute -bottom-16 -right-16 text-white/[0.02] select-none">
-        <svg className="w-96 h-96" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="0.75">
-          <path d="M4 18h16M5 14h14M3 8l4 5 5-7 5 7 4-5v10H3z" />
-          <circle cx="12" cy="5" r="1.5" fill="currentColor" />
-        </svg>
+      {/* Faint luxury watermark lion crest in background */}
+      <div className="pointer-events-none absolute -bottom-12 -right-12 opacity-[0.04] select-none">
+        <Image
+          src="/logo-icon.svg"
+          alt=""
+          width={340}
+          height={340}
+          className="object-contain"
+        />
       </div>
 
       <div className="content-container py-16 lg:py-20 relative z-10">
@@ -61,19 +65,13 @@ export default async function Footer() {
           {/* Brand Mark Column (2 cols) */}
           <div className="lg:col-span-2 flex flex-col items-start pr-0 lg:pr-10">
             <LocalizedClientLink href="/" className="group flex items-center gap-3.5 mb-5">
-              <div className="w-10 h-10 rounded-full border border-[#E5C378]/40 bg-gradient-to-b from-[#E5C378]/15 to-transparent flex items-center justify-center transition-all duration-300 group-hover:border-[#E5C378] group-hover:scale-105 shadow-[0_0_15px_rgba(229,195,120,0.15)]">
-                <svg
-                  className="w-5 h-5 text-[#E5C378]"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M4 18h16M5 14h14M3 8l4 5 5-7 5 7 4-5v10H3z" />
-                  <circle cx="12" cy="5" r="1" fill="currentColor" />
-                </svg>
+              <div className="relative w-12 h-12 shrink-0 transition-transform duration-300 group-hover:scale-105">
+                <Image
+                  src="/logo-icon.svg"
+                  alt="TamZen"
+                  fill
+                  className="object-contain"
+                />
               </div>
 
               <div className="flex flex-col">

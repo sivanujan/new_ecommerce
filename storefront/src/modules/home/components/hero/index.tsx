@@ -3,7 +3,7 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 
 export default function Hero() {
   return (
-    <section className="relative w-full overflow-hidden min-h-[calc(100dvh-5rem)] lg:min-h-[calc(100vh-5rem)] flex items-center justify-center">
+    <section className="relative w-full overflow-hidden min-h-[calc(100dvh-5rem)] lg:min-h-[calc(100vh-5rem)] flex items-center justify-center bg-bg-base">
       {/* Full-bleed Traditional Heritage Background Image */}
       <div className="absolute inset-0 z-0">
         <Image
@@ -20,8 +20,9 @@ export default function Hero() {
         {/* 1. Left-to-right gradient (heavy dark on text side, open clarity towards temple) */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/75 to-black/30 lg:from-black/90 lg:via-black/55 lg:to-transparent" />
 
-        {/* 2. Top and bottom subtle vignettes */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/50" />
+        {/* 2. Top and bottom subtle vignettes blending into bg-base */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-base)] via-transparent to-black/50" />
+        <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[var(--bg-base)] via-[var(--bg-base)]/80 to-transparent pointer-events-none" />
 
         {/* 3. Warm amber ambient wash */}
         <div className="absolute inset-0 bg-[#A07428]/10 mix-blend-overlay pointer-events-none" />

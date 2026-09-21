@@ -4,6 +4,7 @@ import { Popover, PopoverPanel, Transition } from "@headlessui/react"
 import { ArrowRightMini, XMark } from "@medusajs/icons"
 import { Text, clx, useToggleState } from "@medusajs/ui"
 import { Fragment } from "react"
+import Image from "next/image"
 
 import { usePathname, useParams } from "next/navigation"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
@@ -87,8 +88,21 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
                     data-testid="nav-menu-popup"
                     className="flex flex-col h-full bg-[rgba(3,7,18,0.5)] rounded-rounded justify-between p-6"
                   >
-                    <div className="flex justify-end" id="xmark">
-                      <button data-testid="close-menu-button" onClick={close}>
+                    <div className="flex items-center justify-between pb-4 border-b border-white/10" id="xmark">
+                      <div className="flex items-center gap-2.5">
+                        <div className="relative w-8 h-8 shrink-0">
+                          <Image
+                            src="/logo-icon.svg"
+                            alt="TamZen"
+                            fill
+                            className="object-contain"
+                          />
+                        </div>
+                        <span className="font-display text-base font-bold tracking-[0.2em] text-[#E5C378] uppercase">
+                          TamZen
+                        </span>
+                      </div>
+                      <button data-testid="close-menu-button" onClick={close} className="text-neutral-400 hover:text-white p-1">
                         <XMark />
                       </button>
                     </div>

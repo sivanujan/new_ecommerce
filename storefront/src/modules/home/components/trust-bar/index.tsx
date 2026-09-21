@@ -73,7 +73,7 @@ export default function TrustBar() {
   ]
 
   return (
-    <div className="w-full bg-[#0E0E12] border-y border-white/10 py-7 sm:py-8 relative overflow-hidden">
+    <div className="w-full bg-bg-base py-7 sm:py-8 relative overflow-hidden">
       {/* Subtle ambient lighting band */}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-[#E5C378]/[0.03] to-transparent" />
 

@@ -165,7 +165,7 @@ export default function DealCarousel({
           onClick={() => handleScroll("left")}
           disabled={!canScrollLeft}
           aria-label="Previous Deals"
-          className="w-10 h-10 rounded-full bg-[#121215] border border-white/15 hover:border-[#E5C378] text-white hover:text-[#E5C378] disabled:opacity-30 disabled:hover:border-white/15 disabled:hover:text-white flex items-center justify-center transition-all shadow-md cursor-pointer disabled:cursor-not-allowed"
+          className="w-10 h-10 rounded-full bg-bg-elevated border border-white/15 hover:border-[#E5C378] text-white hover:text-[#E5C378] disabled:opacity-30 disabled:hover:border-white/15 disabled:hover:text-white flex items-center justify-center transition-all shadow-md cursor-pointer disabled:cursor-not-allowed"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -176,7 +176,7 @@ export default function DealCarousel({
           onClick={() => handleScroll("right")}
           disabled={!canScrollRight}
           aria-label="Next Deals"
-          className="w-10 h-10 rounded-full bg-[#121215] border border-white/15 hover:border-[#E5C378] text-white hover:text-[#E5C378] disabled:opacity-30 disabled:hover:border-white/15 disabled:hover:text-white flex items-center justify-center transition-all shadow-md cursor-pointer disabled:cursor-not-allowed"
+          className="w-10 h-10 rounded-full bg-bg-elevated border border-white/15 hover:border-[#E5C378] text-white hover:text-[#E5C378] disabled:opacity-30 disabled:hover:border-white/15 disabled:hover:text-white flex items-center justify-center transition-all shadow-md cursor-pointer disabled:cursor-not-allowed"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -194,7 +194,7 @@ export default function DealCarousel({
           <LocalizedClientLink
             key={product.id}
             href={`/products/${product.handle}`}
-            className="group relative flex flex-col justify-between w-[210px] sm:w-[225px] md:w-[235px] lg:w-[245px] xl:w-[250px] shrink-0 snap-start bg-[#121215] hover:bg-[#16161a] rounded-2xl overflow-hidden border border-white/10 hover:border-[#E5C378]/50 shadow-[0_6px_25px_rgba(0,0,0,0.4)] hover:shadow-[0_16px_40px_rgba(229,195,120,0.15)] transition-all duration-500 active:scale-[0.99]"
+            className="group relative flex flex-col justify-between w-[210px] sm:w-[225px] md:w-[235px] lg:w-[245px] xl:w-[250px] shrink-0 snap-start bg-bg-elevated hover:bg-bg-surface rounded-2xl overflow-hidden border border-white/10 hover:border-[#E5C378]/50 shadow-[0_6px_25px_rgba(0,0,0,0.4)] hover:shadow-[0_16px_40px_rgba(229,195,120,0.15)] transition-all duration-500 active:scale-[0.99]"
           >
             {/* Image Area with Discount Badge */}
             <div className="relative aspect-square w-full overflow-hidden bg-neutral-900 border-b border-white/10">

@@ -1,6 +1,5 @@
 import { Metadata } from "next"
 import ContactForm from "@modules/contact/components/contact-form"
-import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
 export const metadata: Metadata = {
   title: "Contact Us | TamZen — More Than Jewellery",
@@ -50,23 +49,8 @@ export default async function ContactPage() {
     },
   ]
 
-  const quickFaqs = [
-    {
-      q: "When will my order ship?",
-      a: "Orders are processed within 24 to 48 hours and dispatched with tracked express delivery across Europe and worldwide.",
-    },
-    {
-      q: "Can I wear it in the shower or gym?",
-      a: "Yes. All pieces are forged in solid 316L stainless steel — completely waterproof, sweatproof, and corrosion-free.",
-    },
-    {
-      q: "What is your return policy?",
-      a: "We offer a 30-day hassle-free money back guarantee on all unworn items in original packaging.",
-    },
-  ]
-
   return (
-    <div className="w-full min-h-screen bg-[#0B0B0C] text-white pt-28 pb-20 sm:pb-28 relative overflow-hidden">
+    <div className="w-full min-h-screen bg-bg-base text-white pt-28 pb-20 sm:pb-28 relative overflow-hidden">
       {/* Ambient background lighting */}
       <div className="pointer-events-none absolute top-10 left-1/2 -translate-x-1/2 w-[800px] h-[350px] bg-[#E5C378]/[0.06] rounded-full blur-[140px]" />
       <div className="pointer-events-none absolute bottom-40 right-10 w-[500px] h-[300px] bg-[#C99C47]/[0.04] rounded-full blur-[120px]" />
@@ -97,7 +81,7 @@ export default async function ContactPage() {
           {/* Tamil Decorative Divider */}
           <div className="flex items-center justify-center gap-3 my-4 w-40 mx-auto">
             <span className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-[#E5C378]/60" />
-            <div className="w-2 h-2 rotate-45 border border-[#E5C378] bg-[#121215]" />
+            <div className="w-2 h-2 rotate-45 border border-[#E5C378] bg-bg-elevated" />
             <span className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-[#E5C378]/60" />
           </div>
 
@@ -119,7 +103,7 @@ export default async function ContactPage() {
           {/* RIGHT: Contact Information & Details (5 Cols) */}
           <div className="lg:col-span-5 flex flex-col gap-6">
             {/* Primary Contact Info Card */}
-            <div className="p-6 sm:p-8 rounded-2xl bg-[#121215] border border-white/10 shadow-[0_15px_45px_rgba(0,0,0,0.5)] flex flex-col gap-6">
+            <div className="p-6 sm:p-8 rounded-2xl bg-bg-elevated border border-white/10 shadow-[0_15px_45px_rgba(0,0,0,0.5)] flex flex-col gap-6">
               <h3 className="font-display font-serif font-bold text-lg sm:text-xl text-[#FDFBF7] tracking-wide border-b border-white/10 pb-4">
                 Direct Inquiries
               </h3>
@@ -210,38 +194,10 @@ export default async function ContactPage() {
                 </div>
               </div>
             </div>
-
-            {/* Quick FAQ Teaser Card */}
-            <div className="p-6 sm:p-7 rounded-2xl bg-[#121215] border border-white/10 shadow-[0_15px_45px_rgba(0,0,0,0.5)]">
-              <h4 className="font-display text-xs uppercase tracking-[0.2em] font-bold text-[#E5C378] mb-4">
-                Common Questions
-              </h4>
-              <div className="flex flex-col gap-4">
-                {quickFaqs.map((faq, idx) => (
-                  <div key={idx} className="border-b border-white/5 pb-3 last:border-b-0 last:pb-0">
-                    <p className="text-xs font-bold text-[#FDFBF7] font-sans">
-                      {faq.q}
-                    </p>
-                    <p className="text-[11px] text-neutral-400 font-sans mt-1 leading-relaxed">
-                      {faq.a}
-                    </p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-5 pt-4 border-t border-white/10 text-center">
-                <LocalizedClientLink
-                  href="/store"
-                  className="text-xs font-mono uppercase tracking-wider text-[#E5C378] hover:underline inline-flex items-center gap-1.5"
-                >
-                  <span>Explore The Full Collection</span>
-                  <span>&rarr;</span>
-                </LocalizedClientLink>
-              </div>
-            </div>
           </div>
         </div>
       </div>
     </div>
   )
 }
+

@@ -37,7 +37,7 @@ export default function BrandStory() {
   return (
     <section
       id="contact"
-      className="w-full bg-gradient-to-b from-[#0E0E12] via-[#121216] to-[#0A0A0C] border-t border-white/10 py-16 sm:py-20 lg:py-24 text-white relative overflow-hidden"
+      className="w-full bg-bg-base py-16 sm:py-20 lg:py-24 text-white relative overflow-hidden"
     >
       {/* Full-width ambient glow & lighting */}
       <div className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[350px] bg-[#E5C378]/[0.07] rounded-full blur-[140px]" />
@@ -62,7 +62,7 @@ export default function BrandStory() {
           {/* Tamil Decorative Gold Divider */}
           <div className="flex items-center justify-center gap-3 my-4 w-40 mx-auto">
             <span className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-[#E5C378]/60" />
-            <div className="w-2 h-2 rotate-45 border border-[#E5C378] bg-[#121215]" />
+            <div className="w-2 h-2 rotate-45 border border-[#E5C378] bg-bg-elevated" />
             <span className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-[#E5C378]/60" />
           </div>
 

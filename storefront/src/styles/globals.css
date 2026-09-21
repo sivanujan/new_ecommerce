@@ -2,7 +2,28 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
+:root {
+  --bg-base: #0B0B0C;
+  --bg-elevated: #121215;
+  --bg-surface: #16161A;
+}
+
+body {
+  background-color: var(--bg-base);
+  color: #ffffff;
+}
+
 @layer utilities {
+  .bg-base {
+    background-color: var(--bg-base);
+  }
+  .bg-elevated {
+    background-color: var(--bg-elevated);
+  }
+  .bg-surface {
+    background-color: var(--bg-surface);
+  }
+
   /* Chrome, Safari and Opera */
   .no-scrollbar::-webkit-scrollbar {
     display: none;

@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <defs>
+    <!-- Warm luxury gold linear gradient for subtle metallic depth -->
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F5DF9E" />
+      <stop offset="50%" stop-color="#D4AF37" />
+      <stop offset="100%" stop-color="#AA820A" />
+    </linearGradient>
+    <radialGradient id="lionGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#D4AF37" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#D4AF37" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <!-- Ambient background glow behind emblem -->
+  <circle cx="100" cy="100" r="95" fill="url(#lionGlow)" />
+
+  <!-- Outer concentric badge ring -->
+  <circle cx="100" cy="100" r="92" stroke="url(#goldGrad)" stroke-width="2.5" stroke-linecap="round" />
+  
+  <!-- Inner fine accent ring -->
+  <circle cx="100" cy="100" r="84" stroke="#D4AF37" stroke-width="1" stroke-dasharray="3 3" opacity="0.65" />
+
+  <!-- 4 Cardinal Star Points (North, South, East, West) -->
+  <circle cx="100" cy="8" r="2" fill="#D4AF37" />
+  <circle cx="100" cy="192" r="2" fill="#D4AF37" />
+  <circle cx="8" cy="100" r="2" fill="#D4AF37" />
+  <circle cx="192" cy="100" r="2" fill="#D4AF37" />
+
+  <!-- Stylized Royal Lion Crest (Cultural & Symmetrical Line-Art) -->
+  <g stroke="url(#goldGrad)" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <!-- Top Crown / Sun Crest Motif -->
+    <path d="M100 28 L103 36 L111 32 L106 41 L114 43 L104 48 L100 45 L96 48 L86 43 L94 41 L89 32 L97 36 Z" fill="#D4AF37" fill-opacity="0.18" stroke-width="1.75" />
+    <circle cx="100" cy="24" r="2.2" fill="#D4AF37" />
+
+    <!-- Lion Mane: Outer Arching Flames / Rays (Symmetrical) -->
+    <!-- Left Mane Blades -->
+    <path d="M78 48 C62 52 48 68 44 86 C40 102 46 118 52 128 C54 122 56 112 62 106" stroke-width="2" />
+    <path d="M68 58 C56 68 49 82 48 98 C47 114 55 128 62 138 C63 130 66 122 71 116" stroke-width="1.8" />
+    <path d="M60 74 C52 86 52 102 56 116 C60 128 69 140 78 148 C77 140 80 132 84 126" stroke-width="1.6" />
+    
+    <!-- Right Mane Blades (Mirrored) -->
+    <path d="M122 48 C138 52 152 68 156 86 C160 102 154 118 148 128 C146 122 144 112 138 106" stroke-width="2" />
+    <path d="M132 58 C144 68 151 82 152 98 C153 114 145 128 138 138 C137 130 134 122 129 116" stroke-width="1.8" />
+    <path d="M140 74 C148 86 148 102 144 116 C140 128 131 140 122 148 C123 140 120 132 116 126" stroke-width="1.6" />
+
+    <!-- Lion Ears -->
+    <path d="M72 58 C72 50 80 50 84 56" stroke-width="2" />
+    <path d="M128 58 C128 50 120 50 116 56" stroke-width="2" />
+
+    <!-- Lion Forehead & Brow Structure -->
+    <path d="M85 58 C92 56 108 56 115 58" stroke-width="1.75" />
+    <path d="M82 66 C90 64 97 68 100 72 C103 68 110 64 118 66" stroke-width="2" />
+    <path d="M100 52 L100 70" stroke-width="1.5" />
+
+    <!-- Eyes (Majestic, Symmetrical, Almond-Shaped) -->
+    <!-- Left Eye -->
+    <path d="M75 78 C80 74 88 74 92 80 C87 83 80 83 75 78 Z" fill="#D4AF37" fill-opacity="0.25" stroke-width="1.8" />
+    <circle cx="83.5" cy="78" r="1.5" fill="#D4AF37" />
+    <!-- Right Eye -->
+    <path d="M125 78 C120 74 112 74 108 80 C113 83 120 83 125 78 Z" fill="#D4AF37" fill-opacity="0.25" stroke-width="1.8" />
+    <circle cx="116.5" cy="78" r="1.5" fill="#D4AF37" />
+
+    <!-- Nose Bridge and Muzzle -->
+    <path d="M93 80 L95 96 C95 100 97 104 100 106 C103 104 105 100 105 96 L107 80" stroke-width="1.6" />
+    
+    <!-- Nose Heart / Diamond -->
+    <path d="M96 98 L104 98 L100 104 Z" fill="#D4AF37" stroke-width="1.5" />
+
+    <!-- Whisker Pads & Cheeks -->
+    <path d="M100 106 C94 106 87 109 84 116 C81 123 86 128 92 128 C97 128 100 123 100 119" stroke-width="1.8" />
+    <path d="M100 106 C106 106 113 109 116 116 C119 123 114 128 108 128 C103 128 100 123 100 119" stroke-width="1.8" />
+
+    <!-- Chin Beard / Heritage Taper -->
+    <path d="M94 128 C94 135 97 142 100 146 C103 142 106 135 106 128" stroke-width="1.8" />
+    <path d="M100 146 L100 156" stroke-width="2" />
+    <path d="M95 150 L100 158 L105 150" stroke-width="1.5" />
+
+    <!-- Whisker Dots -->
+    <circle cx="89" cy="116" r="0.9" fill="#D4AF37" />
+    <circle cx="92" cy="119" r="0.9" fill="#D4AF37" />
+    <circle cx="111" cy="116" r="0.9" fill="#D4AF37" />
+    <circle cx="108" cy="119" r="0.9" fill="#D4AF37" />
+
+    <!-- Bottom Base Scroll Accent -->
+    <path d="M74 158 C84 168 116 168 126 158" stroke-width="1.75" />
+    <circle cx="100" cy="168" r="1.8" fill="#D4AF37" />
+  </g>
+</svg>

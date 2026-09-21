@@ -21,6 +21,14 @@ module.exports = {
         padding: "padding-top padding-right padding-bottom padding-left",
       },
       colors: {
+        "bg-base": "var(--bg-base)",
+        "bg-elevated": "var(--bg-elevated)",
+        "bg-surface": "var(--bg-surface)",
+        brand: {
+          base: "var(--bg-base)",
+          elevated: "var(--bg-elevated)",
+          surface: "var(--bg-surface)",
+        },
         grey: {
           0: "#FFFFFF",
           5: "#F9FAFB",

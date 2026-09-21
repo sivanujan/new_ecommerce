@@ -46,12 +46,12 @@ export default async function RootedInPurpose() {
   return (
     <section
       id="purpose"
-      className="w-full bg-[#0B0B0C] border-b border-white/10 py-20 lg:py-28 relative overflow-hidden"
+      className="w-full bg-bg-base py-20 lg:py-28 relative overflow-hidden"
     >
       <div className="content-container">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
           {/* Left Panel: Close-up macro image + Heading + CTA */}
-          <div className="lg:col-span-4 flex flex-col justify-between p-8 sm:p-10 rounded-2xl bg-neutral-900/60 border border-white/10 relative overflow-hidden group shadow-2xl">
+          <div className="lg:col-span-4 flex flex-col justify-between p-8 sm:p-10 rounded-2xl bg-bg-elevated border border-white/10 relative overflow-hidden group shadow-2xl">
             {/* Background Macro Image with Dark Overlay */}
             <div className="absolute inset-0 z-0">
               <Image
@@ -102,7 +102,7 @@ export default async function RootedInPurpose() {
               <LocalizedClientLink
                 key={idx}
                 href={`/categories/${cat.handle}`}
-                className="group flex flex-col justify-between rounded-2xl overflow-hidden bg-neutral-900/80 border border-white/10 hover:border-[#C59B51]/60 transition-all duration-300 p-3 shadow-lg"
+                className="group flex flex-col justify-between rounded-2xl overflow-hidden bg-bg-elevated border border-white/10 hover:border-[#C59B51]/60 transition-all duration-300 p-3 shadow-lg"
               >
                 {/* Category Image Box */}
                 <div className="relative aspect-[3/4] w-full rounded-xl overflow-hidden bg-neutral-950 mb-3">

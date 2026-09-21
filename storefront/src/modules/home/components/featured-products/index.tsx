@@ -79,7 +79,7 @@ export default async function FeaturedProducts({
   return (
     <section
       id="featured-products"
-      className="w-full bg-[#0B0B0C] py-20 lg:py-28 text-white relative overflow-hidden border-b border-white/10"
+      className="w-full bg-bg-base py-20 lg:py-28 text-white relative overflow-hidden"
     >
       {/* Ambient background glow */}
       <div className="pointer-events-none absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[700px] rounded-full bg-[#E5C378]/5 blur-[130px]" />
@@ -105,7 +105,7 @@ export default async function FeaturedProducts({
           {/* Tamil Decorative Divider */}
           <div className="flex items-center justify-center gap-3 my-4 w-full max-w-xs mx-auto">
             <span className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-[#E5C378]/60" />
-            <div className="w-2.5 h-2.5 rotate-45 border border-[#E5C378] bg-[#121215]" />
+            <div className="w-2.5 h-2.5 rotate-45 border border-[#E5C378] bg-bg-elevated" />
             <span className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-[#E5C378]/60" />
           </div>
 
@@ -123,7 +123,7 @@ export default async function FeaturedProducts({
             <LocalizedClientLink
               key={product.id}
               href={`/products/${product.handle}`}
-              className="group relative flex items-center gap-4 sm:gap-5 p-3.5 sm:p-4 rounded-2xl bg-[#121215] hover:bg-[#16161A] border border-white/10 hover:border-[#E5C378]/50 shadow-[0_4px_20px_rgba(0,0,0,0.35)] hover:shadow-[0_12px_35px_rgba(229,195,120,0.12)] transition-all duration-300 active:scale-[0.99]"
+              className="group relative flex items-center gap-4 sm:gap-5 p-3.5 sm:p-4 rounded-2xl bg-bg-elevated hover:bg-bg-surface border border-white/10 hover:border-[#E5C378]/50 shadow-[0_4px_20px_rgba(0,0,0,0.35)] hover:shadow-[0_12px_35px_rgba(229,195,120,0.12)] transition-all duration-300 active:scale-[0.99]"
             >
               {/* LEFT: Product Image in rounded dark tile */}
               <div className="relative w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 shrink-0 rounded-xl overflow-hidden bg-neutral-900 border border-white/10">
