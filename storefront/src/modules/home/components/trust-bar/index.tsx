@@ -5,7 +5,7 @@ export default function TrustBar() {
       subtitle: "316L Stainless Steel",
       icon: (
         <svg
-          className="w-5 h-5 text-neutral-900"
+          className="w-5 h-5 text-[#E5C378]"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -22,7 +22,7 @@ export default function TrustBar() {
       subtitle: "Water & Sweat Resistant",
       icon: (
         <svg
-          className="w-5 h-5 text-neutral-900"
+          className="w-5 h-5 text-[#E5C378]"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -39,7 +39,7 @@ export default function TrustBar() {
       subtitle: "No Tarnish",
       icon: (
         <svg
-          className="w-5 h-5 text-neutral-900"
+          className="w-5 h-5 text-[#E5C378]"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -56,7 +56,7 @@ export default function TrustBar() {
       subtitle: "For Our Global Community",
       icon: (
         <svg
-          className="w-5 h-5 text-neutral-900"
+          className="w-5 h-5 text-[#E5C378]"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -73,22 +73,30 @@ export default function TrustBar() {
   ]
 
   return (
-    <div className="w-full bg-[#EFECE6] border-b border-neutral-300 py-8 sm:py-10">
-      <div className="content-container">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 items-center">
+    <div className="w-full bg-[#0E0E12] border-y border-white/10 py-7 sm:py-8 relative overflow-hidden">
+      {/* Subtle ambient lighting band */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-[#E5C378]/[0.03] to-transparent" />
+
+      <div className="content-container relative z-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-white/10">
           {features.map((feature, idx) => (
             <div
               key={idx}
-              className="flex items-center gap-3.5 sm:gap-4 group p-1 transition-all duration-200"
+              className={`flex items-center gap-3.5 sm:gap-4 group p-3 sm:px-5 lg:px-6 transition-all duration-300 ${
+                idx % 2 === 1 ? "sm:pl-6" : ""
+              }`}
             >
-              <div className="w-11 h-11 rounded-full border border-neutral-300 bg-white/90 group-hover:border-neutral-900 group-hover:scale-105 flex items-center justify-center flex-shrink-0 transition-all duration-300 shadow-sm">
+              {/* Gold Outline Icon Circle */}
+              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full border border-[#E5C378]/30 bg-[#E5C378]/10 group-hover:border-[#E5C378] group-hover:bg-[#E5C378]/20 group-hover:scale-105 flex items-center justify-center flex-shrink-0 transition-all duration-300 shadow-[0_0_15px_rgba(229,195,120,0.1)]">
                 {feature.icon}
               </div>
-              <div className="flex flex-col">
-                <span className="text-xs sm:text-sm font-bold tracking-wider uppercase text-neutral-950 font-sans">
+
+              {/* Text Labels */}
+              <div className="flex flex-col min-w-0">
+                <span className="text-xs sm:text-sm font-bold tracking-wider uppercase text-[#FDFBF7] group-hover:text-[#E5C378] transition-colors font-sans">
                   {feature.title}
                 </span>
-                <span className="text-[11px] sm:text-xs text-neutral-600 font-medium tracking-wide mt-0.5 font-sans">
+                <span className="text-[11px] sm:text-xs text-[#E5C378]/80 font-medium tracking-wide mt-0.5 font-sans">
                   {feature.subtitle}
                 </span>
               </div>

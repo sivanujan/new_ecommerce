@@ -3,7 +3,9 @@ import { getRegion } from "@lib/data/regions"
 import Hero from "@modules/home/components/hero"
 import TrustBar from "@modules/home/components/trust-bar"
 import RootedInPurpose from "@modules/home/components/rooted-in-purpose"
-import SignatureDesigns from "@modules/home/components/signature-designs"
+import FeaturedProducts from "@modules/home/components/featured-products"
+import DealOfTheWeek from "@modules/home/components/deal-of-the-week"
+import PromoSection from "@modules/home/components/promo-section"
 import BrandStory from "@modules/home/components/brand-story"
 
 export const metadata: Metadata = {
@@ -40,11 +42,20 @@ export default async function Home(props: {
       {/* 3. Rooted In Purpose Collection Band (Dark Background) */}
       <RootedInPurpose />
 
-      {/* 4. Signature Designs Grid (Light Background) */}
-      <SignatureDesigns region={region} />
+      {/* 4. Featured Products (Horizontal Cards Grid) */}
+      <FeaturedProducts region={region} />
 
-      {/* 5. Brand Story & Philosophy Band (Dark Background) */}
+      {/* 5. Deal of the Week Carousel with Live Countdown Timer */}
+      <DealOfTheWeek region={region} />
+
+
+      {/* 6. Promo Banner + Service Bar Section */}
+      <PromoSection />
+
+      {/* 7. Brand Story & Philosophy Band (Dark Background) */}
       <BrandStory />
     </div>
   )
 }
+
+
