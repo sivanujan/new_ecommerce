@@ -31,10 +31,10 @@ export default async function Home(props: {
 
   return (
     <div className="w-full flex flex-col bg-[#0B0B0C]">
-      {/* 1. Light Hero Section */}
+      {/* 1. Full-Height Temple Hero (Fills the entire 100vh viewport) */}
       <Hero />
 
-      {/* 2. Trust Bar (Light Background) */}
+      {/* 2. Trust Bar (Directly below hero, reveals on scroll) */}
       <TrustBar />
 
       {/* 3. Rooted In Purpose Collection Band (Dark Background) */}

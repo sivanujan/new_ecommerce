@@ -73,15 +73,15 @@ export default function TrustBar() {
   ]
 
   return (
-    <div className="w-full bg-[#EFECE6] border-b border-neutral-300 py-4 sm:py-5 lg:py-5">
+    <div className="w-full bg-[#EFECE6] border-b border-neutral-300 py-8 sm:py-10">
       <div className="content-container">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 items-center">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 items-center">
           {features.map((feature, idx) => (
             <div
               key={idx}
-              className="flex items-center gap-3 sm:gap-3.5 group p-1 transition-all duration-200"
+              className="flex items-center gap-3.5 sm:gap-4 group p-1 transition-all duration-200"
             >
-              <div className="w-10 h-10 rounded-full border border-neutral-300 bg-white/90 group-hover:border-neutral-900 group-hover:scale-105 flex items-center justify-center flex-shrink-0 transition-all duration-300 shadow-sm">
+              <div className="w-11 h-11 rounded-full border border-neutral-300 bg-white/90 group-hover:border-neutral-900 group-hover:scale-105 flex items-center justify-center flex-shrink-0 transition-all duration-300 shadow-sm">
                 {feature.icon}
               </div>
               <div className="flex flex-col">
