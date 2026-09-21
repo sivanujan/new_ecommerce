@@ -1,49 +1,11 @@
 import Image from "next/image"
-import { HttpTypes } from "@medusajs/types"
-import { listProducts } from "@lib/data/products"
-import { getProductPrice } from "@lib/util/get-product-price"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
-import HeroProductSlider, { HeroSliderProduct } from "./hero-slider"
 
-export default async function Hero({
-  countryCode,
-  region,
-}: {
-  countryCode?: string
-  region?: HttpTypes.StoreRegion
-}) {
-  // Query live products from Medusa backend (first 3-5 items)
-  const {
-    response: { products },
-  } = await listProducts({
-    regionId: region?.id,
-    countryCode: countryCode || "fr",
-    queryParams: {
-      limit: 5,
-      fields: "*variants.calculated_price",
-    },
-  }).catch(() => ({ response: { products: [] } }))
-
-  // Prepare slides with calculated EUR prices
-  const sliderProducts: HeroSliderProduct[] = (products || []).slice(0, 5).map((product) => {
-    const { cheapestPrice } = getProductPrice({ product })
-
-    const thumbnail =
-      product.thumbnail ||
-      product.images?.[0]?.url ||
-      "/images/tamzen-hero-pendant.jpg"
-
-    return {
-      id: product.id,
-      title: product.title,
-      handle: product.handle,
-      thumbnail,
-      price: cheapestPrice?.calculated_price ?? "€49.00",
-    }
-  })
+export default function Hero() {
+  const verticalMenu = ["PEOPLE", "HERITAGE", "IDENTITY", "STYLE", "FOREVER"]
 
   return (
-    <section className="relative w-full overflow-hidden min-h-[100dvh] lg:min-h-screen flex items-center justify-center">
+    <section className="relative w-full overflow-hidden min-h-[58dvh] lg:h-[calc(100dvh-170px)] lg:min-h-[500px] lg:max-h-[660px] flex items-center justify-center">
       {/* Full-bleed Traditional Heritage Background Image */}
       <div className="absolute inset-0 z-0">
         <Image
@@ -57,8 +19,8 @@ export default async function Hero({
         />
 
         {/* Directional scrim overlays for WCAG AA readability */}
-        {/* 1. Left-to-right gradient (heavy dark on the left text side, open clarity towards the right) */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/80 to-black/40 lg:from-black/90 lg:via-black/60 lg:to-black/30" />
+        {/* 1. Left-to-right gradient (heavy dark on text side, soft clarity towards temple) */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/75 to-black/30 lg:from-black/90 lg:via-black/55 lg:to-transparent" />
 
         {/* 2. Top and bottom subtle vignettes */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/50" />
@@ -68,10 +30,10 @@ export default async function Hero({
       </div>
 
       {/* Hero Content Container - Vertically Centered */}
-      <div className="content-container relative z-10 w-full py-12 sm:py-16 lg:py-20 my-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 xl:gap-10 items-center lg:items-end">
-          {/* Left Column: Eyebrow, Headline, Tamil tagline, Subtext, CTA Button */}
-          <div className="lg:col-span-6 xl:col-span-6 flex flex-col items-start justify-center pr-0 lg:pr-2">
+      <div className="content-container relative z-10 w-full py-8 sm:py-10 lg:py-12 my-auto">
+        <div className="flex items-center justify-between gap-8">
+          {/* Main Text Content: Eyebrow, Headline, Tamil tagline, Subtext, CTA Button */}
+          <div className="flex flex-col items-start justify-center max-w-2xl lg:max-w-3xl pr-0 lg:pr-4">
             {/* Eyebrow */}
             <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-black/40 border border-white/20 backdrop-blur-md mb-4 sm:mb-5">
               <span className="w-1.5 h-1.5 rounded-full bg-[#E5C378] animate-pulse" />
@@ -98,13 +60,13 @@ export default async function Hero({
             </div>
 
             {/* Subtext Paragraph */}
-            <p className="text-xs sm:text-sm lg:text-base text-neutral-200 font-sans font-light leading-relaxed max-w-md mb-6 sm:mb-8 drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
+            <p className="text-xs sm:text-sm lg:text-base text-neutral-200 font-sans font-light leading-relaxed max-w-xl mb-6 sm:mb-8 drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
               Symbols that define you. Forged in solid 316L stainless steel, carrying timeless cultural memory and personal strength for the modern diaspora.
             </p>
 
             {/* Explore Collection Pill Button */}
             <LocalizedClientLink
-              href="#purpose"
+              href="/store"
               className="inline-flex items-center justify-center gap-2.5 sm:gap-3 px-7 sm:px-9 py-3.5 sm:py-4 rounded-full text-xs sm:text-sm uppercase tracking-[0.2em] font-bold text-black bg-white hover:bg-[#F3D798] transition-all shadow-[0_4px_25px_rgba(0,0,0,0.4)] hover:shadow-[0_6px_30px_rgba(243,215,152,0.4)] active:scale-95 group"
             >
               <span>Explore Collection</span>
@@ -114,9 +76,21 @@ export default async function Hero({
             </LocalizedClientLink>
           </div>
 
-          {/* Right Column: Live Product Slider + Desktop Vertical Menu & Counter */}
-          <div className="lg:col-span-6 xl:col-span-6 w-full flex justify-center lg:justify-end">
-            <HeroProductSlider products={sliderProducts} />
+          {/* Far Right: Clean Vertical Menu (Desktop Only, No Slider/Counter) */}
+          <div className="hidden lg:flex flex-col items-center justify-center gap-7 py-4 pl-6 border-l border-white/20 flex-shrink-0">
+            {verticalMenu.map((item, idx) => (
+              <span
+                key={idx}
+                className={`text-[9px] font-bold tracking-[0.28em] uppercase transition-colors cursor-pointer ${
+                  idx === 1
+                    ? "text-[#E5C378] font-black drop-shadow-sm"
+                    : "text-white/60 hover:text-white"
+                }`}
+                style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
+              >
+                {item}
+              </span>
+            ))}
           </div>
         </div>
       </div>
