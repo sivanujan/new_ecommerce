@@ -1,16 +1,10 @@
 import React, { Suspense } from "react"
-
-import ImageGallery from "@modules/products/components/image-gallery"
-import ProductActions from "@modules/products/components/product-actions"
-import ProductOnboardingCta from "@modules/products/components/product-onboarding-cta"
-import ProductTabs from "@modules/products/components/product-tabs"
-import RelatedProducts from "@modules/products/components/related-products"
-import ProductInfo from "@modules/products/templates/product-info"
-import SkeletonRelatedProducts from "@modules/skeletons/templates/skeleton-related-products"
 import { notFound } from "next/navigation"
 import { HttpTypes } from "@medusajs/types"
-
-import ProductActionsWrapper from "./product-actions-wrapper"
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import ProductGallery from "@modules/products/components/product-gallery"
+import ProductDetailPanel from "@modules/products/components/product-detail-panel"
+import RelatedProducts from "@modules/products/components/related-products"
 
 type ProductTemplateProps = {
   product: HttpTypes.StoreProduct
@@ -30,42 +24,68 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
   }
 
   return (
-    <>
-      <div
-        className="content-container  flex flex-col small:flex-row small:items-start py-6 relative"
-        data-testid="product-container"
-      >
-        <div className="flex flex-col small:sticky small:top-48 small:py-0 small:max-w-[300px] w-full py-8 gap-y-6">
-          <ProductInfo product={product} />
-          <ProductTabs product={product} />
-        </div>
-        <div className="block w-full relative">
-          <ImageGallery images={images} />
-        </div>
-        <div className="flex flex-col small:sticky small:top-48 small:py-0 small:max-w-[300px] w-full py-8 gap-y-12">
-          <ProductOnboardingCta />
-          <Suspense
-            fallback={
-              <ProductActions
-                disabled={true}
-                product={product}
-                region={region}
-              />
-            }
+    <div className="w-full bg-[#0B0B0C] min-h-screen text-white flex flex-col">
+      {/* 1. Breadcrumb Bar */}
+      <div className="w-full border-b border-white/10 py-3.5 bg-black/20">
+        <div className="content-container flex items-center gap-2 text-xs font-sans text-neutral-400 overflow-x-auto no-scrollbar">
+          <LocalizedClientLink
+            href="/"
+            className="hover:text-white transition-colors uppercase tracking-wider text-[11px]"
           >
-            <ProductActionsWrapper id={product.id} region={region} />
-          </Suspense>
+            Home
+          </LocalizedClientLink>
+          <span className="text-neutral-600">/</span>
+          <LocalizedClientLink
+            href="/store"
+            className="hover:text-white transition-colors uppercase tracking-wider text-[11px]"
+          >
+            Collection
+          </LocalizedClientLink>
+          <span className="text-neutral-600">/</span>
+          <span className="text-[#E5C378] font-medium truncate uppercase tracking-wider text-[11px]">
+            {product.title}
+          </span>
         </div>
       </div>
+
+      {/* 2. Main Product Area: Balanced 2-Column Luxury Layout */}
+      <div className="content-container py-8 sm:py-12 lg:py-16">
+        <div
+          className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 xl:gap-16 items-start"
+          data-testid="product-container"
+        >
+          {/* Left Column (7 cols): Interactive Luxury Image Gallery */}
+          <div className="lg:col-span-7 w-full">
+            <ProductGallery
+              images={images}
+              title={product.title}
+              thumbnail={product.thumbnail}
+            />
+          </div>
+
+          {/* Right Column (5 cols): Sticky Product Info & Purchase Panel */}
+          <div className="lg:col-span-5 w-full lg:sticky lg:top-28">
+            <ProductDetailPanel product={product} region={region} />
+          </div>
+        </div>
+      </div>
+
+      {/* 3. Related Products Section: "You May Also Like" */}
       <div
-        className="content-container my-16 small:my-32"
+        className="content-container py-16 sm:py-24 border-t border-white/10 mt-8 sm:mt-16"
         data-testid="related-products-container"
       >
-        <Suspense fallback={<SkeletonRelatedProducts />}>
+        <Suspense
+          fallback={
+            <div className="w-full h-80 rounded-2xl bg-white/[0.02] border border-white/10 animate-pulse flex items-center justify-center text-neutral-500 text-sm">
+              Loading curated pieces...
+            </div>
+          }
+        >
           <RelatedProducts product={product} countryCode={countryCode} />
         </Suspense>
       </div>
-    </>
+    </div>
   )
 }
 

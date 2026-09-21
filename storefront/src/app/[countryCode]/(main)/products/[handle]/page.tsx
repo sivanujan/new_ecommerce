@@ -87,12 +87,23 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     notFound()
   }
 
+  const title = `${product.title} | TamZen — More Than Jewellery`
+  const description =
+    product.description ||
+    `${product.title} — Handcrafted Tamil cultural emblem jewellery by TamZen Atelier. Solid 316L stainless steel, designed to endure.`
+
   return {
-    title: `${product.title} | Medusa Store`,
-    description: `${product.title}`,
+    title,
+    description,
     openGraph: {
-      title: `${product.title} | Medusa Store`,
-      description: `${product.title}`,
+      title,
+      description,
+      images: product.thumbnail ? [{ url: product.thumbnail }] : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
       images: product.thumbnail ? [product.thumbnail] : [],
     },
   }
@@ -114,18 +125,49 @@ export default async function ProductPage(props: Props) {
     queryParams: { handle: params.handle },
   }).then(({ response }) => response.products[0])
 
-  const images = getImagesForVariant(pricedProduct, selectedVariantId)
-
   if (!pricedProduct) {
     notFound()
   }
 
+  const images = getImagesForVariant(pricedProduct, selectedVariantId)
+
+  // JSON-LD Structured Data for Google rich results
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: pricedProduct.title,
+    image: pricedProduct.thumbnail ? [pricedProduct.thumbnail] : [],
+    description: pricedProduct.description || pricedProduct.title,
+    brand: {
+      "@type": "Brand",
+      name: "TamZen",
+    },
+    offers: {
+      "@type": "Offer",
+      priceCurrency: region.currency_code?.toUpperCase() || "EUR",
+      price:
+        pricedProduct.variants?.[0]?.calculated_price?.calculated_amount ||
+        undefined,
+      availability: "https://schema.org/InStock",
+      seller: {
+        "@type": "Organization",
+        name: "TamZen",
+      },
+    },
+  }
+
   return (
-    <ProductTemplate
-      product={pricedProduct}
-      region={region}
-      countryCode={params.countryCode}
-      images={images}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <ProductTemplate
+        product={pricedProduct}
+        region={region}
+        countryCode={params.countryCode}
+        images={images}
+      />
+    </>
   )
 }
