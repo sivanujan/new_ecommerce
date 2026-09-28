@@ -242,6 +242,7 @@ export default async function orderPlacedHandler({
 </html>
     `
 
+    // 1. Send luxury confirmation receipt to the customer
     await sendEmail({
       from: "TamZen Orders <notification@tamzen.shop>",
       to: order.email,
@@ -249,6 +250,17 @@ export default async function orderPlacedHandler({
       html: emailHtml,
       text: `Thank you for your order #${displayId}, ${customerName}! Total paid: ${fmt(order.total)}. View your order at https://tamzen.shop/account/orders`,
     })
+
+    // 2. Send new order notification to store admin (nishaned129@gmail.com)
+    const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL || "nishaned129@gmail.com"
+    await sendEmail({
+      from: "TamZen Orders <notification@tamzen.shop>",
+      to: adminEmail,
+      subject: `🔔 [NEW ORDER] #${displayId} — ${customerName} (${fmt(order.total)})`,
+      html: emailHtml,
+      text: `New order #${displayId} placed by ${customerName} (${order.email})! Total: ${fmt(order.total)}.`,
+    })
+    console.log(`[OrderPlaced Subscriber] Dispatched admin order notification to ${adminEmail}`)
   } catch (error) {
     console.error(`[OrderPlaced Subscriber] Error processing order receipt for ${orderId}:`, error)
   }
