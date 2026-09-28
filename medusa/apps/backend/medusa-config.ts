@@ -7,11 +7,11 @@ module.exports = defineConfig({
     databaseUrl: process.env.DATABASE_URL,
     redisUrl: process.env.REDIS_URL,
     http: {
-      storeCors: process.env.STORE_CORS!,
-      adminCors: process.env.ADMIN_CORS!,
-      authCors: process.env.AUTH_CORS!,
-      jwtSecret: process.env.JWT_SECRET,
-      cookieSecret: process.env.COOKIE_SECRET,
+      storeCors: process.env.STORE_CORS || "https://tamzen.shop,http://localhost:8000",
+      adminCors: process.env.ADMIN_CORS || "*",
+      authCors: process.env.AUTH_CORS || "https://tamzen.shop,http://localhost:8000",
+      jwtSecret: process.env.JWT_SECRET || "dev_tamzen_jwt_secret_production_2026_fallback",
+      cookieSecret: process.env.COOKIE_SECRET || "dev_tamzen_cookie_secret_production_2026_fallback",
     },
   },
   modules: [
