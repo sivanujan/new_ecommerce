@@ -1,4 +1,6 @@
-const { spawn } = require("child_process")
+const { spawn, spawnSync } = require("child_process")
+const fs = require("fs")
+const path = require("path")
 
 const port = process.env.PORT || "9000"
 const host = process.env.HOST || "0.0.0.0"
@@ -6,6 +8,22 @@ const host = process.env.HOST || "0.0.0.0"
 console.log(`[TamZen Backend] Launching Medusa server on ${host}:${port}...`)
 console.log(`[TamZen Backend] DATABASE_URL: ${process.env.DATABASE_URL ? "FOUND (" + process.env.DATABASE_URL.split("@")[1] + ")" : "NOT FOUND / MISSING"}`)
 console.log(`[TamZen Backend] REDIS_URL: ${process.env.REDIS_URL ? "FOUND" : "NOT FOUND / MISSING"}`)
+
+// Check if admin build index.html exists, build if missing
+const adminIndexPath = path.join(process.cwd(), ".medusa", "server", "public", "admin", "index.html")
+if (!fs.existsSync(adminIndexPath)) {
+  console.log(`[TamZen Backend] Admin index.html not found. Building admin now with medusa build...`)
+  const buildResult = spawnSync("npx", ["medusa", "build"], {
+    stdio: "inherit",
+    shell: true,
+    env: process.env,
+  })
+  if (buildResult.status !== 0) {
+    console.error(`[TamZen Backend] medusa build finished with exit code ${buildResult.status}`)
+  } else {
+    console.log(`[TamZen Backend] medusa build completed successfully!`)
+  }
+}
 
 const child = spawn("npx", ["medusa", "start", "-H", host, "-p", String(port)], {
   stdio: "inherit",

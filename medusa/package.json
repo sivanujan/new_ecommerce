@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "turbo dev",
-    "build": "turbo build",
+    "build": "npm --workspace=@dtc/backend run build",
     "start": "npm --workspace=@dtc/backend run start",
     "lint": "turbo lint",
     "test": "turbo test",
