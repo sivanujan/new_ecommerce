@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useTransition } from "react"
 import Image from "next/image"
-import { useParams, useRouter } from "next/navigation"
+import { useParams, useRouter, usePathname } from "next/navigation"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
 type SearchResultItem = {
@@ -32,16 +32,30 @@ export default function SearchModal() {
   const [isLoading, setIsLoading] = useState(false)
   const [isPending, startTransition] = useTransition()
   const router = useRouter()
+  const pathname = usePathname()
   const params = useParams()
   const countryCode = (params?.countryCode as string) || "fr"
   const inputRef = useRef<HTMLInputElement>(null)
+
+  const handleOpenSearch = () => {
+    // If the user is already on the collection/store page, scroll to & focus the in-page search input
+    if (pathname?.includes("/store")) {
+      const storeInput = document.getElementById("collection-search-input") as HTMLInputElement
+      if (storeInput) {
+        storeInput.scrollIntoView({ behavior: "smooth", block: "center" })
+        storeInput.focus()
+        return
+      }
+    }
+    setIsOpen(true)
+  }
 
   // Open / Close with keyboard shortcuts (Cmd+K / Ctrl+K, Escape)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault()
-        setIsOpen((prev) => !prev)
+        handleOpenSearch()
       } else if (e.key === "Escape" && isOpen) {
         e.preventDefault()
         setIsOpen(false)
@@ -50,7 +64,7 @@ export default function SearchModal() {
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [isOpen])
+  }, [isOpen, pathname])
 
   // Focus input automatically on open
   useEffect(() => {
@@ -113,7 +127,7 @@ export default function SearchModal() {
       {/* Trigger Button in Header */}
       <button
         type="button"
-        onClick={() => setIsOpen(true)}
+        onClick={handleOpenSearch}
         className="w-9 h-9 rounded-full border border-white/15 hover:border-[#E5C378]/60 bg-white/5 hover:bg-white/10 flex items-center justify-center text-neutral-300 hover:text-[#E5C378] transition-all shadow-sm group cursor-pointer"
         aria-label="Search Collection"
         title="Search Collection (Ctrl+K)"
@@ -134,9 +148,9 @@ export default function SearchModal() {
 
       {/* Luxury Fullscreen/Slide-Down Search Overlay */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex flex-col justify-start bg-black/85 backdrop-blur-2xl animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[100] flex flex-col justify-start bg-[#0B0B0C] animate-in fade-in duration-200 overflow-y-auto">
           {/* Top Bar with Brand Wordmark & Close Button */}
-          <div className="border-b border-white/10 bg-[#0B0B0C]/90">
+          <div className="border-b border-white/10 bg-[#0B0B0C] sticky top-0 z-20">
             <div className="content-container py-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <span className="text-[11px] uppercase tracking-[0.25em] font-mono font-bold text-[#E5C378]">

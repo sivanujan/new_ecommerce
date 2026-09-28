@@ -206,6 +206,7 @@ export default function CollectionInteractiveView({
 
               {/* Search Field */}
               <input
+                id="collection-search-input"
                 ref={searchInputRef}
                 type="text"
                 value={searchQuery}
