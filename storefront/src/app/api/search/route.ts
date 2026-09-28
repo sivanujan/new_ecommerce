@@ -6,8 +6,12 @@ export async function GET(request: NextRequest) {
   const category = searchParams.get("category") || ""
   const limit = Math.min(Number(searchParams.get("limit") || 24), 50)
 
-  const backendUrl =
-    process.env.MEDUSA_BACKEND_URL || "http://127.0.0.1:9000"
+  let backendUrl =
+    (process.env.MEDUSA_BACKEND_URL || "http://127.0.0.1:9000").replace("localhost", "127.0.0.1").trim()
+  if (!backendUrl.startsWith("http://") && !backendUrl.startsWith("https://")) {
+    backendUrl = `https://${backendUrl}`
+  }
+  backendUrl = backendUrl.replace(/\/+$/, "")
   const publishableKey =
     process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || ""
 

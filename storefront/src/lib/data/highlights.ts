@@ -11,9 +11,14 @@ export async function getHomepageHighlights(): Promise<HomepageHighlights> {
     deal_end_time: null,
   }
 
-  const backendUrl = (
+  let backendUrl = (
     process.env.MEDUSA_BACKEND_URL || "http://127.0.0.1:9000"
-  ).replace("localhost", "127.0.0.1")
+  ).replace("localhost", "127.0.0.1").trim()
+
+  if (!backendUrl.startsWith("http://") && !backendUrl.startsWith("https://")) {
+    backendUrl = `https://${backendUrl}`
+  }
+  backendUrl = backendUrl.replace(/\/+$/, "")
 
   const publishableKey =
     process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || ""

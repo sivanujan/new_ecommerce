@@ -5,7 +5,11 @@ import Medusa, { FetchArgs, FetchInput } from "@medusajs/js-sdk"
 let MEDUSA_BACKEND_URL = "http://127.0.0.1:9000"
 
 if (process.env.MEDUSA_BACKEND_URL) {
-  MEDUSA_BACKEND_URL = process.env.MEDUSA_BACKEND_URL.replace("localhost", "127.0.0.1")
+  let url = process.env.MEDUSA_BACKEND_URL.replace("localhost", "127.0.0.1").trim()
+  if (!url.startsWith("http://") && !url.startsWith("https://")) {
+    url = `https://${url}`
+  }
+  MEDUSA_BACKEND_URL = url.replace(/\/+$/, "")
 }
 
 export const sdk = new Medusa({
