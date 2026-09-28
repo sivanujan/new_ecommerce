@@ -11,21 +11,34 @@ export default async function DealOfTheWeek({
 }: {
   region: HttpTypes.StoreRegion
 }) {
-  // Fetch products, collections, and admin highlights concurrently from Medusa
-  const [productsRes, collectionsRes, highlights] = await Promise.all([
-    listProducts({
-      regionId: region.id,
-      queryParams: {
-        limit: 100,
-        fields: "*variants.calculated_price,*variants,*collection,*tags,+metadata",
-      },
-    }).catch(() => ({ response: { products: [] } })),
-    listCollections().catch(() => ({ collections: [] })),
-    getHomepageHighlights(),
-  ])
+  let rawProducts: HttpTypes.StoreProduct[] = []
+  let rawCollections: any[] = []
+  let highlights = {
+    featured_product_ids: [] as string[],
+    deal_product_ids: [] as string[],
+    deal_end_time: null as string | null,
+  }
 
-  const rawProducts = productsRes.response?.products || []
-  const rawCollections = collectionsRes?.collections || []
+  try {
+    // Fetch products, collections, and admin highlights concurrently from Medusa
+    const [productsRes, collectionsRes, highlightsRes] = await Promise.all([
+      listProducts({
+        regionId: region.id,
+        queryParams: {
+          limit: 100,
+          fields: "*variants.calculated_price,*variants,*collection,*tags,+metadata",
+        },
+      }).catch(() => ({ response: { products: [] } })),
+      listCollections().catch(() => ({ collections: [] })),
+      getHomepageHighlights().catch(() => highlights),
+    ])
+
+    rawProducts = productsRes?.response?.products || []
+    rawCollections = collectionsRes?.collections || []
+    highlights = highlightsRes || highlights
+  } catch (err) {
+    console.error("DealOfTheWeek fetch error:", err)
+  }
 
   // 1. If admin explicitly selected Deal of the Week products in the Admin Highlights menu:
   let candidateProducts: HttpTypes.StoreProduct[] = []

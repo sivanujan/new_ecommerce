@@ -1,11 +1,11 @@
 import { getLocaleHeader } from "@lib/util/get-locale-header"
 import Medusa, { FetchArgs, FetchInput } from "@medusajs/js-sdk"
 
-// Defaults to standard port for Medusa server
-let MEDUSA_BACKEND_URL = "http://localhost:9000"
+// Defaults to standard port for Medusa server (force 127.0.0.1 to avoid Windows IPv6 resolution issues)
+let MEDUSA_BACKEND_URL = "http://127.0.0.1:9000"
 
 if (process.env.MEDUSA_BACKEND_URL) {
-  MEDUSA_BACKEND_URL = process.env.MEDUSA_BACKEND_URL
+  MEDUSA_BACKEND_URL = process.env.MEDUSA_BACKEND_URL.replace("localhost", "127.0.0.1")
 }
 
 export const sdk = new Medusa({

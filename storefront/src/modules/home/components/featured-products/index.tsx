@@ -12,21 +12,34 @@ export default async function FeaturedProducts({
 }: {
   region: HttpTypes.StoreRegion
 }) {
-  // Concurrently fetch products, collections, and admin highlights live from Medusa
-  const [productsRes, collectionsRes, highlights] = await Promise.all([
-    listProducts({
-      regionId: region.id,
-      queryParams: {
-        limit: 100,
-        fields: "*variants.calculated_price,*variants,*collection,*tags",
-      },
-    }).catch(() => ({ response: { products: [] } })),
-    listCollections().catch(() => ({ collections: [] })),
-    getHomepageHighlights(),
-  ])
+  let rawProducts: HttpTypes.StoreProduct[] = []
+  let rawCollections: any[] = []
+  let highlights = {
+    featured_product_ids: [] as string[],
+    deal_product_ids: [] as string[],
+    deal_end_time: null as string | null,
+  }
 
-  const rawProducts = productsRes.response?.products || []
-  const rawCollections = collectionsRes?.collections || []
+  try {
+    // Concurrently fetch products, collections, and admin highlights live from Medusa
+    const [productsRes, collectionsRes, highlightsRes] = await Promise.all([
+      listProducts({
+        regionId: region.id,
+        queryParams: {
+          limit: 100,
+          fields: "*variants.calculated_price,*variants,*collection,*tags",
+        },
+      }).catch(() => ({ response: { products: [] } })),
+      listCollections().catch(() => ({ collections: [] })),
+      getHomepageHighlights().catch(() => highlights),
+    ])
+
+    rawProducts = productsRes?.response?.products || []
+    rawCollections = collectionsRes?.collections || []
+    highlights = highlightsRes || highlights
+  } catch (err) {
+    console.error("FeaturedProducts fetch error:", err)
+  }
 
   // Check if an admin-curated collection named "Featured" exists
   const featuredCollection = rawCollections.find((c) => {
