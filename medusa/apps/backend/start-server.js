@@ -4,6 +4,8 @@ const port = process.env.PORT || "9000"
 const host = process.env.HOST || "0.0.0.0"
 
 console.log(`[TamZen Backend] Launching Medusa server on ${host}:${port}...`)
+console.log(`[TamZen Backend] DATABASE_URL: ${process.env.DATABASE_URL ? "FOUND (" + process.env.DATABASE_URL.split("@")[1] + ")" : "NOT FOUND / MISSING"}`)
+console.log(`[TamZen Backend] REDIS_URL: ${process.env.REDIS_URL ? "FOUND" : "NOT FOUND / MISSING"}`)
 
 const child = spawn("npx", ["medusa", "start", "-H", host, "-p", String(port)], {
   stdio: "inherit",
