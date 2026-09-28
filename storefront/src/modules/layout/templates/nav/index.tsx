@@ -8,7 +8,6 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 import CartButton from "@modules/layout/components/cart-button"
 import SideMenu from "@modules/layout/components/side-menu"
 import NavLinks from "@modules/layout/components/nav-links"
-import SearchModal from "@modules/layout/components/search-modal"
 
 export default async function Nav() {
   const [regions, locales, currentLocale] = await Promise.all([
@@ -69,10 +68,8 @@ export default async function Nav() {
         {/* Center: Dynamic Desktop Navigation with Active State Indicator */}
         <NavLinks />
 
-        {/* Right: Search + Account + Cart Icons */}
+        {/* Right: Account + Cart Icons */}
         <div className="flex items-center gap-3 sm:gap-3.5">
-          {/* Search Icon with Interactive Overlay */}
-          <SearchModal />
 
           {/* Account Icon */}
           <LocalizedClientLink

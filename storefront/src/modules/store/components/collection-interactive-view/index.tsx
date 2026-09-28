@@ -181,72 +181,9 @@ export default function CollectionInteractiveView({
           </div>
 
           {/* Subtitle */}
-          <p className="text-xs sm:text-sm lg:text-base text-neutral-300 font-sans font-light max-w-lg mx-auto leading-relaxed mb-8">
+          <p className="text-xs sm:text-sm lg:text-base text-neutral-300 font-sans font-light max-w-lg mx-auto leading-relaxed">
             Explore handcrafted diaspora statements forged in solid steel and precious gold, designed to endure every chapter of your journey.
           </p>
-
-          {/* ============================================================ */}
-          {/* VISIBLE BRAND-STYLED LIVE SEARCH INPUT */}
-          {/* ============================================================ */}
-          <div className="w-full max-w-xl relative">
-            <div className="relative flex items-center w-full">
-              {/* Gold Search Icon */}
-              <div className="absolute left-4 sm:left-5 text-[#E5C378] pointer-events-none">
-                <svg
-                  className="w-5 h-5 sm:w-5 sm:h-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <circle cx="11" cy="11" r="8" />
-                  <path d="m21 21-4.3-4.3" />
-                </svg>
-              </div>
-
-              {/* Search Field */}
-              <input
-                id="collection-search-input"
-                ref={searchInputRef}
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search collection by piece, lion, pendant, steel, gold..."
-                className="w-full bg-[#121215] border border-white/20 focus:border-[#E5C378] focus:ring-1 focus:ring-[#E5C378] text-[#FDFBF7] placeholder-neutral-500 rounded-full pl-12 sm:pl-14 pr-12 py-3.5 sm:py-4 text-xs sm:text-sm font-sans tracking-wide shadow-[0_6px_25px_rgba(0,0,0,0.5)] focus:shadow-[0_0_25px_rgba(229,195,120,0.2)] focus:outline-none transition-all duration-300"
-              />
-
-              {/* Clear "x" Button */}
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={handleClearSearch}
-                  className="absolute right-4 w-7 h-7 rounded-full bg-white/10 hover:bg-[#E5C378] text-neutral-300 hover:text-black flex items-center justify-center transition-all cursor-pointer"
-                  title="Clear search"
-                  aria-label="Clear search"
-                >
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              )}
-            </div>
-
-            {/* Live Search Active Feedback */}
-            {debouncedQuery && (
-              <div className="flex items-center justify-between text-[11px] font-mono text-neutral-400 mt-2 px-4">
-                <span>
-                  Filtering by: <strong className="text-[#E5C378]">&ldquo;{debouncedQuery}&rdquo;</strong>
-                </span>
-                <button
-                  type="button"
-                  onClick={handleClearSearch}
-                  className="text-neutral-400 hover:text-[#E5C378] underline cursor-pointer"
-                >
-                  Reset search
-                </button>
-              </div>
-            )}
-          </div>
         </div>
       </section>
 
