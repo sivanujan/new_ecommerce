@@ -106,6 +106,12 @@ export const StripeCardContainer = ({
     }
   }, [])
 
+  const isKeyConfigured = Boolean(
+    process.env.NEXT_PUBLIC_STRIPE_KEY &&
+      process.env.NEXT_PUBLIC_STRIPE_KEY.startsWith("pk_") &&
+      !process.env.NEXT_PUBLIC_STRIPE_KEY.includes("placeholder")
+  )
+
   return (
     <PaymentContainer
       paymentProviderId={paymentProviderId}
@@ -129,6 +135,15 @@ export const StripeCardContainer = ({
                 setCardComplete(e.complete)
               }}
             />
+          </div>
+        ) : !isKeyConfigured ? (
+          <div className="my-3 p-3.5 rounded-lg bg-[#E5C378]/10 border border-[#E5C378]/25 text-neutral-300 text-xs leading-relaxed">
+            <span className="font-semibold text-[#E5C378] block mb-1">
+              Stripe API Key Setup Required
+            </span>
+            Set your Stripe Publishable Key (<code>NEXT_PUBLIC_STRIPE_KEY=pk_test_...</code>) in{" "}
+            <code className="text-white">storefront/.env.local</code> and Secret Key (<code>STRIPE_API_KEY=sk_test_...</code>) in{" "}
+            <code className="text-white">medusa/apps/backend/.env</code> to accept real or test credit card payments.
           </div>
         ) : (
           <SkeletonCardDetails />

@@ -15,10 +15,16 @@ const stripeKey =
   process.env.NEXT_PUBLIC_STRIPE_KEY ||
   process.env.NEXT_PUBLIC_MEDUSA_PAYMENTS_PUBLISHABLE_KEY
 
+const isStripeConfigured = Boolean(
+  stripeKey &&
+  stripeKey.startsWith("pk_") &&
+  !stripeKey.includes("placeholder")
+)
+
 const medusaAccountId = process.env.NEXT_PUBLIC_MEDUSA_PAYMENTS_ACCOUNT_ID
-const stripePromise = stripeKey
+const stripePromise = isStripeConfigured
   ? loadStripe(
-      stripeKey,
+      stripeKey!,
       medusaAccountId ? { stripeAccount: medusaAccountId } : undefined
     )
   : null

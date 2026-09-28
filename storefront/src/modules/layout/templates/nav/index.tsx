@@ -8,6 +8,7 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 import CartButton from "@modules/layout/components/cart-button"
 import SideMenu from "@modules/layout/components/side-menu"
 import NavLinks from "@modules/layout/components/nav-links"
+import SearchModal from "@modules/layout/components/search-modal"
 
 export default async function Nav() {
   const [regions, locales, currentLocale] = await Promise.all([
@@ -70,26 +71,8 @@ export default async function Nav() {
 
         {/* Right: Search + Account + Cart Icons */}
         <div className="flex items-center gap-3 sm:gap-3.5">
-          {/* Search Icon */}
-          <LocalizedClientLink
-            href="/store"
-            className="w-9 h-9 rounded-full border border-white/15 hover:border-white/40 bg-white/5 hover:bg-white/10 flex items-center justify-center text-neutral-300 hover:text-white transition-all shadow-sm"
-            aria-label="Search Collection"
-            title="Search Collection"
-          >
-            <svg
-              className="w-4 h-4"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.75"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.3-4.3" />
-            </svg>
-          </LocalizedClientLink>
+          {/* Search Icon with Interactive Overlay */}
+          <SearchModal />
 
           {/* Account Icon */}
           <LocalizedClientLink

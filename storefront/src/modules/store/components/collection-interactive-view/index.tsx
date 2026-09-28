@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect, useRef } from "react"
 import Image from "next/image"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
@@ -28,47 +28,97 @@ export default function CollectionInteractiveView({
   categories,
   initialCategory = "all",
   initialSort = "created_at",
+  initialSearch = "",
 }: {
   products: FormattedCollectionProduct[]
   categories: CategoryOption[]
   initialCategory?: string
   initialSort?: string
+  initialSearch?: string
 }) {
   const [selectedCategory, setSelectedCategory] = useState(initialCategory)
   const [selectedSort, setSelectedSort] = useState(initialSort)
+  const [searchQuery, setSearchQuery] = useState(initialSearch)
+  const [debouncedQuery, setDebouncedQuery] = useState(initialSearch)
+  const searchInputRef = useRef<HTMLInputElement>(null)
 
-  // Sync state to URL search parameters seamlessly
-  const handleCategoryChange = (categoryHandle: string) => {
-    setSelectedCategory(categoryHandle)
+  // Debounce search input by 150ms for buttery smooth typing
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery)
+    }, 150)
+    return () => clearTimeout(timer)
+  }, [searchQuery])
+
+  // Sync state to URL search parameters seamlessly (q, category, sortBy)
+  useEffect(() => {
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href)
-      if (categoryHandle && categoryHandle !== "all") {
-        url.searchParams.set("category", categoryHandle)
+      
+      if (debouncedQuery.trim()) {
+        url.searchParams.set("q", debouncedQuery.trim())
+      } else {
+        url.searchParams.delete("q")
+      }
+
+      if (selectedCategory && selectedCategory !== "all") {
+        url.searchParams.set("category", selectedCategory)
       } else {
         url.searchParams.delete("category")
       }
+
+      if (selectedSort && selectedSort !== "created_at") {
+        url.searchParams.set("sortBy", selectedSort)
+      } else {
+        url.searchParams.delete("sortBy")
+      }
+
       window.history.replaceState({}, "", url.toString())
     }
+  }, [debouncedQuery, selectedCategory, selectedSort])
+
+  const handleCategoryChange = (categoryHandle: string) => {
+    setSelectedCategory(categoryHandle)
   }
 
   const handleSortChange = (sortBy: string) => {
     setSelectedSort(sortBy)
-    if (typeof window !== "undefined") {
-      const url = new URL(window.location.href)
-      if (sortBy && sortBy !== "created_at") {
-        url.searchParams.set("sortBy", sortBy)
-      } else {
-        url.searchParams.delete("sortBy")
-      }
-      window.history.replaceState({}, "", url.toString())
-    }
   }
 
-  // Filter and sort products
+  const handleClearSearch = () => {
+    setSearchQuery("")
+    setDebouncedQuery("")
+    searchInputRef.current?.focus()
+  }
+
+  const handleResetAll = () => {
+    setSearchQuery("")
+    setDebouncedQuery("")
+    setSelectedCategory("all")
+    setSelectedSort("created_at")
+  }
+
+  // Filter and sort products live from Medusa dataset
   const filteredProducts = useMemo(() => {
     let result = [...products]
 
-    // 1. Filter by category
+    // 1. Search Query Filter (name, description, handle, categories)
+    if (debouncedQuery.trim()) {
+      const q = debouncedQuery.toLowerCase().trim()
+      result = result.filter((product) => {
+        const titleMatch = product.title.toLowerCase().includes(q)
+        const descMatch = product.description
+          ? product.description.toLowerCase().includes(q)
+          : false
+        const handleMatch = product.handle.toLowerCase().includes(q)
+        const catMatch = product.categories.some((cat) =>
+          cat.name.toLowerCase().includes(q) || cat.handle.toLowerCase().includes(q)
+        )
+        return titleMatch || descMatch || handleMatch || catMatch
+      })
+    }
+
+    // 2. Filter by selected category
     if (selectedCategory && selectedCategory !== "all") {
       result = result.filter((product) =>
         product.categories.some(
@@ -79,7 +129,7 @@ export default function CollectionInteractiveView({
       )
     }
 
-    // 2. Sort
+    // 3. Sort
     result.sort((a, b) => {
       switch (selectedSort) {
         case "price_asc":
@@ -98,12 +148,111 @@ export default function CollectionInteractiveView({
     })
 
     return result
-  }, [products, selectedCategory, selectedSort])
+  }, [products, debouncedQuery, selectedCategory, selectedSort])
 
   return (
-    <div className="w-full">
-      {/* Sticky Filter & Sort Bar */}
-      <div className="sticky top-20 z-30 w-full bg-[#0B0B0C]/90 backdrop-blur-xl border-y border-white/10 py-3.5 sm:py-4 transition-all shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+    <div className="w-full bg-[#0B0B0C] min-h-screen text-white">
+      {/* ============================================================ */}
+      {/* 1. SECTION HERO & SEARCH HEADER */}
+      {/* ============================================================ */}
+      <section className="relative w-full pt-10 sm:pt-14 pb-8 sm:pb-12 border-b border-white/10 overflow-hidden">
+        {/* Ambient gold glow */}
+        <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] rounded-full bg-[#E5C378]/5 blur-[130px]" />
+
+        <div className="content-container relative z-10 flex flex-col items-center text-center max-w-3xl mx-auto">
+          {/* Eyebrow */}
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-[#E5C378]/30 mb-4 backdrop-blur-md shadow-sm">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#E5C378] animate-pulse" />
+            <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.25em] font-mono font-bold text-[#E5C378]">
+              Solid 316L Surgical Steel • Heritage Defined
+            </span>
+          </div>
+
+          {/* Heading */}
+          <h1 className="font-serif font-bold text-3xl sm:text-5xl lg:text-6xl tracking-tight text-[#FDFBF7] uppercase">
+            The Collection
+          </h1>
+
+          {/* Tamil Decorative Divider */}
+          <div className="flex items-center justify-center gap-3 my-4 w-full max-w-xs mx-auto">
+            <span className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-[#E5C378]/60" />
+            <div className="w-2.5 h-2.5 rotate-45 border border-[#E5C378] bg-bg-elevated" />
+            <span className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-[#E5C378]/60" />
+          </div>
+
+          {/* Subtitle */}
+          <p className="text-xs sm:text-sm lg:text-base text-neutral-300 font-sans font-light max-w-lg mx-auto leading-relaxed mb-8">
+            Explore handcrafted diaspora statements forged in solid steel and precious gold, designed to endure every chapter of your journey.
+          </p>
+
+          {/* ============================================================ */}
+          {/* VISIBLE BRAND-STYLED LIVE SEARCH INPUT */}
+          {/* ============================================================ */}
+          <div className="w-full max-w-xl relative">
+            <div className="relative flex items-center w-full">
+              {/* Gold Search Icon */}
+              <div className="absolute left-4 sm:left-5 text-[#E5C378] pointer-events-none">
+                <svg
+                  className="w-5 h-5 sm:w-5 sm:h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="m21 21-4.3-4.3" />
+                </svg>
+              </div>
+
+              {/* Search Field */}
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search collection by piece, lion, pendant, steel, gold..."
+                className="w-full bg-[#121215] border border-white/20 focus:border-[#E5C378] focus:ring-1 focus:ring-[#E5C378] text-[#FDFBF7] placeholder-neutral-500 rounded-full pl-12 sm:pl-14 pr-12 py-3.5 sm:py-4 text-xs sm:text-sm font-sans tracking-wide shadow-[0_6px_25px_rgba(0,0,0,0.5)] focus:shadow-[0_0_25px_rgba(229,195,120,0.2)] focus:outline-none transition-all duration-300"
+              />
+
+              {/* Clear "x" Button */}
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={handleClearSearch}
+                  className="absolute right-4 w-7 h-7 rounded-full bg-white/10 hover:bg-[#E5C378] text-neutral-300 hover:text-black flex items-center justify-center transition-all cursor-pointer"
+                  title="Clear search"
+                  aria-label="Clear search"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+            </div>
+
+            {/* Live Search Active Feedback */}
+            {debouncedQuery && (
+              <div className="flex items-center justify-between text-[11px] font-mono text-neutral-400 mt-2 px-4">
+                <span>
+                  Filtering by: <strong className="text-[#E5C378]">&ldquo;{debouncedQuery}&rdquo;</strong>
+                </span>
+                <button
+                  type="button"
+                  onClick={handleClearSearch}
+                  className="text-neutral-400 hover:text-[#E5C378] underline cursor-pointer"
+                >
+                  Reset search
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/* 2. STICKY FILTER & SORT BAR */}
+      {/* ============================================================ */}
+      <div className="sticky top-20 z-30 w-full bg-[#0B0B0C]/90 backdrop-blur-xl border-b border-white/10 py-3.5 sm:py-4 transition-all shadow-[0_10px_30px_rgba(0,0,0,0.6)]">
         <div className="content-container flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
           {/* Category Filter Pills (Scrollable horizontally on mobile) */}
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 max-w-full">
@@ -111,9 +260,9 @@ export default function CollectionInteractiveView({
             <button
               type="button"
               onClick={() => handleCategoryChange("all")}
-              className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs uppercase tracking-wider font-semibold transition-all shrink-0 active:scale-95 ${
+              className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs uppercase tracking-wider font-semibold transition-all shrink-0 active:scale-95 cursor-pointer ${
                 selectedCategory === "all"
-                  ? "bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.25)]"
+                  ? "bg-gradient-to-r from-[#F3D798] via-[#E5C378] to-[#C99C47] text-black shadow-[0_0_20px_rgba(229,195,120,0.35)] font-bold"
                   : "bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white border border-white/15"
               }`}
             >
@@ -121,7 +270,7 @@ export default function CollectionInteractiveView({
               <span
                 className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
                   selectedCategory === "all"
-                    ? "bg-black/15 text-black"
+                    ? "bg-black/20 text-black font-bold"
                     : "bg-white/10 text-neutral-400"
                 }`}
               >
@@ -148,9 +297,9 @@ export default function CollectionInteractiveView({
                   key={category.id}
                   type="button"
                   onClick={() => handleCategoryChange(category.handle)}
-                  className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs uppercase tracking-wider font-semibold transition-all shrink-0 active:scale-95 ${
+                  className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs uppercase tracking-wider font-semibold transition-all shrink-0 active:scale-95 cursor-pointer ${
                     isActive
-                      ? "bg-[#E5C378] text-black shadow-[0_0_20px_rgba(229,195,120,0.35)]"
+                      ? "bg-gradient-to-r from-[#F3D798] via-[#E5C378] to-[#C99C47] text-black shadow-[0_0_20px_rgba(229,195,120,0.35)] font-bold"
                       : "bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white border border-white/15"
                   }`}
                 >
@@ -182,30 +331,30 @@ export default function CollectionInteractiveView({
               {filteredProducts.length === 1 ? "Creation" : "Creations"}
             </span>
 
-            {/* Sort Dropdown */}
+            {/* Dark Styled Sort Dropdown */}
             <div className="relative inline-flex items-center">
               <select
                 value={selectedSort}
                 onChange={(e) => handleSortChange(e.target.value)}
-                aria-label="Sort products"
-                className="appearance-none bg-neutral-900/90 hover:bg-neutral-800 text-neutral-200 hover:text-white border border-white/15 hover:border-white/30 text-xs rounded-full pl-4 pr-9 py-2 focus:outline-none focus:border-[#E5C378] transition-all cursor-pointer font-sans tracking-wide shadow-sm"
+                aria-label="Sort creations"
+                className="appearance-none bg-[#121215] hover:bg-[#16161A] text-neutral-200 hover:text-white border border-white/20 hover:border-[#E5C378]/50 text-xs rounded-full pl-4 pr-9 py-2.5 focus:outline-none focus:border-[#E5C378] focus:ring-1 focus:ring-[#E5C378] transition-all cursor-pointer font-sans tracking-wide shadow-sm"
               >
-                <option value="created_at" className="bg-[#121214] text-white">
+                <option value="created_at" className="bg-[#121215] text-[#FDFBF7]">
                   Latest Creations
                 </option>
-                <option value="price_asc" className="bg-[#121214] text-white">
+                <option value="price_asc" className="bg-[#121215] text-[#FDFBF7]">
                   Price: Low to High
                 </option>
-                <option value="price_desc" className="bg-[#121214] text-white">
+                <option value="price_desc" className="bg-[#121215] text-[#FDFBF7]">
                   Price: High to Low
                 </option>
-                <option value="title_asc" className="bg-[#121214] text-white">
+                <option value="title_asc" className="bg-[#121215] text-[#FDFBF7]">
                   Name: A to Z
                 </option>
               </select>
 
               {/* Chevron icon */}
-              <div className="pointer-events-none absolute right-3 flex items-center text-neutral-400">
+              <div className="pointer-events-none absolute right-3 flex items-center text-[#E5C378]">
                 <svg
                   className="w-3.5 h-3.5"
                   fill="none"
@@ -221,10 +370,12 @@ export default function CollectionInteractiveView({
         </div>
       </div>
 
-      {/* Main Content Area: Products Grid or Empty State */}
-      <div className="content-container py-12 sm:py-16">
+      {/* ============================================================ */}
+      {/* 3. PRODUCT GRID & REFINED PREMIUM CARDS */}
+      {/* ============================================================ */}
+      <div className="content-container py-12 sm:py-16 lg:py-20">
         {filteredProducts.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8 items-stretch">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8 lg:gap-10 items-stretch">
             {filteredProducts.map((product) => {
               const primaryCategory = product.categories[0]?.name
 
@@ -232,10 +383,10 @@ export default function CollectionInteractiveView({
                 <LocalizedClientLink
                   key={product.id}
                   href={`/products/${product.handle}`}
-                  className="group relative flex flex-col justify-between bg-[#121215] hover:bg-[#16161a] rounded-2xl overflow-hidden border border-white/10 hover:border-[#E5C378]/50 shadow-[0_10px_30px_rgba(0,0,0,0.4)] hover:shadow-[0_20px_50px_rgba(229,195,120,0.12)] transition-all duration-500 active:scale-[0.99]"
+                  className="group relative flex flex-col justify-between h-full bg-[#121215] hover:bg-[#16161A] rounded-2xl overflow-hidden border border-white/10 hover:border-[#E5C378]/50 shadow-[0_10px_30px_rgba(0,0,0,0.4)] hover:shadow-[0_20px_50px_rgba(229,195,120,0.15)] transition-all duration-500 active:scale-[0.99]"
                 >
-                  {/* Image Frame */}
-                  <div className="relative aspect-square w-full overflow-hidden bg-neutral-900/90 border-b border-white/10">
+                  {/* Image Frame with hover zoom & dark vignette */}
+                  <div className="relative aspect-square w-full overflow-hidden bg-neutral-900 border-b border-white/10">
                     <Image
                       src={product.thumbnail}
                       alt={product.title}
@@ -246,13 +397,13 @@ export default function CollectionInteractiveView({
                     />
 
                     {/* Subtle dark vignette */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none" />
 
                     {/* Top Badges */}
                     <div className="absolute top-3 inset-x-3 flex items-center justify-between z-10">
                       {product.isNew ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] bg-black/85 text-[#E5C378] border border-[#E5C378]/40 shadow-sm backdrop-blur-md">
-                          <span className="w-1 h-1 rounded-full bg-[#E5C378] animate-pulse" />
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-[0.2em] bg-black/85 text-[#E5C378] border border-[#E5C378]/40 shadow-sm backdrop-blur-md">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#E5C378] animate-pulse" />
                           New
                         </span>
                       ) : (
@@ -260,51 +411,56 @@ export default function CollectionInteractiveView({
                       )}
 
                       {primaryCategory && (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-medium uppercase tracking-wider bg-black/60 text-neutral-300 border border-white/15 backdrop-blur-md">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-mono font-medium uppercase tracking-wider bg-black/75 text-[#E5C378] border border-[#E5C378]/30 backdrop-blur-md shadow-sm">
                           {primaryCategory}
                         </span>
                       )}
                     </div>
 
-                    {/* Floating Quick View pill on hover */}
+                    {/* Floating Gold "VIEW CREATION →" Reveal on hover */}
                     <div className="absolute inset-x-4 bottom-4 z-10 translate-y-3 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 flex justify-center">
-                      <span className="w-full py-2.5 rounded-full text-[11px] font-semibold tracking-widest uppercase bg-white text-black text-center shadow-lg group-hover:bg-[#E5C378] transition-colors flex items-center justify-center gap-1.5">
-                        View Creation
-                        <span className="font-sans">&rarr;</span>
+                      <span className="w-full py-2.5 rounded-full text-[11px] font-bold tracking-widest uppercase bg-gradient-to-r from-[#F3D798] via-[#E5C378] to-[#C99C47] text-black text-center shadow-[0_4px_20px_rgba(229,195,120,0.4)] flex items-center justify-center gap-1.5 transition-all">
+                        <span>View Creation</span>
+                        <span className="font-sans font-bold">&rarr;</span>
                       </span>
                     </div>
                   </div>
 
                   {/* Card Content Details */}
-                  <div className="p-5 flex flex-col flex-1 justify-between gap-3 text-white">
+                  <div className="p-5 sm:p-6 flex flex-col flex-1 justify-between gap-4 text-white">
                     <div>
-                      <h3 className="font-display font-bold text-base sm:text-lg text-white group-hover:text-[#E5C378] transition-colors line-clamp-1">
+                      {/* Material Spec */}
+                      <span className="text-[10px] uppercase font-mono tracking-wider text-neutral-400 block mb-1">
+                        316L Surgical Steel
+                      </span>
+
+                      {/* Clean Serif Title */}
+                      <h3 className="font-serif font-bold text-base sm:text-lg text-[#FDFBF7] group-hover:text-[#E5C378] transition-colors line-clamp-1 leading-snug">
                         {product.title}
                       </h3>
 
+                      {/* Subtitle / Description Snippet */}
                       {product.description && (
-                        <p className="text-xs text-neutral-400 font-sans mt-1.5 line-clamp-2 leading-relaxed">
+                        <p className="text-xs text-neutral-400 font-sans mt-1.5 line-clamp-2 leading-relaxed font-light">
                           {product.description}
                         </p>
                       )}
                     </div>
 
-                    {/* Price and Subtle Callout Row */}
+                    {/* Price and Action Row */}
                     <div className="pt-3 border-t border-white/10 flex items-center justify-between mt-auto">
                       <div className="flex flex-col">
-                        <span className="text-[9px] uppercase tracking-wider text-neutral-500 font-semibold font-sans">
+                        <span className="text-[9px] uppercase tracking-wider text-neutral-500 font-mono font-semibold">
                           Price
                         </span>
-                        <span className="font-sans font-bold text-sm sm:text-base text-[#F3D798] tracking-wide mt-0.5">
+                        <span className="font-mono font-bold text-base sm:text-lg text-[#E5C378] tracking-wide mt-0.5">
                           {product.price}
                         </span>
                       </div>
 
-                      <span className="text-[10px] uppercase tracking-wider text-white/50 group-hover:text-white font-medium flex items-center gap-1 transition-colors">
-                        Details
-                        <span className="transition-transform duration-300 group-hover:translate-x-1">
-                          &rarr;
-                        </span>
+                      <span className="text-xs text-neutral-400 group-hover:text-[#E5C378] transition-colors inline-flex items-center gap-1 font-medium">
+                        <span>Explore</span>
+                        <span className="transform group-hover:translate-x-1 transition-transform">&rarr;</span>
                       </span>
                     </div>
                   </div>
@@ -313,12 +469,14 @@ export default function CollectionInteractiveView({
             })}
           </div>
         ) : (
-          /* Graceful Empty State */
+          /* ============================================================ */
+          /* 4. CLEAN EMPTY STATE (With Clear Search & Reset) */
+          /* ============================================================ */
           <div className="text-center py-20 px-6 max-w-lg mx-auto bg-[#121215] rounded-3xl border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col items-center">
             {/* Cultural Diamond Icon */}
-            <div className="w-14 h-14 rounded-full bg-white/5 border border-white/20 flex items-center justify-center text-[#E5C378] mb-5">
+            <div className="w-16 h-16 rounded-full bg-white/5 border border-[#E5C378]/30 flex items-center justify-center text-[#E5C378] mb-5 shadow-[0_0_20px_rgba(229,195,120,0.15)]">
               <svg
-                className="w-6 h-6"
+                className="w-7 h-7"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -330,22 +488,37 @@ export default function CollectionInteractiveView({
               </svg>
             </div>
 
-            <h3 className="font-display font-bold text-xl text-white uppercase tracking-wider mb-2">
-              No Creations In This Category
+            <h3 className="font-serif font-bold text-2xl text-[#FDFBF7] uppercase tracking-wide mb-2">
+              {debouncedQuery
+                ? `No Creations Found for "${debouncedQuery}"`
+                : "No Creations in this Category"}
             </h3>
 
-            <p className="text-sm text-neutral-400 font-sans max-w-sm mb-6 leading-relaxed">
-              We couldn&apos;t find any pieces matching the selected filter. Explore
-              our full collection of signature jewelry.
+            <p className="text-xs sm:text-sm text-neutral-400 font-sans max-w-sm mb-6 leading-relaxed">
+              {debouncedQuery
+                ? `We couldn't find any pieces matching your search. Check your spelling or try clearing the search filter.`
+                : `We couldn't find any pieces matching the selected filter. Explore our full collection of signature jewelry.`}
             </p>
 
-            <button
-              type="button"
-              onClick={() => handleCategoryChange("all")}
-              className="inline-flex items-center justify-center px-7 py-3 rounded-full text-xs uppercase tracking-[0.2em] font-semibold text-black bg-white hover:bg-[#E5C378] transition-all shadow-md active:scale-95"
-            >
-              View All Creations &rarr;
-            </button>
+            <div className="flex items-center gap-3 flex-wrap justify-center">
+              {debouncedQuery && (
+                <button
+                  type="button"
+                  onClick={handleClearSearch}
+                  className="inline-flex items-center justify-center px-6 py-2.5 rounded-full text-xs uppercase tracking-wider font-semibold text-white bg-white/10 hover:bg-white/20 border border-white/20 transition-all cursor-pointer"
+                >
+                  Clear Search Filter
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={handleResetAll}
+                className="inline-flex items-center justify-center px-7 py-2.5 rounded-full text-xs uppercase tracking-[0.15em] font-bold text-black bg-gradient-to-r from-[#F3D798] via-[#E5C378] to-[#C99C47] hover:shadow-[0_0_20px_rgba(229,195,120,0.4)] transition-all cursor-pointer active:scale-95"
+              >
+                View All Creations &rarr;
+              </button>
+            </div>
           </div>
         )}
       </div>

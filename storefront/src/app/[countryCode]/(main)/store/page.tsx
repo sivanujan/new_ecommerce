@@ -26,6 +26,7 @@ type Params = {
     sortBy?: string
     category?: string
     page?: string
+    q?: string
   }>
   params: Promise<{
     countryCode: string
@@ -35,7 +36,7 @@ type Params = {
 export default async function StorePage(props: Params) {
   const params = await props.params
   const searchParams = await props.searchParams
-  const { sortBy, category } = searchParams
+  const { sortBy, category, q } = searchParams
   const { countryCode } = params
 
   const region = await getRegion(countryCode)
@@ -97,6 +98,7 @@ export default async function StorePage(props: Params) {
       categories={categories}
       initialCategory={category}
       initialSort={sortBy}
+      initialSearch={q}
     />
   )
 }

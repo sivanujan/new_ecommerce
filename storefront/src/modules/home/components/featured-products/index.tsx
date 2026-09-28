@@ -5,21 +5,24 @@ import { listCollections } from "@lib/data/collections"
 import { getProductPrice } from "@lib/util/get-product-price"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
+import { getHomepageHighlights } from "@lib/data/highlights"
+
 export default async function FeaturedProducts({
   region,
 }: {
   region: HttpTypes.StoreRegion
 }) {
-  // Concurrently fetch products and collections live from Medusa
-  const [productsRes, collectionsRes] = await Promise.all([
+  // Concurrently fetch products, collections, and admin highlights live from Medusa
+  const [productsRes, collectionsRes, highlights] = await Promise.all([
     listProducts({
       regionId: region.id,
       queryParams: {
         limit: 100,
-        fields: "*variants.calculated_price,*variants,*collection",
+        fields: "*variants.calculated_price,*variants,*collection,*tags",
       },
     }).catch(() => ({ response: { products: [] } })),
     listCollections().catch(() => ({ collections: [] })),
+    getHomepageHighlights(),
   ])
 
   const rawProducts = productsRes.response?.products || []
@@ -35,16 +38,32 @@ export default async function FeaturedProducts({
     )
   })
 
-  // Filter products by the Featured collection if present, else gracefully fall back to latest products
-  let candidateProducts = featuredCollection
-    ? rawProducts.filter(
-        (p) =>
-          p.collection_id === featuredCollection.id ||
-          (p as any).collection?.id === featuredCollection.id ||
-          (p as any).collection?.handle?.toLowerCase() === "featured"
-      )
-    : []
+  // 1. If admin explicitly selected products in the "Featured & Deals" admin panel:
+  let candidateProducts: HttpTypes.StoreProduct[] = []
+  if (highlights.featured_product_ids?.length > 0) {
+    const featuredIdSet = new Set(highlights.featured_product_ids)
+    candidateProducts = rawProducts.filter((p) => featuredIdSet.has(p.id))
+  }
 
+  // 2. If no explicit admin selections yet, filter by Tag ("featured") OR by Collection ("Featured")
+  if (candidateProducts.length === 0) {
+    candidateProducts = rawProducts.filter((p) => {
+      const hasFeaturedTag = (p as any).tags?.some((t: any) => {
+        const val = (t.value || "").toLowerCase()
+        return val === "featured" || val === "featured-product" || val.includes("featured")
+      })
+
+      const isInFeaturedCollection = featuredCollection && (
+        p.collection_id === featuredCollection.id ||
+        (p as any).collection?.id === featuredCollection.id ||
+        (p as any).collection?.handle?.toLowerCase() === "featured"
+      )
+
+      return Boolean(hasFeaturedTag || isInFeaturedCollection)
+    })
+  }
+
+  // 3. Gracefully fall back to latest products if none are tagged or assigned yet
   if (candidateProducts.length === 0) {
     candidateProducts = rawProducts.slice(0, 6)
   }

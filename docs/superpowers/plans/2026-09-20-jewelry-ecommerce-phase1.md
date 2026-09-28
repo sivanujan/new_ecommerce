@@ -25,7 +25,6 @@
 
 **Files:**
 - Create: `docker-compose.yml`
-- Create: `.env.docker` (compose-level env, not committed secrets — dev-only fixed credentials)
 - Create: `.gitignore` (repo root)
 
 **Interfaces:**
@@ -764,7 +763,7 @@ git commit -m "Add custom seed script: France region, TVA 20%, jewelry/saree cat
 From the `new_ecommerce/` repo root, run:
 
 ```bash
-npx create-next-app@latest storefront --ts --tailwind --eslint --app --src-dir=false --import-alias "@/*" --use-npm --turbopack
+npx create-next-app@latest storefront --ts --tailwind --eslint --app --no-src-dir --import-alias "@/*" --use-npm --turbopack
 ```
 
 Expected: `storefront/` created with `app/`, `package.json`, `next.config.ts`.

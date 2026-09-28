@@ -260,7 +260,7 @@ export default async function seedJewelry({
     ).run({
       input: { collections: [{ title: "Signature", handle: "signature" }] },
     });
-    signatureCollection = createdCollections[0];
+    signatureCollection = createdCollections[0] as any;
     logger.info("Created 'Signature' collection.");
   }
 

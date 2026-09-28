@@ -31,19 +31,19 @@ module.exports = defineConfig({
       resolve: "@medusajs/medusa/payment",
       options: {
         providers: [
-          // pp_system_default (manual/system provider) is registered
-          // automatically and needs no entry here - it is the active
-          // provider for phase 1.
-          //
-          // Swap-in point for a real gateway once credentials exist.
-          // Uncomment to activate Stripe (needs STRIPE_API_KEY in .env):
-          // {
-          //   resolve: "@medusajs/medusa/payment-stripe",
-          //   id: "stripe",
-          //   options: {
-          //     apiKey: process.env.STRIPE_API_KEY,
-          //   },
-          // },
+          // Stripe Payment Provider - active whenever STRIPE_API_KEY is defined in .env
+          ...(process.env.STRIPE_API_KEY
+            ? [
+                {
+                  resolve: "@medusajs/medusa/payment-stripe",
+                  id: "stripe",
+                  options: {
+                    apiKey: process.env.STRIPE_API_KEY,
+                    webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
+                  },
+                },
+              ]
+            : []),
         ],
       },
     },

@@ -4,50 +4,67 @@ import { listCollections } from "@lib/data/collections"
 import { getProductPrice } from "@lib/util/get-product-price"
 import { convertToLocale } from "@lib/util/money"
 import DealCarousel, { DealProduct } from "./deal-carousel"
+import { getHomepageHighlights } from "@lib/data/highlights"
 
 export default async function DealOfTheWeek({
   region,
 }: {
   region: HttpTypes.StoreRegion
 }) {
-  // Fetch products and collections concurrently from Medusa
-  const [productsRes, collectionsRes] = await Promise.all([
+  // Fetch products, collections, and admin highlights concurrently from Medusa
+  const [productsRes, collectionsRes, highlights] = await Promise.all([
     listProducts({
       regionId: region.id,
       queryParams: {
         limit: 100,
-        fields: "*variants.calculated_price,*variants,*collection,+metadata",
+        fields: "*variants.calculated_price,*variants,*collection,*tags,+metadata",
       },
     }).catch(() => ({ response: { products: [] } })),
     listCollections().catch(() => ({ collections: [] })),
+    getHomepageHighlights(),
   ])
 
   const rawProducts = productsRes.response?.products || []
   const rawCollections = collectionsRes?.collections || []
 
-  // 1. Look for a curated Medusa collection named "Deals" or "Deal of the Week"
-  const dealsCollection = rawCollections.find((c) => {
-    const handle = c.handle?.toLowerCase() || ""
-    const title = c.title?.toLowerCase() || ""
-    return (
-      handle === "deals" ||
-      handle === "deal-of-the-week" ||
-      handle.includes("deal") ||
-      title.toLowerCase().includes("deal")
-    )
-  })
+  // 1. If admin explicitly selected Deal of the Week products in the Admin Highlights menu:
+  let candidateProducts: HttpTypes.StoreProduct[] = []
+  if (highlights.deal_product_ids?.length > 0) {
+    const dealIdSet = new Set(highlights.deal_product_ids)
+    candidateProducts = rawProducts.filter((p) => dealIdSet.has(p.id))
+  }
 
-  // Filter products belonging to the Deals collection if found
-  let candidateProducts = dealsCollection
-    ? rawProducts.filter(
-        (p) =>
-          p.collection_id === dealsCollection.id ||
-          (p as any).collection?.id === dealsCollection.id ||
-          (p as any).collection?.handle?.toLowerCase() === dealsCollection.handle?.toLowerCase()
+  // 2. If no explicit admin selection yet, look for a curated Medusa collection named "Deals" or "Deal of the Week"
+  if (candidateProducts.length === 0) {
+    const dealsCollection = rawCollections.find((c) => {
+      const handle = c.handle?.toLowerCase() || ""
+      const title = c.title?.toLowerCase() || ""
+      return (
+        handle === "deals" ||
+        handle === "deal-of-the-week" ||
+        handle.includes("deal") ||
+        title.toLowerCase().includes("deal")
       )
-    : []
+    })
 
-  // 2. If no curated collection products found, check for products with active Medusa sale prices
+    // Filter products by Tag ("deal" or "deal-of-the-week") OR by Deals collection
+    candidateProducts = rawProducts.filter((p) => {
+      const hasDealTag = (p as any).tags?.some((t: any) => {
+        const val = (t.value || "").toLowerCase()
+        return val === "deal" || val === "deal-of-the-week" || val.includes("deal")
+      })
+
+      const isInDealsCollection = dealsCollection && (
+        p.collection_id === dealsCollection.id ||
+        (p as any).collection?.id === dealsCollection.id ||
+        (p as any).collection?.handle?.toLowerCase() === dealsCollection.handle?.toLowerCase()
+      )
+
+      return Boolean(hasDealTag || isInDealsCollection)
+    })
+  }
+
+  // 3. If no curated tags or collection found, check for products with active Medusa sale prices
   if (candidateProducts.length === 0) {
     const onSaleProducts = rawProducts.filter((p) => {
       const { cheapestPrice } = getProductPrice({ product: p })
@@ -60,20 +77,19 @@ export default async function DealOfTheWeek({
     }
   }
 
-  // 3. Fallback for demonstration if admin hasn't configured a Deals collection or sale pricing yet:
+  // 4. Fallback for demonstration if admin hasn't configured a Deals collection or sale pricing yet:
   // Use first 10 products so the user can immediately experience the interactive carousel and live countdown timer.
   if (candidateProducts.length === 0 && rawProducts.length > 0) {
     candidateProducts = rawProducts.slice(0, 10)
   }
-
 
   // If there are still no products at all, gracefully return null
   if (candidateProducts.length === 0) {
     return null
   }
 
-  // Default deal end date: upcoming Sunday midnight or +5 days from current date
-  const defaultDealEndDate = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString()
+  // Admin configured deal end time or default deal end date (+5 days)
+  const defaultDealEndDate = highlights.deal_end_time || new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString()
 
   // Format products for DealCarousel
   const dealProducts: DealProduct[] = candidateProducts.map((p, index) => {

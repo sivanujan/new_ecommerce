@@ -1,7 +1,7 @@
 import { Listbox, Transition } from "@headlessui/react"
 import { ChevronUpDown } from "@medusajs/icons"
 import { clx } from "@medusajs/ui"
-import { Fragment, useMemo } from "react"
+import { Fragment, useEffect, useMemo, useState } from "react"
 
 import Radio from "@modules/common/components/radio"
 import compareAddresses from "@lib/util/compare-addresses"
@@ -21,19 +21,34 @@ const AddressSelect = ({
   addressInput,
   onSelect,
 }: AddressSelectProps) => {
+  const selectedAddress = useMemo(() => {
+    return addresses.find((a) => compareAddresses(a, addressInput))
+  }, [addresses, addressInput])
+
+  const [selectedId, setSelectedId] = useState<string>(
+    selectedAddress?.id || ""
+  )
+
+  useEffect(() => {
+    if (selectedAddress?.id) {
+      setSelectedId(selectedAddress.id)
+    }
+  }, [selectedAddress?.id])
+
   const handleSelect = (id: string) => {
+    setSelectedId(id)
     const savedAddress = addresses.find((a) => a.id === id)
     if (savedAddress) {
       onSelect(savedAddress as HttpTypes.StoreCartAddress)
     }
   }
 
-  const selectedAddress = useMemo(() => {
-    return addresses.find((a) => compareAddresses(a, addressInput))
-  }, [addresses, addressInput])
+  const activeId = selectedAddress?.id || selectedId || ""
+  const currentDisplayAddress =
+    selectedAddress || addresses.find((a) => a.id === activeId)
 
   return (
-    <Listbox onChange={handleSelect} value={selectedAddress?.id}>
+    <Listbox onChange={handleSelect} value={activeId}>
       <div className="relative">
         <Listbox.Button
           className="relative w-full flex justify-between items-center px-4 py-3 text-left bg-[#121215] cursor-pointer focus:outline-none border border-white/15 rounded-xl hover:border-white/30 focus-visible:border-[#E5C378] focus-visible:ring-1 focus-visible:ring-[#E5C378]/50 text-sm transition-all duration-150 shadow-sm"
@@ -43,11 +58,11 @@ const AddressSelect = ({
             <>
               <div className="flex flex-col truncate pr-3">
                 <span className="text-[11px] uppercase tracking-wider text-neutral-400 font-medium">
-                  {selectedAddress ? "Selected Address" : "Saved Addresses"}
+                  {currentDisplayAddress ? "Selected Address" : "Saved Addresses"}
                 </span>
                 <span className="text-sm font-medium text-[#FDFBF7] truncate mt-0.5">
-                  {selectedAddress
-                    ? `${selectedAddress.first_name} ${selectedAddress.last_name} — ${selectedAddress.address_1}${selectedAddress.city ? `, ${selectedAddress.city}` : ""}`
+                  {currentDisplayAddress
+                    ? `${currentDisplayAddress.first_name} ${currentDisplayAddress.last_name} — ${currentDisplayAddress.address_1}${currentDisplayAddress.city ? `, ${currentDisplayAddress.city}` : ""}`
                     : "Choose a saved address"}
                 </span>
               </div>
@@ -70,7 +85,7 @@ const AddressSelect = ({
             data-testid="shipping-address-options"
           >
             {addresses.map((address) => {
-              const isSelected = selectedAddress?.id === address.id
+              const isSelected = activeId === address.id
               return (
                 <Listbox.Option
                   key={address.id}
