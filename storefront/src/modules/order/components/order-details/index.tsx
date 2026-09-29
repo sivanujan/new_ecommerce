@@ -1,4 +1,5 @@
 import { HttpTypes } from "@medusajs/types"
+import { formatOrderNumber } from "@lib/util/format-order-number"
 
 type OrderDetailsProps = {
   order: HttpTypes.StoreOrder
@@ -43,7 +44,7 @@ const OrderDetails = ({ order, showStatus }: OrderDetailsProps) => {
             className="font-mono font-bold text-[#E5C378] text-sm sm:text-base"
             data-testid="order-id"
           >
-            #{order.display_id}
+            {formatOrderNumber(order)}
           </span>
         </div>
 

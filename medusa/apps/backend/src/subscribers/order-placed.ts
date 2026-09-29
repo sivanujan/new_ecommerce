@@ -23,10 +23,13 @@ export default async function orderPlacedHandler({
         "tax_total",
         "shipping_total",
         "discount_total",
+        "item_subtotal",
         "created_at",
         "items.*",
+        "shipping_methods.*",
         "shipping_address.*",
         "customer.*",
+        "summary.*",
       ],
       filters: { id: orderId },
     })
@@ -38,7 +41,38 @@ export default async function orderPlacedHandler({
     }
 
     const currency = (order.currency_code || "EUR").toUpperCase()
-    const displayId = order.display_id || order.id.slice(-6)
+    
+    // Format unguessable, professional branded order tracking code (e.g. TZ-SB3HYM)
+    const formatOrderRef = (ord: any): string => {
+      const id = ord?.id
+      if (id && typeof id === "string") {
+        const cleanId = id.replace(/^order_/, "")
+        if (cleanId.length >= 6) {
+          const suffix = cleanId.slice(-6).toUpperCase()
+          const hasDigit = /\d/.test(suffix)
+          const hasLetter = /[A-Z]/.test(suffix)
+          if (hasDigit && hasLetter) return `TZ-${suffix}`
+          if (cleanId.length >= 7) {
+            const suffix7 = cleanId.slice(-7).toUpperCase()
+            if (/\d/.test(suffix7) && /[A-Z]/.test(suffix7)) return `TZ-${suffix7}`
+          }
+          const d = ord.display_id ? String(ord.display_id).slice(-2) : "8"
+          return `TZ-${d}${suffix.slice(-4)}`
+        }
+      }
+      const num = parseInt(String(ord?.display_id || "1").replace(/\D/g, ""), 10) || 1
+      let hash = ((num * 2654435761) ^ 0x5bf03635) >>> 0
+      const chars = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ"
+      let result = ""
+      for (let i = 0; i < 6; i++) {
+        result += chars[hash % chars.length]
+        hash = ((hash / chars.length) ^ (num * 31 + i * 17)) >>> 0
+      }
+      return `TZ-${result}`
+    }
+
+    const orderNumber = formatOrderRef(order)
+
     const customerName =
       order.shipping_address?.first_name ||
       order.customer?.first_name ||
@@ -50,20 +84,80 @@ export default async function orderPlacedHandler({
       day: "numeric",
     })
 
+    // Robust BigNumber / numeric value extractor for Medusa 2.0
+    const toNum = (val: any): number => {
+      if (val === null || val === undefined) return 0
+      if (typeof val === "number") return val
+      if (typeof val === "string") {
+        const parsed = parseFloat(val)
+        return isNaN(parsed) ? 0 : parsed
+      }
+      if (typeof val === "object") {
+        if (typeof val.numeric_ === "number") return val.numeric_
+        if (val.raw_?.value) {
+          const parsed = parseFloat(val.raw_.value)
+          if (!isNaN(parsed)) return parsed
+        }
+        if (val.value) {
+          const parsed = parseFloat(val.value)
+          if (!isNaN(parsed)) return parsed
+        }
+        if (typeof val.toNumber === "function") return val.toNumber()
+        if (typeof val.valueOf === "function") {
+          const v = val.valueOf()
+          if (typeof v === "number") return v
+          const parsed = parseFloat(String(v))
+          if (!isNaN(parsed)) return parsed
+        }
+      }
+      const num = Number(val)
+      return isNaN(num) ? 0 : num
+    }
+
     // Format currency amount helper
-    const fmt = (amount?: number | null) => {
-      const val = typeof amount === "number" ? amount : 0
+    const fmt = (amount?: any) => {
+      const val = toNum(amount)
       return `${currency} ${val.toFixed(2)}`
     }
+
+    // Calculate totals accurately
+    const itemsCalculatedSubtotal = (order.items || []).reduce((acc: number, item: any) => {
+      const q = toNum(item.quantity) || 1
+      const price = toNum(item.total) || (toNum(item.unit_price) * q)
+      return acc + price
+    }, 0)
+
+    const subtotalAmount =
+      toNum(order.item_subtotal) ||
+      (itemsCalculatedSubtotal > 0 ? itemsCalculatedSubtotal : 0) ||
+      toNum(order.subtotal) ||
+      toNum(order.summary?.item_subtotal) ||
+      0
+
+    const shippingAmount =
+      toNum(order.shipping_total) ||
+      toNum(order.shipping_methods?.[0]?.amount) ||
+      toNum(order.summary?.shipping_total) ||
+      0
+
+    const taxAmount =
+      toNum(order.tax_total) ||
+      toNum(order.summary?.tax_total) ||
+      0
+
+    const totalAmount =
+      toNum(order.total) ||
+      toNum(order.summary?.total) ||
+      (subtotalAmount + shippingAmount + taxAmount)
 
     // Build items HTML table rows
     const itemsHtml = (order.items || [])
       .map((item: any) => {
         const itemTitle = item.title || item.product_title || "TamZen Jewelry Creation"
         const variantTitle = item.variant_title ? ` (${item.variant_title})` : ""
-        const quantity = item.quantity || 1
-        const unitPrice = fmt(item.unit_price)
-        const lineTotal = fmt(item.total || (item.unit_price ? item.unit_price * quantity : 0))
+        const quantity = toNum(item.quantity) || 1
+        const itemPrice = toNum(item.total) || (toNum(item.unit_price) * quantity)
+        const lineTotal = fmt(itemPrice)
         const thumbnail = item.thumbnail || "https://tamzen.shop/logo-icon.svg"
 
         return `
@@ -155,7 +249,7 @@ export default async function orderPlacedHandler({
                   <td style="font-size: 12px; color: #71717a; text-transform: uppercase; letter-spacing: 0.1em; font-family: monospace; text-align: right;">Date</td>
                 </tr>
                 <tr>
-                  <td style="font-size: 14px; font-weight: bold; color: #E5C378; font-family: monospace;">#${displayId}</td>
+                  <td style="font-size: 15px; font-weight: bold; color: #E5C378; font-family: monospace; letter-spacing: 0.05em;">${orderNumber}</td>
                   <td style="font-size: 13px; color: #FDFBF7; text-align: right; font-family: monospace;">${formattedDate}</td>
                 </tr>
               </table>
@@ -177,25 +271,25 @@ export default async function orderPlacedHandler({
               <table width="100%" cellpadding="6" cellspacing="0" border="0" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 12px;">
                 <tr>
                   <td style="font-size: 13px; color: #a1a1aa;">Subtotal</td>
-                  <td style="font-size: 13px; color: #FDFBF7; text-align: right; font-family: monospace;">${fmt(order.subtotal)}</td>
+                  <td style="font-size: 13px; color: #FDFBF7; text-align: right; font-family: monospace;">${fmt(subtotalAmount)}</td>
                 </tr>
                 <tr>
                   <td style="font-size: 13px; color: #a1a1aa;">Shipping</td>
-                  <td style="font-size: 13px; color: #FDFBF7; text-align: right; font-family: monospace;">${fmt(order.shipping_total)}</td>
+                  <td style="font-size: 13px; color: #FDFBF7; text-align: right; font-family: monospace;">${fmt(shippingAmount)}</td>
                 </tr>
                 ${
-                  order.tax_total
+                  taxAmount > 0
                     ? `
                   <tr>
                     <td style="font-size: 13px; color: #a1a1aa;">Tax</td>
-                    <td style="font-size: 13px; color: #FDFBF7; text-align: right; font-family: monospace;">${fmt(order.tax_total)}</td>
+                    <td style="font-size: 13px; color: #FDFBF7; text-align: right; font-family: monospace;">${fmt(taxAmount)}</td>
                   </tr>
                 `
                     : ""
                 }
                 <tr>
                   <td style="font-size: 16px; font-weight: bold; color: #FDFBF7; padding-top: 10px; font-family: Georgia, serif;">Total Paid</td>
-                  <td style="font-size: 18px; font-weight: bold; color: #E5C378; text-align: right; padding-top: 10px; font-family: monospace;">${fmt(order.total)}</td>
+                  <td style="font-size: 18px; font-weight: bold; color: #E5C378; text-align: right; padding-top: 10px; font-family: monospace;">${fmt(totalAmount)}</td>
                 </tr>
               </table>
             </td>
@@ -246,9 +340,9 @@ export default async function orderPlacedHandler({
     await sendEmail({
       from: "TamZen Orders <notification@tamzen.shop>",
       to: order.email,
-      subject: `Order Confirmation — TamZen (#${displayId})`,
+      subject: `Order Confirmation — TamZen (${orderNumber})`,
       html: emailHtml,
-      text: `Thank you for your order #${displayId}, ${customerName}! Total paid: ${fmt(order.total)}. View your order at https://tamzen.shop/account/orders`,
+      text: `Thank you for your order ${orderNumber}, ${customerName}! Total paid: ${fmt(totalAmount)}. View your order at https://tamzen.shop/account/orders`,
     })
 
     // 2. Send new order notification to store admin (nishaned129@gmail.com)
@@ -256,9 +350,9 @@ export default async function orderPlacedHandler({
     await sendEmail({
       from: "TamZen Orders <notification@tamzen.shop>",
       to: adminEmail,
-      subject: `🔔 [NEW ORDER] #${displayId} — ${customerName} (${fmt(order.total)})`,
+      subject: `🔔 [NEW ORDER] ${orderNumber} — ${customerName} (${fmt(totalAmount)})`,
       html: emailHtml,
-      text: `New order #${displayId} placed by ${customerName} (${order.email})! Total: ${fmt(order.total)}.`,
+      text: `New order ${orderNumber} placed by ${customerName} (${order.email})! Total: ${fmt(totalAmount)}.`,
     })
     console.log(`[OrderPlaced Subscriber] Dispatched admin order notification to ${adminEmail}`)
   } catch (error) {

@@ -8,6 +8,7 @@ import Items from "@modules/order/components/items"
 import OrderDetails from "@modules/order/components/order-details"
 import OrderSummary from "@modules/order/components/order-summary"
 import ShippingDetails from "@modules/order/components/shipping-details"
+import { formatOrderNumber } from "@lib/util/format-order-number"
 import React from "react"
 
 type OrderDetailsTemplateProps = {
@@ -25,7 +26,7 @@ const OrderDetailsTemplate: React.FC<OrderDetailsTemplateProps> = ({
             Order Archive
           </span>
           <h1 className="font-display font-bold text-2xl sm:text-3xl text-white tracking-tight mt-1">
-            Order #{order.display_id}
+            Order {formatOrderNumber(order)}
           </h1>
         </div>
         <LocalizedClientLink

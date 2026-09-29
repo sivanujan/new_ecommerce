@@ -3,6 +3,7 @@ import Thumbnail from "@modules/products/components/thumbnail"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { convertToLocale } from "@lib/util/money"
 import { HttpTypes } from "@medusajs/types"
+import { formatOrderNumber } from "@lib/util/format-order-number"
 
 type OrderCardProps = {
   order: HttpTypes.StoreOrder
@@ -36,7 +37,7 @@ const OrderCard = ({ order }: OrderCardProps) => {
             className="font-mono font-bold text-[#E5C378] text-base sm:text-lg"
             data-testid="order-display-id"
           >
-            #{order.display_id}
+            {formatOrderNumber(order)}
           </span>
         </div>
 

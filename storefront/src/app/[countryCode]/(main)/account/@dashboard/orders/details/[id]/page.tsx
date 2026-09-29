@@ -2,6 +2,7 @@ import { retrieveOrder } from "@lib/data/orders"
 import OrderDetailsTemplate from "@modules/order/templates/order-details-template"
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
+import { formatOrderNumber } from "@lib/util/format-order-number"
 
 type Props = {
   params: Promise<{ id: string }>
@@ -16,7 +17,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   }
 
   return {
-    title: `Order #${order.display_id}`,
+    title: `Order ${formatOrderNumber(order)}`,
     description: `View your order`,
   }
 }

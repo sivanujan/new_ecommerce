@@ -5,6 +5,7 @@ import seedJewelry from "./seed-jewelry"
 import enableStripe from "./enable-stripe"
 import fixShippingProfiles from "./fix-shipping-profiles"
 import seedTamzenCategories from "./seed-tamzen-categories"
+import fixInventoryLevels from "./fix-inventory-levels"
 
 /**
  * All-in-one production setup script for Railway.
@@ -51,6 +52,13 @@ export default async function seedProductionComplete({ container }: { container:
     await seedTamzenCategories({ container })
   } catch (err: any) {
     logger.error(`Category seed error: ${err?.message || err}`)
+  }
+
+  try {
+    logger.info("\n--- STEP 6: Stocking All Inventory Items to Stock Locations ---")
+    await fixInventoryLevels({ container })
+  } catch (err: any) {
+    logger.error(`Inventory level stock error: ${err?.message || err}`)
   }
 
   logger.info("==========================================")

@@ -57,7 +57,11 @@ const PaymentDetails = ({ order }: PaymentDetailsProps) => {
                 ? `${convertToLocale({
                     amount: payment.amount,
                     currency_code: order.currency_code,
-                  })} processed on ${new Date(payment.created_at ?? "").toLocaleDateString()}`
+                  })} processed on ${
+                    payment.created_at
+                      ? new Date(payment.created_at).toLocaleDateString()
+                      : new Date().toLocaleDateString()
+                  }`
                 : "Payment confirmed"}
             </span>
           </div>

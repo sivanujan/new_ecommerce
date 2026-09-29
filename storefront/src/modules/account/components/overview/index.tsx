@@ -1,6 +1,7 @@
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { convertToLocale } from "@lib/util/money"
 import { HttpTypes } from "@medusajs/types"
+import { formatOrderNumber } from "@lib/util/format-order-number"
 
 type OverviewProps = {
   customer: HttpTypes.StoreCustomer | null
@@ -170,7 +171,7 @@ const Overview = ({ customer, orders }: OverviewProps) => {
                             data-testid="order-id"
                             data-value={order.display_id}
                           >
-                            #{order.display_id}
+                            {formatOrderNumber(order)}
                           </span>
                         </div>
 

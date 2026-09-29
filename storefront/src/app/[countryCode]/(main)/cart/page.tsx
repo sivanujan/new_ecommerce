@@ -2,17 +2,18 @@ import { retrieveCart } from "@lib/data/cart"
 import { retrieveCustomer } from "@lib/data/customer"
 import CartTemplate from "@modules/cart/templates"
 import { Metadata } from "next"
-import { notFound } from "next/navigation"
+
+export const dynamic = "force-dynamic"
 
 export const metadata: Metadata = {
-  title: "Cart",
+  title: "Cart | TamZen Atelier",
   description: "View your cart",
 }
 
 export default async function Cart() {
   const cart = await retrieveCart().catch((error) => {
-    console.error(error)
-    return notFound()
+    console.error("Cart retrieval error:", error)
+    return null
   })
 
   const customer = await retrieveCustomer()

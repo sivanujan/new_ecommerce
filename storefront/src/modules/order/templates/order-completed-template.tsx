@@ -8,6 +8,7 @@ import PaymentDetails from "@modules/order/components/payment-details"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { retrieveCustomer } from "@lib/data/customer"
 import { HttpTypes } from "@medusajs/types"
+import { formatOrderNumber } from "@lib/util/format-order-number"
 
 type OrderCompletedTemplateProps = {
   order: HttpTypes.StoreOrder
@@ -20,12 +21,19 @@ export default async function OrderCompletedTemplate({
   const isOnboarding = cookies.get("_medusa_onboarding")?.value === "true"
   const customer = await retrieveCustomer().catch(() => null)
 
-  const orderDate = new Date(order.created_at).toLocaleDateString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  })
+  const orderDate = order?.created_at
+    ? new Date(order.created_at).toLocaleDateString("en-US", {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+    : new Date().toLocaleDateString("en-US", {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
 
   const formatStatus = (str?: string | null) => {
     if (!str) return "Pending"
@@ -105,7 +113,7 @@ export default async function OrderCompletedTemplate({
                   className="font-mono font-bold text-[#E5C378] text-sm sm:text-base tracking-wide"
                   data-testid="order-id"
                 >
-                  #{order.display_id}
+                  {formatOrderNumber(order)}
                 </span>
               </div>
 
@@ -222,7 +230,7 @@ export default async function OrderCompletedTemplate({
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 px-6 rounded-2xl bg-white/[0.02] border border-white/10 text-xs text-neutral-400">
           <p>
             Questions regarding this order? Quote reference{" "}
-            <span className="text-[#E5C378] font-mono font-bold">#{order.display_id}</span>
+            <span className="text-[#E5C378] font-mono font-bold">{formatOrderNumber(order)}</span>
           </p>
           <LocalizedClientLink
             href="/store"

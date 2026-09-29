@@ -5,18 +5,23 @@ import CheckoutForm from "@modules/checkout/templates/checkout-form"
 import CheckoutSummary from "@modules/checkout/templates/checkout-summary"
 import MobileOrderSummary from "@modules/checkout/components/mobile-summary"
 import { Metadata } from "next"
-import { notFound } from "next/navigation"
+import { redirect } from "next/navigation"
+
+export const dynamic = "force-dynamic"
 
 export const metadata: Metadata = {
   title: "Checkout | TamZen Atelier",
   description: "Complete your secure order with TamZen Atelier Paris.",
 }
 
-export default async function Checkout() {
+export default async function Checkout(props: {
+  params: Promise<{ countryCode: string }>
+}) {
+  const { countryCode } = await props.params
   const cart = await retrieveCart()
 
-  if (!cart) {
-    return notFound()
+  if (!cart || !cart.items || cart.items.length === 0) {
+    return redirect(`/${countryCode}/cart`)
   }
 
   const customer = await retrieveCustomer()
