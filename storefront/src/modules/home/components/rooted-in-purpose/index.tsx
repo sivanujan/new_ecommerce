@@ -9,21 +9,24 @@ export default async function RootedInPurpose() {
   const defaultCategoryShowcases = [
     {
       title: "Pendants",
-      handle: "bijoux",
-      image: "/images/tamzen-hero-pendant.jpg",
-      subtext: "Cultural Dog-Tags",
+      subtitle: "Cultural Pendants",
+      description: "Symbols of meaning, crafted to be worn every day.",
+      handle: "pendants",
+      image: "/images/category-pendants.jpg",
     },
     {
       title: "Chains",
+      subtitle: "316L Chains",
+      description: "Clean, timeless chains designed to complement every TAMZEN piece.",
       handle: "chains",
-      image: "/images/pendant-closeup-macro.jpg",
-      subtext: "316L Venetian & Box",
+      image: "/images/category-chains.jpg",
     },
     {
       title: "Special Editions",
-      handle: "signature",
-      image: "/images/tamzen-hero-pendant.jpg",
-      subtext: "Limited Lion Crests",
+      subtitle: "Limited Creations",
+      description: "Distinctive designs created in limited quantities for those who want something different.",
+      handle: "special-editions",
+      image: "/images/category-special-editions.jpg",
     },
   ]
 
@@ -37,8 +40,9 @@ export default async function RootedInPurpose() {
 
     return {
       title: card.title,
+      subtitle: card.subtitle,
+      description: card.description,
       handle: liveCat?.handle || card.handle,
-      subtext: card.subtext,
       image: card.image,
     }
   })
@@ -67,18 +71,18 @@ export default async function RootedInPurpose() {
 
             {/* Top Text Content */}
             <div className="relative z-10 flex flex-col items-start">
-              <span className="text-[11px] uppercase tracking-[0.3em] font-bold text-[#C59B51] font-sans mb-3 block">
+              <span className="text-[11px] uppercase tracking-[0.3em] font-bold text-[#E5C378] font-sans mb-3 block">
                 Our Collection
               </span>
 
               <h2 className="font-display font-black text-3xl sm:text-4xl text-white tracking-tight uppercase leading-tight mb-4">
-                Rooted In
+                Symbols With
                 <br />
-                <span className="text-white">Purpose</span>
+                <span className="text-[#E5C378]">Meaning</span>
               </h2>
 
               <p className="text-sm text-neutral-300 font-sans font-light leading-relaxed max-w-xs">
-                Symbols for a stronger tomorrow. Every motif embodies ancient resistance, pride, and continuity.
+                Every piece carries a story. Inspired by Tamil culture, shaped by tradition, and reimagined for a new generation.
               </p>
             </div>
 
@@ -102,16 +106,16 @@ export default async function RootedInPurpose() {
               <LocalizedClientLink
                 key={idx}
                 href={`/categories/${cat.handle}`}
-                className="group flex flex-col justify-between rounded-2xl overflow-hidden bg-bg-elevated border border-white/10 hover:border-[#C59B51]/60 transition-all duration-300 p-3 shadow-lg"
+                className="group flex flex-col rounded-2xl overflow-hidden bg-bg-elevated border border-white/10 hover:border-[#C59B51]/60 transition-all duration-300 p-3 sm:p-3.5 shadow-lg h-full"
               >
-                {/* Category Image Box */}
-                <div className="relative aspect-[3/4] w-full rounded-xl overflow-hidden bg-neutral-950 mb-3">
+                {/* Category Image Box - Locked aspect ratio across all cards */}
+                <div className="relative h-52 sm:h-auto aspect-[16/10] sm:aspect-[3/4] w-full shrink-0 rounded-xl overflow-hidden bg-neutral-950 mb-3.5">
                   <Image
                     src={cat.image}
                     alt={cat.title}
                     fill
                     unoptimized
-                    sizes="(max-width: 640px) 100vw, 220px"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 240px"
                     className="object-cover object-center transform transition-transform duration-500 ease-out group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-80 group-hover:opacity-60 transition-opacity" />
@@ -122,24 +126,27 @@ export default async function RootedInPurpose() {
                   </div>
                 </div>
 
-                {/* Label Underneath */}
-                <div className="px-1.5 pb-1 flex flex-col">
+                {/* Label Underneath - All titles start at the exact same vertical pixel */}
+                <div className="px-1.5 pb-1 flex flex-col flex-1">
                   <h3 className="font-display text-sm font-bold uppercase tracking-wider text-white group-hover:text-[#C59B51] transition-colors">
                     {cat.title}
                   </h3>
-                  <span className="text-[10px] text-neutral-400 font-sans tracking-wide mt-0.5">
-                    {cat.subtext}
+                  <span className="text-[11px] font-mono text-[#E5C378] font-medium tracking-wide mt-1">
+                    {cat.subtitle}
                   </span>
+                  <p className="text-[11px] text-neutral-300 font-sans leading-relaxed mt-1.5">
+                    {cat.description}
+                  </p>
                 </div>
               </LocalizedClientLink>
             ))}
           </div>
 
           {/* Right: Narrow Vertical Accent Panel */}
-          <div className="lg:col-span-2 relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl min-h-[300px] lg:min-h-full flex items-center justify-center p-6 group">
+          <div className="lg:col-span-2 relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl min-h-[200px] sm:min-h-[300px] lg:min-h-full flex items-center justify-center p-6 group">
             <Image
               src="/images/sunset-palm-accent.jpg"
-              alt="Our History Lives Through Us"
+              alt="What We Carry, Lives Beyond Us"
               fill
               unoptimized
               sizes="(max-width: 1024px) 100vw, 200px"
@@ -157,11 +164,13 @@ export default async function RootedInPurpose() {
                   letterSpacing: "0.28em",
                 }}
               >
-                Our History
+                What We
+                <br />
+                Carry
                 <br />
                 Lives
                 <br />
-                Through
+                Beyond
                 <br />
                 <span className="text-[#E5C378]">Us</span>
               </p>

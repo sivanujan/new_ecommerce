@@ -4,6 +4,7 @@ import initialDataSeed from "../migration-scripts/initial-data-seed"
 import seedJewelry from "./seed-jewelry"
 import enableStripe from "./enable-stripe"
 import fixShippingProfiles from "./fix-shipping-profiles"
+import seedTamzenCategories from "./seed-tamzen-categories"
 
 /**
  * All-in-one production setup script for Railway.
@@ -43,6 +44,13 @@ export default async function seedProductionComplete({ container }: { container:
     await fixShippingProfiles({ container })
   } catch (err: any) {
     logger.error(`Shipping profile link error: ${err?.message || err}`)
+  }
+
+  try {
+    logger.info("\n--- STEP 5: Seeding TamZen Categories (Pendants, Chains, Special Editions) ---")
+    await seedTamzenCategories({ container })
+  } catch (err: any) {
+    logger.error(`Category seed error: ${err?.message || err}`)
   }
 
   logger.info("==========================================")

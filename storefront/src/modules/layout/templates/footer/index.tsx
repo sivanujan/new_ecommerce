@@ -99,6 +99,16 @@ export default async function Footer() {
               <span>Worldwide Shipping Available</span>
             </div>
 
+            {/* Follow TAMZEN */}
+            <div className="flex flex-col mb-3">
+              <span className="font-display font-bold text-xs uppercase tracking-wider text-[#FDFBF7]">
+                Follow TAMZEN
+              </span>
+              <span className="text-[11px] text-neutral-400 font-sans mt-0.5">
+                Stay connected for new designs, launches, special offers, and more
+              </span>
+            </div>
+
             {/* Social Icons */}
             <div className="flex items-center gap-3">
               {socialLinks.map((social) => (
@@ -116,10 +126,10 @@ export default async function Footer() {
             </div>
           </div>
 
-          {/* Column 1: Collections */}
+          {/* Column 1: Shop */}
           <div className="flex flex-col gap-3">
             <h4 className="font-display text-xs uppercase tracking-[0.25em] font-bold text-[#E5C378] mb-2 flex items-center gap-1.5">
-              <span>Collections</span>
+              <span>Shop</span>
             </h4>
             <ul className="flex flex-col gap-2.5">
               <li>
@@ -127,34 +137,33 @@ export default async function Footer() {
                   href="/store"
                   className="text-neutral-300 hover:text-[#E5C378] transition-colors"
                 >
-                  All Creations
+                  Shop All
                 </LocalizedClientLink>
               </li>
-              {collections && collections.length > 0 ? (
-                collections.slice(0, 4).map((c) => (
-                  <li key={c.id}>
-                    <LocalizedClientLink
-                      href={`/collections/${c.handle}`}
-                      className="text-neutral-300 hover:text-[#E5C378] transition-colors"
-                    >
-                      {c.title}
-                    </LocalizedClientLink>
-                  </li>
-                ))
-              ) : (
-                <>
-                  <li>
-                    <LocalizedClientLink href="/store" className="text-neutral-300 hover:text-[#E5C378] transition-colors">
-                      Signature Pendants
-                    </LocalizedClientLink>
-                  </li>
-                  <li>
-                    <LocalizedClientLink href="/store" className="text-neutral-300 hover:text-[#E5C378] transition-colors">
-                      Heritage Dog-Tags
-                    </LocalizedClientLink>
-                  </li>
-                </>
-              )}
+              <li>
+                <LocalizedClientLink
+                  href="/categories/pendants"
+                  className="text-neutral-300 hover:text-[#E5C378] transition-colors"
+                >
+                  Pendants
+                </LocalizedClientLink>
+              </li>
+              <li>
+                <LocalizedClientLink
+                  href="/categories/chains"
+                  className="text-neutral-300 hover:text-[#E5C378] transition-colors"
+                >
+                  Chains
+                </LocalizedClientLink>
+              </li>
+              <li>
+                <LocalizedClientLink
+                  href="/categories/special-editions"
+                  className="text-neutral-300 hover:text-[#E5C378] transition-colors"
+                >
+                  Special Editions
+                </LocalizedClientLink>
+              </li>
             </ul>
           </div>
 
@@ -187,40 +196,39 @@ export default async function Footer() {
             </ul>
           </div>
 
-          {/* Column 3: Contact */}
+          {/* Column 3: Contact Information */}
           <div className="flex flex-col gap-3" id="contact-info">
             <h4 className="font-display text-xs uppercase tracking-[0.25em] font-bold text-[#E5C378] mb-2 flex items-center gap-1.5">
-              <span>Contact</span>
+              <span>Contact Information</span>
             </h4>
             <ul className="flex flex-col gap-2.5">
-              <li className="text-neutral-400">
-                Email:{" "}
+              <li>
+                <span className="text-neutral-400 block text-[11px]">Email Us</span>
                 <a
-                  href="mailto:contact@tamzen.com"
-                  className="text-neutral-300 hover:text-[#E5C378] transition-colors"
+                  href="mailto:contact@tamzen.shop"
+                  className="text-neutral-200 hover:text-[#E5C378] transition-colors font-medium text-xs"
                 >
-                  contact@tamzen.com
+                  contact@tamzen.shop
                 </a>
-              </li>
-              <li className="text-neutral-400">
-                Support: Mon &ndash; Fri (9:00 &ndash; 18:00 CET)
-              </li>
-              <li>
-                <LocalizedClientLink href="/contact" className="text-neutral-300 hover:text-[#E5C378] transition-colors">
-                  Contact Form &amp; Atelier
-                </LocalizedClientLink>
-              </li>
-              <li>
-                <LocalizedClientLink href="/cart" className="text-neutral-300 hover:text-[#E5C378] transition-colors">
-                  View Bag
-                </LocalizedClientLink>
-              </li>
-
-              <li className="pt-2">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#E5C378]/20 text-[10px] uppercase font-mono tracking-wider text-[#E5C378] bg-[#E5C378]/5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#E5C378]" />
-                  <span>Europe • EUR</span>
+                <span className="text-[10px] text-neutral-400 block mt-0.5">
+                  Orders, product questions &amp; support
                 </span>
+              </li>
+              <li className="pt-1">
+                <span className="text-neutral-400 block text-[11px]">Support Hours</span>
+                <span className="text-neutral-200 block font-medium text-xs">Monday &ndash; Friday</span>
+                <span className="text-[10px] text-neutral-400 block">9:00 &ndash; 18:00 CET</span>
+              </li>
+              <li className="pt-1">
+                <span className="text-neutral-400 block text-[11px]">Shipping Worldwide</span>
+                <span className="text-neutral-200 block font-medium text-xs">France &bull; Europe &bull; Worldwide</span>
+                <span className="text-[10px] text-neutral-400 block">Delivering to customers around the world</span>
+              </li>
+              <li className="pt-1">
+                <LocalizedClientLink href="/contact" className="text-[#E5C378] hover:underline transition-colors text-xs font-medium inline-flex items-center gap-1">
+                  <span>Contact Form &amp; Atelier</span>
+                  <span>&rarr;</span>
+                </LocalizedClientLink>
               </li>
             </ul>
           </div>

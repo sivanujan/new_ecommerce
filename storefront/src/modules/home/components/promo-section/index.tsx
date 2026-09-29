@@ -12,9 +12,9 @@ export interface PromoBannerProps {
 }
 
 export default function PromoSection({
-  eyebrow = "SIGNATURE TRENDING STYLE",
-  heading = "Symbols Forged in 316L Steel",
-  subtext = "Crafted for resilience, inspired by enduring heritage. Discover bold cultural pendants and chains engineered to withstand time, water, and sweat.",
+  eyebrow = "SIGNATURE COLLECTION",
+  heading = "Symbols Made to Be Worn",
+  subtext = "Crafted in premium 316L stainless steel, TAMZEN brings meaningful Tamil symbols into modern jewellery — bold pieces created for everyday wear, wherever life takes you.",
   buttonText = "SHOP NOW",
   buttonLink = "/store",
   imageSrc = "/images/promo-campaign-banner.jpg",
@@ -23,7 +23,8 @@ export default function PromoSection({
   const serviceFeatures = [
     {
       title: "Worldwide Shipping",
-      subtext: "Order Above €100",
+      tagline: "Across the Globe",
+      description: "We deliver TAMZEN to our community worldwide.",
       icon: (
         <svg
           className="w-6 h-6 text-[#E5C378]"
@@ -42,8 +43,9 @@ export default function PromoSection({
       ),
     },
     {
-      title: "Money Back Guarantee",
-      subtext: "Guarantee Within 30 Days",
+      title: "Secure Payments",
+      tagline: "Safe & Protected Checkout",
+      description: "Shop with confidence through secure payment methods.",
       icon: (
         <svg
           className="w-6 h-6 text-[#E5C378]"
@@ -61,8 +63,9 @@ export default function PromoSection({
       ),
     },
     {
-      title: "Offers And Discounts",
-      subtext: "Back Returns In 7 Days",
+      title: "Quality You Can Trust",
+      tagline: "316L Stainless Steel",
+      description: "Every TAMZEN piece is crafted in premium 316L stainless steel.",
       icon: (
         <svg
           className="w-6 h-6 text-[#E5C378]"
@@ -74,14 +77,15 @@ export default function PromoSection({
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
-            d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+            d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
           />
         </svg>
       ),
     },
     {
-      title: "24/7 Support Services",
-      subtext: "Any Time Support",
+      title: "Customer Support",
+      tagline: "We're Here to Help",
+      description: "Our team is available to assist you with your order and questions.",
       icon: (
         <svg
           className="w-6 h-6 text-[#E5C378]"
@@ -93,7 +97,7 @@ export default function PromoSection({
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
-            d="M19 11a7 7 0 00-14 0v5a3 3 0 003 3h1a1 1 0 001-1v-4a1 1 0 00-1-1H7v-2a5 5 0 0110 0v2h-2a1 1 0 00-1 1v4a1 1 0 001 1h1a3 3 0 003-3v-5z"
+            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
           />
         </svg>
       ),
@@ -192,7 +196,7 @@ export default function PromoSection({
           {serviceFeatures.map((item, idx) => (
             <div
               key={idx}
-              className="group relative flex items-center gap-4 p-5 rounded-2xl bg-bg-elevated border border-white/10 hover:border-[#E5C378]/50 shadow-[0_4px_20px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_rgba(229,195,120,0.1)] transition-all duration-300"
+              className="group relative flex items-start gap-4 p-5 rounded-2xl bg-bg-elevated border border-white/10 hover:border-[#E5C378]/50 shadow-[0_4px_20px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_rgba(229,195,120,0.1)] transition-all duration-300"
             >
               {/* Icon Container with Gold Glow */}
               <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 group-hover:border-[#E5C378]/50 group-hover:bg-[#E5C378]/10 flex items-center justify-center flex-shrink-0 transition-all duration-300">
@@ -204,9 +208,12 @@ export default function PromoSection({
                 <span className="text-sm font-bold text-[#FDFBF7] group-hover:text-[#E5C378] transition-colors font-sans tracking-wide">
                   {item.title}
                 </span>
-                <span className="text-xs text-neutral-400 font-sans tracking-normal mt-0.5">
-                  {item.subtext}
+                <span className="text-[11px] font-mono uppercase tracking-wider text-[#E5C378] font-medium mt-0.5">
+                  {item.tagline}
                 </span>
+                <p className="text-xs text-neutral-400 font-sans tracking-normal mt-1 leading-relaxed">
+                  {item.description}
+                </p>
               </div>
             </div>
           ))}

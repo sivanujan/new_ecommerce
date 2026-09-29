@@ -57,18 +57,33 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
         <Popover className="h-full flex">
           {({ open, close }) => (
             <>
-              <div className="relative flex h-full">
+              <div className="relative flex h-full items-center">
                 <Popover.Button
                   data-testid="nav-menu-button"
-                  className="relative h-full flex items-center transition-all ease-out duration-200 focus:outline-none hover:text-ui-fg-base"
+                  aria-label="Open Navigation Menu"
+                  className="group relative flex items-center justify-center focus:outline-none transition-transform active:scale-95"
                 >
-                  Menu
+                  <div className="w-10 h-10 rounded-full border border-white/10 bg-white/5 flex items-center justify-center text-neutral-200 group-hover:text-[#E5C378] group-hover:border-[#E5C378]/40 group-hover:bg-[#E5C378]/10 transition-all duration-200">
+                    <svg
+                      className="w-5 h-5 text-current"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <line x1="4" y1="7" x2="20" y2="7" />
+                      <line x1="4" y1="12" x2="20" y2="12" />
+                      <line x1="4" y1="17" x2="20" y2="17" />
+                    </svg>
+                  </div>
                 </Popover.Button>
               </div>
 
               {open && (
                 <div
-                  className="fixed inset-0 z-[50] bg-black/0 pointer-events-auto"
+                  className="fixed inset-0 z-[999] bg-black/80 backdrop-blur-sm pointer-events-auto transition-opacity"
                   onClick={close}
                   data-testid="side-menu-backdrop"
                 />
@@ -77,20 +92,21 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
               <Transition
                 show={open}
                 as={Fragment}
-                enter="transition ease-out duration-150"
-                enterFrom="opacity-0"
-                enterTo="opacity-100 backdrop-blur-2xl"
-                leave="transition ease-in duration-150"
-                leaveFrom="opacity-100 backdrop-blur-2xl"
-                leaveTo="opacity-0"
+                enter="transition ease-out duration-300 transform"
+                enterFrom="-translate-x-full opacity-0"
+                enterTo="translate-x-0 opacity-100"
+                leave="transition ease-in duration-200 transform"
+                leaveFrom="translate-x-0 opacity-100"
+                leaveTo="-translate-x-full opacity-0"
               >
-                <PopoverPanel className="flex flex-col absolute w-full pr-4 sm:pr-0 sm:w-1/3 2xl:w-1/4 sm:min-w-min h-[calc(100vh-1rem)] z-[51] inset-x-0 text-sm text-ui-fg-on-color m-2 backdrop-blur-2xl">
+                <PopoverPanel className="fixed inset-y-0 left-0 z-[1000] w-[86vw] max-w-[360px] h-[100dvh] flex flex-col focus:outline-none shadow-2xl">
                   <div
                     data-testid="nav-menu-popup"
-                    className="flex flex-col h-full bg-[rgba(3,7,18,0.5)] rounded-rounded justify-between p-6"
+                    className="flex flex-col h-full bg-[#0B0F17] border-r border-[#E5C378]/20 justify-between p-6 overflow-y-auto"
                   >
-                    <div className="flex items-center justify-between pb-4 border-b border-white/10" id="xmark">
-                      <div className="flex items-center gap-2.5">
+                    {/* Drawer Header with Logo and Close Button */}
+                    <div className="flex items-center justify-between pb-5 border-b border-white/10" id="xmark">
+                      <div className="flex items-center gap-3">
                         <div className="relative w-8 h-8 shrink-0">
                           <Image
                             src="/logo-icon.svg"
@@ -99,15 +115,27 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
                             className="object-contain"
                           />
                         </div>
-                        <span className="font-display text-base font-bold tracking-[0.2em] text-[#E5C378] uppercase">
-                          TamZen
-                        </span>
+                        <div className="flex flex-col">
+                          <span className="font-display text-base font-bold tracking-[0.2em] text-[#E5C378] uppercase leading-tight">
+                            TamZen
+                          </span>
+                          <span className="text-[7.5px] tracking-wider text-[#E5C378]/70 font-medium">
+                            எங்கள் வேர் எங்கள் அடையாளம்
+                          </span>
+                        </div>
                       </div>
-                      <button data-testid="close-menu-button" onClick={close} className="text-neutral-400 hover:text-white p-1">
-                        <XMark />
+                      <button
+                        data-testid="close-menu-button"
+                        onClick={close}
+                        className="w-8 h-8 rounded-full border border-white/15 bg-white/5 hover:bg-white/10 hover:border-white/30 flex items-center justify-center text-neutral-400 hover:text-white transition-all focus:outline-none"
+                        aria-label="Close menu"
+                      >
+                        <XMark className="w-4 h-4" />
                       </button>
                     </div>
-                    <ul className="flex flex-col gap-6 items-start justify-start">
+
+                    {/* Navigation Menu Links */}
+                    <ul className="flex flex-col gap-2 my-6">
                       {Object.entries(SideMenuItems).map(([name, href]) => {
                         const isActive = getIsActive(href)
 
@@ -116,27 +144,34 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
                             <LocalizedClientLink
                               href={href}
                               className={clx(
-                                "text-2xl sm:text-3xl leading-10 transition-colors flex items-center gap-3",
+                                "text-lg sm:text-xl py-2.5 px-3 rounded-lg transition-all duration-200 flex items-center justify-between group",
                                 isActive
-                                  ? "text-[#E5C378] font-bold"
-                                  : "text-neutral-300 hover:text-white"
+                                  ? "text-[#E5C378] font-semibold bg-[#E5C378]/10 border-l-2 border-[#E5C378]"
+                                  : "text-neutral-300 hover:text-white hover:bg-white/5 hover:translate-x-1"
                               )}
                               onClick={close}
                               data-testid={`${name.toLowerCase()}-link`}
                             >
-                              {isActive && (
-                                <span className="w-2 h-2 rounded-full bg-[#E5C378]" />
-                              )}
-                              {name}
+                              <span>{name}</span>
+                              <ArrowRightMini
+                                className={clx(
+                                  "w-4 h-4 transition-all duration-200",
+                                  isActive
+                                    ? "text-[#E5C378] opacity-100 translate-x-0"
+                                    : "text-neutral-500 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0"
+                                )}
+                              />
                             </LocalizedClientLink>
                           </li>
                         )
                       })}
                     </ul>
-                    <div className="flex flex-col gap-y-6">
+
+                    {/* Footer: Language, Region, and Copyright */}
+                    <div className="mt-auto pt-5 border-t border-white/10 flex flex-col gap-y-4">
                       {!!locales?.length && (
                         <div
-                          className="flex justify-between"
+                          className="flex justify-between items-center py-2 px-3 rounded-lg bg-white/5 border border-white/5 hover:border-white/15 transition-all text-sm"
                           onMouseEnter={languageToggleState.open}
                           onMouseLeave={languageToggleState.close}
                         >
@@ -147,14 +182,14 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
                           />
                           <ArrowRightMini
                             className={clx(
-                              "transition-transform duration-150",
+                              "transition-transform duration-150 text-neutral-400",
                               languageToggleState.state ? "-rotate-90" : ""
                             )}
                           />
                         </div>
                       )}
                       <div
-                        className="flex justify-between"
+                        className="flex justify-between items-center py-2 px-3 rounded-lg bg-white/5 border border-white/5 hover:border-white/15 transition-all text-sm"
                         onMouseEnter={countryToggleState.open}
                         onMouseLeave={countryToggleState.close}
                       >
@@ -166,14 +201,13 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
                         )}
                         <ArrowRightMini
                           className={clx(
-                            "transition-transform duration-150",
+                            "transition-transform duration-150 text-neutral-400",
                             countryToggleState.state ? "-rotate-90" : ""
                           )}
                         />
                       </div>
-                      <Text className="flex justify-between txt-compact-small">
-                        © {new Date().getFullYear()} Medusa Store. All rights
-                        reserved.
+                      <Text className="text-center text-xs text-neutral-500 pt-2 tracking-wide font-sans">
+                        © {new Date().getFullYear()} TamZen. All rights reserved.
                       </Text>
                     </div>
                   </div>

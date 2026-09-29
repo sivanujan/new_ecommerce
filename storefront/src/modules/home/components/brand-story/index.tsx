@@ -1,104 +1,101 @@
 import NewsletterForm from "./newsletter-form"
 
 export default function BrandStory() {
-  const socialLinks = [
-    {
-      name: "Instagram",
-      href: "https://instagram.com",
-      icon: (
-        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
-          <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-          <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-          <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
-        </svg>
-      ),
-    },
-    {
-      name: "TikTok",
-      href: "https://tiktok.com",
-      icon: (
-        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64c.298-.002.595.042.88.13V9.4a6.33 6.33 0 0 0-1-.08A6.34 6.34 0 0 0 3 15.66a6.34 6.34 0 0 0 10.82 4.49 6.27 6.27 0 0 0 1.95-4.49V8.62a8.28 8.28 0 0 0 4.82 1.52V6.69h-1z" />
-        </svg>
-      ),
-    },
-    {
-      name: "YouTube",
-      href: "https://youtube.com",
-      icon: (
-        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
-          <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19.1c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.43z" />
-          <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02" fill="currentColor" />
-        </svg>
-      ),
-    },
-  ]
-
   return (
-    <section
-      id="contact"
-      className="w-full bg-bg-base py-16 sm:py-20 lg:py-24 text-white relative overflow-hidden"
-    >
-      {/* Full-width ambient glow & lighting */}
-      <div className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[350px] bg-[#E5C378]/[0.07] rounded-full blur-[140px]" />
-      <div className="pointer-events-none absolute bottom-0 left-1/4 w-[500px] h-[250px] bg-[#C99C47]/[0.04] rounded-full blur-[120px]" />
+    <div className="w-full flex flex-col">
+      {/* ============================================================ */}
+      {/* 1. OUR STORY SECTION */}
+      {/* ============================================================ */}
+      <section
+        id="our-story"
+        className="w-full bg-bg-base py-20 sm:py-28 lg:py-32 text-white relative overflow-hidden"
+      >
+        {/* Full-width ambient glow & lighting */}
+        <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[350px] bg-[#E5C378]/[0.06] rounded-full blur-[140px]" />
 
-      <div className="content-container relative z-10">
-        {/* Full-width Centered Content Container */}
-        <div className="max-w-3xl mx-auto flex flex-col items-center text-center">
-          {/* Eyebrow Label */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-[#E5C378]/30 mb-4 backdrop-blur-md">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#E5C378] animate-pulse" />
-            <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.25em] font-mono font-bold text-[#E5C378]">
-              Join The Community
-            </span>
-          </div>
+        <div className="content-container relative z-10">
+          <div className="max-w-3xl mx-auto flex flex-col items-center text-center">
+            {/* Eyebrow Label */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-[#E5C378]/30 mb-6 backdrop-blur-md">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#E5C378] animate-pulse" />
+              <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.25em] font-mono font-bold text-[#E5C378]">
+                Our Story
+              </span>
+            </div>
 
-          {/* Bold Serif Heading */}
-          <h2 className="font-display font-serif font-bold text-3xl sm:text-4xl lg:text-5xl text-[#FDFBF7] uppercase tracking-tight mb-2">
-            Stay Connected
-          </h2>
+            {/* Bold Serif Heading */}
+            <h2 className="font-display font-serif font-bold text-3xl sm:text-4xl lg:text-5xl text-[#FDFBF7] tracking-tight mb-4">
+              What We Carry, <br className="hidden sm:inline" />
+              <span className="text-[#E5C378]">Lives Beyond Us.</span>
+            </h2>
 
-          {/* Tamil Decorative Gold Divider */}
-          <div className="flex items-center justify-center gap-3 my-4 w-40 mx-auto">
-            <span className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-[#E5C378]/60" />
-            <div className="w-2 h-2 rotate-45 border border-[#E5C378] bg-bg-elevated" />
-            <span className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-[#E5C378]/60" />
-          </div>
+            {/* Tamil Decorative Gold Divider */}
+            <div className="flex items-center justify-center gap-3 my-6 w-40 mx-auto">
+              <span className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-[#E5C378]/60" />
+              <div className="w-2 h-2 rotate-45 border border-[#E5C378] bg-bg-elevated" />
+              <span className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-[#E5C378]/60" />
+            </div>
 
-          {/* Subtext */}
-          <p className="text-xs sm:text-sm lg:text-base text-neutral-300 font-sans max-w-lg mx-auto leading-relaxed mb-8 sm:mb-10">
-            Receive exclusive early access to limited seasonal runs, heritage archive releases, and private diaspora community drops.
-          </p>
-
-          {/* Functional Pill Form */}
-          <div className="w-full max-w-xl mx-auto">
-            <NewsletterForm />
-          </div>
-
-          {/* Social Links Row */}
-          <div className="mt-12 pt-8 border-t border-white/10 w-full max-w-xl flex flex-col sm:flex-row items-center justify-between gap-4">
-            <span className="text-[11px] uppercase tracking-widest text-neutral-400 font-mono">
-              Follow Our Journey
-            </span>
-
-            <div className="flex items-center gap-3">
-              {socialLinks.map((social) => (
-                <a
-                  key={social.name}
-                  href={social.href}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="w-10 h-10 rounded-full border border-white/10 hover:border-[#E5C378] bg-white/[0.04] hover:bg-[#E5C378]/10 flex items-center justify-center text-neutral-400 hover:text-[#E5C378] transition-all duration-300 shadow-sm hover:scale-105"
-                  aria-label={social.name}
-                >
-                  {social.icon}
-                </a>
-              ))}
+            {/* Story Narrative */}
+            <div className="max-w-2xl mx-auto space-y-4 text-center">
+              <p className="text-base sm:text-lg lg:text-xl text-neutral-200 font-serif leading-relaxed">
+                Our culture is more than where we come from.
+                <br />
+                It is what we carry, what we remember, and what we pass forward.
+              </p>
+              <p className="text-sm sm:text-base text-[#E5C378]/90 font-sans leading-relaxed tracking-wide font-medium">
+                TAMZEN transforms meaningful symbols into modern jewellery — connecting our story with a new generation.
+              </p>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      {/* ============================================================ */}
+      {/* 2. BE PART OF TAMZEN - TRUE FULL-WIDTH COMMUNITY SECTION */}
+      {/* ============================================================ */}
+      <section
+        id="community"
+        className="w-full bg-gradient-to-b from-[#0F0F11] via-[#09090A] to-bg-base border-t border-white/[0.08] py-20 sm:py-24 lg:py-28 text-white relative overflow-hidden"
+      >
+        {/* Full-width luxury ambient lighting */}
+        <div className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[1px] bg-gradient-to-r from-transparent via-[#E5C378]/30 to-transparent" />
+        <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[300px] bg-[#E5C378]/[0.04] rounded-full blur-[130px]" />
+
+        <div className="content-container relative z-10 flex flex-col items-center text-center">
+          <div className="max-w-2xl mx-auto flex flex-col items-center">
+            {/* Eyebrow Label */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-[#E5C378]/30 mb-5 backdrop-blur-md">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#E5C378] animate-pulse" />
+              <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.25em] font-mono font-bold text-[#E5C378]">
+                Something new is always coming
+              </span>
+            </div>
+
+            {/* Bold Serif Heading matching Our Story typography */}
+            <h3 className="font-display font-serif font-bold text-3xl sm:text-4xl lg:text-5xl text-[#FDFBF7] tracking-tight mb-4">
+              Be Part of <span className="text-[#E5C378]">TAMZEN</span>
+            </h3>
+
+            {/* Tamil Decorative Gold Divider */}
+            <div className="flex items-center justify-center gap-3 my-4 w-32 mx-auto">
+              <span className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-[#E5C378]/50" />
+              <div className="w-1.5 h-1.5 rotate-45 border border-[#E5C378] bg-bg-elevated" />
+              <span className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-[#E5C378]/50" />
+            </div>
+
+            {/* Subtitle */}
+            <p className="text-sm sm:text-base text-neutral-300 font-sans leading-relaxed mb-8">
+              Get first access to new pieces, limited releases, exclusive offers, and stories from TAMZEN.
+            </p>
+
+            {/* Newsletter Input Form */}
+            <div className="w-full max-w-lg mx-auto">
+              <NewsletterForm />
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
   )
 }

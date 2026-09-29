@@ -40,26 +40,33 @@ export default function Hero() {
           </div>
 
           {/* Huge bold serif headline */}
-          <h1 className="font-display font-black text-3xl sm:text-5xl md:text-6xl lg:text-[68px] xl:text-[74px] tracking-tight leading-[1] text-white uppercase mb-3 sm:mb-4 drop-shadow-[0_4px_20px_rgba(0,0,0,0.8)]">
+          <h1 className="font-display font-black text-3xl sm:text-5xl md:text-6xl lg:text-[68px] xl:text-[74px] tracking-tight leading-[1.05] text-white uppercase mb-3 sm:mb-4 drop-shadow-[0_4px_20px_rgba(0,0,0,0.8)]">
             More Than
             <br />
             <span className="text-[#E5C378] drop-shadow-[0_4px_25px_rgba(229,195,120,0.4)]">
-              Jewellery
+              Jewellery.
             </span>
           </h1>
 
           {/* Tamil Tagline */}
           <div className="inline-flex items-center gap-2.5 mb-4 sm:mb-5 py-0.5">
-            <span className="w-3 h-[1.5px] bg-[#E5C378]" />
-            <span className="text-sm sm:text-base lg:text-lg font-semibold text-[#F3D798] font-sans tracking-wide drop-shadow-md">
-              எங்கள் வேர் எங்கள் அடையாளம்
+            <span className="w-3.5 h-[1.5px] bg-[#E5C378]" />
+            <span className="text-sm sm:text-base lg:text-lg font-semibold text-[#F3D798] tracking-wide drop-shadow-md">
+              எங்கள் அடையாளம். எங்கள் பெருமை.
             </span>
           </div>
 
-          {/* Subtext Paragraph */}
-          <p className="text-xs sm:text-sm lg:text-base text-neutral-200 font-sans font-light leading-relaxed max-w-xl mb-6 sm:mb-8 drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
-            Symbols that define you. Crafted in 316L stainless steel, inspired by our roots and designed for a new generation.
-          </p>
+          {/* Cultural Story Hook & Description */}
+          <div className="flex flex-col gap-2.5 max-w-xl mb-6 sm:mb-8">
+            <p className="text-sm sm:text-base lg:text-lg font-serif italic text-neutral-100 leading-snug drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
+              Our culture gave us the story.
+              <br />
+              <span className="text-[#E5C378] font-semibold not-italic">TAMZEN</span> turns that story into something you wear.
+            </p>
+            <p className="text-xs sm:text-sm lg:text-base text-neutral-300 font-sans font-light leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
+              Crafted in premium 316L stainless steel, each piece carries a symbol of where we come from — reimagined for the generation that carries it forward.
+            </p>
+          </div>
 
           {/* Explore Collection Pill Button */}
           <LocalizedClientLink

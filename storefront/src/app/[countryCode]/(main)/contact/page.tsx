@@ -105,10 +105,10 @@ export default async function ContactPage() {
             {/* Primary Contact Info Card */}
             <div className="p-6 sm:p-8 rounded-2xl bg-bg-elevated border border-white/10 shadow-[0_15px_45px_rgba(0,0,0,0.5)] flex flex-col gap-6">
               <h3 className="font-display font-serif font-bold text-lg sm:text-xl text-[#FDFBF7] tracking-wide border-b border-white/10 pb-4">
-                Direct Inquiries
+                Contact Information
               </h3>
 
-              {/* Email */}
+              {/* Email Us */}
               <div className="flex items-start gap-4">
                 <div className="w-11 h-11 rounded-xl bg-[#E5C378]/10 border border-[#E5C378]/30 flex items-center justify-center flex-shrink-0 text-[#E5C378]">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
@@ -116,17 +116,17 @@ export default async function ContactPage() {
                   </svg>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[11px] uppercase font-mono tracking-wider text-neutral-400">
-                    Email Our Atelier
+                  <span className="text-[11px] uppercase font-mono tracking-wider text-[#E5C378] font-bold">
+                    Email Us
                   </span>
                   <a
-                    href="mailto:contact@tamzen.com"
+                    href="mailto:contact@tamzen.shop"
                     className="font-sans font-bold text-sm sm:text-base text-[#FDFBF7] hover:text-[#E5C378] transition-colors mt-0.5"
                   >
-                    contact@tamzen.com
+                    contact@tamzen.shop
                   </a>
-                  <span className="text-[11px] text-neutral-400 font-sans mt-0.5">
-                    For custom inquiries, press & support
+                  <span className="text-xs text-neutral-300 font-sans mt-0.5 leading-relaxed">
+                    For orders, product questions, shipping, and general support.
                   </span>
                 </div>
               </div>
@@ -139,45 +139,47 @@ export default async function ContactPage() {
                   </svg>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[11px] uppercase font-mono tracking-wider text-neutral-400">
+                  <span className="text-[11px] uppercase font-mono tracking-wider text-[#E5C378] font-bold">
                     Support Hours
                   </span>
                   <span className="font-sans font-bold text-sm sm:text-base text-[#FDFBF7] mt-0.5">
                     Monday &ndash; Friday
                   </span>
-                  <span className="text-[11px] text-[#E5C378]/90 font-sans mt-0.5">
+                  <span className="text-xs text-neutral-300 font-sans mt-0.5">
                     9:00 &ndash; 18:00 CET
                   </span>
                 </div>
               </div>
 
-              {/* Location & Shipping */}
+              {/* Shipping Worldwide */}
               <div className="flex items-start gap-4">
                 <div className="w-11 h-11 rounded-xl bg-[#E5C378]/10 border border-[#E5C378]/30 flex items-center justify-center flex-shrink-0 text-[#E5C378]">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <circle cx="12" cy="12" r="10" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
                   </svg>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[11px] uppercase font-mono tracking-wider text-neutral-400">
-                    Hub & Shipping
+                  <span className="text-[11px] uppercase font-mono tracking-wider text-[#E5C378] font-bold">
+                    Shipping Worldwide
                   </span>
                   <span className="font-sans font-bold text-sm sm:text-base text-[#FDFBF7] mt-0.5">
-                    Europe &bull; France
+                    France &bull; Europe &bull; Worldwide
                   </span>
-                  <span className="text-[11px] text-emerald-400 font-sans mt-0.5 inline-flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                    Worldwide Delivery Available
+                  <span className="text-xs text-neutral-300 font-sans mt-0.5">
+                    TAMZEN delivers to customers around the world.
                   </span>
                 </div>
               </div>
 
-              {/* Social Channels */}
+              {/* Follow TAMZEN */}
               <div className="pt-4 border-t border-white/10">
-                <span className="text-[11px] uppercase font-mono tracking-wider text-neutral-400 block mb-3">
-                  Follow Our Social Channels
-                </span>
+                <h4 className="font-display font-serif font-bold text-base text-[#FDFBF7] mb-1">
+                  Follow TAMZEN
+                </h4>
+                <p className="text-xs text-neutral-400 font-sans mb-3 leading-relaxed">
+                  Stay connected for new designs, launches, special offers, and more
+                </p>
                 <div className="flex items-center gap-3">
                   {socialLinks.map((social) => (
                     <a

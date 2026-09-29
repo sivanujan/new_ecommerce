@@ -26,11 +26,11 @@ export default async function SignatureDesigns({
         <div className="flex flex-col items-center text-center max-w-2xl mx-auto mb-14 sm:mb-16">
           <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-neutral-200/90 border border-neutral-300 text-[11px] uppercase tracking-[0.25em] font-bold text-neutral-800 mb-4 shadow-sm">
             <span className="w-1.5 h-1.5 rounded-full bg-neutral-800" />
-            The Collection
+            SIGNATURE COLLECTION
           </span>
 
           <h2 className="font-display font-black text-3xl sm:text-4xl lg:text-5xl tracking-tight text-neutral-950 uppercase">
-            Signature Designs
+            Symbols Made to Be Worn
           </h2>
 
           {/* Decorative Divider */}
@@ -41,7 +41,7 @@ export default async function SignatureDesigns({
           </div>
 
           <p className="text-base sm:text-lg text-neutral-800 font-sans font-medium tracking-wide">
-            Carry your story. Wear your roots.
+            Crafted in premium 316L stainless steel, TAMZEN brings meaningful Tamil symbols into modern jewellery — bold pieces created for everyday wear, wherever life takes you.
           </p>
         </div>
 

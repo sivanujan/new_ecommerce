@@ -58,7 +58,7 @@ export default function NewsletterForm() {
   }
 
   return (
-    <div className="w-full max-w-lg mx-auto">
+    <div className="w-full max-w-xl mx-auto">
       <form onSubmit={handleSubmit} className="w-full">
         {/* Unified Pill Input + Button Container */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center p-1.5 rounded-2xl sm:rounded-full bg-[#0A0A0C] border border-white/15 focus-within:border-[#E5C378] focus-within:ring-2 focus-within:ring-[#E5C378]/20 transition-all duration-300 shadow-inner gap-2 sm:gap-0">
@@ -88,7 +88,7 @@ export default function NewsletterForm() {
                 <span>Joining...</span>
               </>
             ) : (
-              <span>Subscribe</span>
+              <span>Join Us</span>
             )}
           </button>
         </div>
@@ -105,7 +105,7 @@ export default function NewsletterForm() {
           <svg className="w-3.5 h-3.5 text-[#E5C378]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
           </svg>
-          <span>No spam. Unsubscribe anytime.</span>
+          <span>No spam. Just what matters.</span>
         </div>
       </form>
     </div>

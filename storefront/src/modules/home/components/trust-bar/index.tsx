@@ -1,15 +1,17 @@
 export default function TrustBar() {
   const features = [
     {
-      title: "Premium Quality",
-      subtitle: "316L Stainless Steel",
+      badge: "Premium Quality",
+      title: "316L Stainless Steel",
+      description:
+        "Made with premium 316L stainless steel for durability, comfort, and a refined finish.",
       icon: (
         <svg
           className="w-5 h-5 text-[#E5C378]"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
-          strokeWidth="1.5"
+          strokeWidth="1.75"
           strokeLinecap="round"
           strokeLinejoin="round"
         >
@@ -18,15 +20,17 @@ export default function TrustBar() {
       ),
     },
     {
-      title: "Long Lasting",
-      subtitle: "Water & Sweat Resistant",
+      badge: "Made for Everyday",
+      title: "Water & Sweat Resistant",
+      description:
+        "Designed to keep up with your everyday life — wherever you go.",
       icon: (
         <svg
           className="w-5 h-5 text-[#E5C378]"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
-          strokeWidth="1.5"
+          strokeWidth="1.75"
           strokeLinecap="round"
           strokeLinejoin="round"
         >
@@ -35,15 +39,17 @@ export default function TrustBar() {
       ),
     },
     {
-      title: "Skin Friendly",
-      subtitle: "No Tarnish",
+      badge: "Comfort First",
+      title: "Skin-Friendly & Tarnish Resistant",
+      description:
+        "Comfortable for everyday wear and designed to maintain its finish with proper care.",
       icon: (
         <svg
           className="w-5 h-5 text-[#E5C378]"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
-          strokeWidth="1.5"
+          strokeWidth="1.75"
           strokeLinecap="round"
           strokeLinejoin="round"
         >
@@ -52,15 +58,17 @@ export default function TrustBar() {
       ),
     },
     {
+      badge: "From Our Roots to the World",
       title: "Worldwide Shipping",
-      subtitle: "For Our Global Community",
+      description:
+        "Created from our culture, made for our generation, and delivered across the world.",
       icon: (
         <svg
           className="w-5 h-5 text-[#E5C378]"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
-          strokeWidth="1.5"
+          strokeWidth="1.75"
           strokeLinecap="round"
           strokeLinejoin="round"
         >
@@ -73,37 +81,42 @@ export default function TrustBar() {
   ]
 
   return (
-    <div className="w-full bg-bg-base py-7 sm:py-8 relative overflow-hidden">
+    <section className="w-full bg-[#0A0D14] border-y border-white/10 py-10 sm:py-12 relative overflow-hidden">
       {/* Subtle ambient lighting band */}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-[#E5C378]/[0.03] to-transparent" />
 
       <div className="content-container relative z-10">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-white/10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 divide-y sm:divide-y-0 sm:divide-x divide-white/10">
           {features.map((feature, idx) => (
             <div
               key={idx}
-              className={`flex items-center gap-3.5 sm:gap-4 group p-3 sm:px-5 lg:px-6 transition-all duration-300 ${
-                idx % 2 === 1 ? "sm:pl-6" : ""
+              className={`flex flex-col items-start gap-3.5 group pt-6 sm:pt-0 ${
+                idx !== 0 ? "sm:pl-6 lg:pl-8" : ""
               }`}
             >
-              {/* Gold Outline Icon Circle */}
-              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full border border-[#E5C378]/30 bg-[#E5C378]/10 group-hover:border-[#E5C378] group-hover:bg-[#E5C378]/20 group-hover:scale-105 flex items-center justify-center flex-shrink-0 transition-all duration-300 shadow-[0_0_15px_rgba(229,195,120,0.1)]">
-                {feature.icon}
+              {/* Header row: Icon + Eyebrow badge */}
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full border border-[#E5C378]/30 bg-[#E5C378]/10 group-hover:border-[#E5C378] group-hover:bg-[#E5C378]/20 group-hover:scale-105 flex items-center justify-center flex-shrink-0 transition-all duration-300 shadow-[0_0_15px_rgba(229,195,120,0.1)]">
+                  {feature.icon}
+                </div>
+                <span className="text-[10px] sm:text-[11px] font-mono uppercase tracking-[0.2em] font-semibold text-[#E5C378]">
+                  {feature.badge}
+                </span>
               </div>
 
-              {/* Text Labels */}
-              <div className="flex flex-col min-w-0">
-                <span className="text-xs sm:text-sm font-bold tracking-wider uppercase text-[#FDFBF7] group-hover:text-[#E5C378] transition-colors font-sans">
+              {/* Title & Description */}
+              <div className="flex flex-col gap-1.5">
+                <h3 className="text-sm sm:text-base font-bold text-[#FDFBF7] group-hover:text-[#E5C378] transition-colors font-display tracking-tight leading-snug">
                   {feature.title}
-                </span>
-                <span className="text-[11px] sm:text-xs text-[#E5C378]/80 font-medium tracking-wide mt-0.5 font-sans">
-                  {feature.subtitle}
-                </span>
+                </h3>
+                <p className="text-xs text-neutral-400 font-sans font-light leading-relaxed">
+                  {feature.description}
+                </p>
               </div>
             </div>
           ))}
         </div>
       </div>
-    </div>
+    </section>
   )
 }
