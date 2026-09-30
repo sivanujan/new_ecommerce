@@ -1,34 +1,24 @@
-import { Table } from "@medusajs/ui"
-
 const SkeletonCartItem = () => {
   return (
-    <Table.Row className="w-full m-4">
-      <Table.Cell className="!pl-0 p-4 w-24">
-        <div className="flex w-24 h-24 p-4 bg-gray-200 rounded-large animate-pulse" />
-      </Table.Cell>
-      <Table.Cell className="text-left">
-        <div className="flex flex-col gap-y-2">
-          <div className="w-32 h-4 bg-gray-200 animate-pulse" />
-          <div className="w-24 h-4 bg-gray-200 animate-pulse" />
+    <div className="flex items-start justify-between gap-4 py-5 font-sans">
+      <div className="flex items-start gap-4">
+        {/* Thumbnail */}
+        <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-white/5 border border-white/10 shrink-0 animate-pulse" />
+
+        {/* Details */}
+        <div className="flex flex-col gap-2 pt-1">
+          <div className="w-36 sm:w-48 h-4 bg-white/15 rounded animate-pulse" />
+          <div className="w-24 sm:w-32 h-3 bg-white/10 rounded animate-pulse" />
+          <div className="w-20 h-7 bg-white/5 rounded-lg border border-white/10 animate-pulse mt-2" />
         </div>
-      </Table.Cell>
-      <Table.Cell>
-        <div className="flex gap-2 items-center">
-          <div className="w-6 h-8 bg-gray-200 animate-pulse" />
-          <div className="w-14 h-10 bg-gray-200 animate-pulse" />
-        </div>
-      </Table.Cell>
-      <Table.Cell>
-        <div className="flex gap-2">
-          <div className="w-12 h-6 bg-gray-200 animate-pulse" />
-        </div>
-      </Table.Cell>
-      <Table.Cell className="!pr-0 text-right">
-        <div className="flex gap-2 justify-end">
-          <div className="w-12 h-6 bg-gray-200 animate-pulse" />
-        </div>
-      </Table.Cell>
-    </Table.Row>
+      </div>
+
+      {/* Price */}
+      <div className="flex flex-col items-end gap-2 pt-1">
+        <div className="w-20 h-5 bg-white/15 rounded animate-pulse" />
+        <div className="w-12 h-3 bg-white/10 rounded animate-pulse" />
+      </div>
+    </div>
   )
 }
 
