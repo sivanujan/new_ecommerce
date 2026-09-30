@@ -127,27 +127,30 @@ export default async function orderPlacedHandler({
       return acc + price
     }, 0)
 
+    const rawOrder = order as any
+    const rawSummary = rawOrder.summary || {}
+
     const subtotalAmount =
-      toNum(order.item_subtotal) ||
+      toNum(rawOrder.item_subtotal) ||
       (itemsCalculatedSubtotal > 0 ? itemsCalculatedSubtotal : 0) ||
-      toNum(order.subtotal) ||
-      toNum(order.summary?.item_subtotal) ||
+      toNum(rawOrder.subtotal) ||
+      toNum(rawSummary.item_subtotal) ||
       0
 
     const shippingAmount =
-      toNum(order.shipping_total) ||
-      toNum(order.shipping_methods?.[0]?.amount) ||
-      toNum(order.summary?.shipping_total) ||
+      toNum(rawOrder.shipping_total) ||
+      toNum(rawOrder.shipping_methods?.[0]?.amount) ||
+      toNum(rawSummary.shipping_total) ||
       0
 
     const taxAmount =
-      toNum(order.tax_total) ||
-      toNum(order.summary?.tax_total) ||
+      toNum(rawOrder.tax_total) ||
+      toNum(rawSummary.tax_total) ||
       0
 
     const totalAmount =
-      toNum(order.total) ||
-      toNum(order.summary?.total) ||
+      toNum(rawOrder.total) ||
+      toNum(rawSummary.total) ||
       (subtotalAmount + shippingAmount + taxAmount)
 
     // Build items HTML table rows
