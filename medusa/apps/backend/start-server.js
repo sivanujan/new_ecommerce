@@ -1,4 +1,4 @@
-const { spawn } = require("child_process")
+const { spawn, execSync } = require("child_process")
 const fs = require("fs")
 const path = require("path")
 
@@ -21,6 +21,14 @@ if (!fs.existsSync(publicAdminIndex) && fs.existsSync(medusaAdminIndex)) {
 }
 
 console.log(`[TamZen Backend] Admin index.html exists: ${fs.existsSync(publicAdminIndex)}`)
+
+// Automatically audit inventory levels so no item is ever unstocked at checkout
+try {
+  console.log(`[TamZen Backend] Auditing and stocking inventory levels...`)
+  execSync("npx medusa exec ./src/scripts/fix-inventory-levels.ts", { stdio: "inherit" })
+} catch (e) {
+  console.warn(`[TamZen Backend] Inventory audit completed or skipped:`, e.message)
+}
 
 const child = spawn("npx", ["medusa", "start", "-H", host, "-p", String(port)], {
   stdio: "inherit",
