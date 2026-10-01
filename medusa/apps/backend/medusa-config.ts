@@ -2,14 +2,20 @@ import { loadEnv, defineConfig } from "@medusajs/framework/utils"
 
 loadEnv(process.env.NODE_ENV || "development", process.cwd())
 
+let backendUrl = (process.env.MEDUSA_BACKEND_URL || "http://localhost:9000").trim()
+if (!backendUrl.startsWith("http://") && !backendUrl.startsWith("https://")) {
+  backendUrl = `https://${backendUrl}`
+}
+backendUrl = backendUrl.replace(/\/+$/, "")
+
 module.exports = defineConfig({
   projectConfig: {
     databaseUrl: process.env.DATABASE_URL,
     redisUrl: process.env.REDIS_URL,
     http: {
-      storeCors: process.env.STORE_CORS || "https://tamzen.shop,http://localhost:8000",
+      storeCors: process.env.STORE_CORS || "https://tamzen.shop,http://localhost:8000,http://localhost:3000",
       adminCors: process.env.ADMIN_CORS || "*",
-      authCors: process.env.AUTH_CORS || "https://tamzen.shop,http://localhost:8000",
+      authCors: process.env.AUTH_CORS || "https://tamzen.shop,http://localhost:8000,http://localhost:3000",
       jwtSecret: process.env.JWT_SECRET || "dev_tamzen_jwt_secret_production_2026_fallback",
       cookieSecret: process.env.COOKIE_SECRET || "dev_tamzen_cookie_secret_production_2026_fallback",
     },
@@ -55,7 +61,7 @@ module.exports = defineConfig({
             resolve: "@medusajs/medusa/file-local",
             id: "local",
             options: {
-              backend_url: `${(process.env.MEDUSA_BACKEND_URL || "http://localhost:9000").replace(/\/+$/, "")}/static`,
+              backend_url: `${backendUrl}/static`,
             },
           },
         ],
