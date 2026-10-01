@@ -51,6 +51,30 @@ const nextConfig = {
         protocol: "https",
         hostname: "medusa-server-testing.s3.us-east-1.amazonaws.com",
       },
+      {
+        protocol: "https",
+        hostname: "tamzen.shop",
+      },
+      {
+        protocol: "https",
+        hostname: "*.tamzen.shop",
+      },
+      ...(() => {
+        try {
+          const rawUrl = process.env.MEDUSA_BACKEND_URL || process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
+          if (rawUrl) {
+            const parsed = new URL(rawUrl.startsWith("http") ? rawUrl : `https://${rawUrl}`)
+            return [
+              {
+                protocol: parsed.protocol.replace(":", ""),
+                hostname: parsed.hostname,
+                port: parsed.port || undefined,
+              },
+            ]
+          }
+        } catch {}
+        return []
+      })(),
       ...(S3_HOSTNAME && S3_PATHNAME
         ? [
             {

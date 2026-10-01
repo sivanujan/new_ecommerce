@@ -8,6 +8,10 @@ import {
   CategoryOption,
   FormattedCollectionProduct,
 } from "@modules/store/components/collection-interactive-view"
+import { normalizeImageUrl } from "@lib/util/normalize-image-url"
+
+// Revalidate store page products every 60 seconds on production builds
+export const revalidate = 60
 
 export const metadata: Metadata = {
   title: "The Collection | TamZen — Wear Your Roots",
@@ -67,10 +71,11 @@ export default async function StorePage(props: Params) {
   ).map((product, index) => {
     const { cheapestPrice } = getProductPrice({ product })
 
-    const thumbnail =
+    const thumbnail = normalizeImageUrl(
       product.thumbnail ||
       product.images?.[0]?.url ||
       "/images/tamzen-hero-pendant.jpg"
+    )
 
     const productCategories = (product.categories || []).map((c) => ({
       id: c.id,

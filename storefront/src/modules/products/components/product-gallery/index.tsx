@@ -3,6 +3,7 @@
 import { useState } from "react"
 import Image from "next/image"
 import { HttpTypes } from "@medusajs/types"
+import { normalizeImageUrl } from "@lib/util/normalize-image-url"
 
 type ProductGalleryProps = {
   images: HttpTypes.StoreProductImage[]
@@ -16,11 +17,16 @@ export default function ProductGallery({
   thumbnail,
 }: ProductGalleryProps) {
   // Consolidate images list, falling back to thumbnail if empty
-  const allImages = images && images.length > 0 
+  const rawImages = images && images.length > 0 
     ? images 
     : thumbnail 
       ? [{ id: "thumb", url: thumbnail } as HttpTypes.StoreProductImage] 
       : []
+
+  const allImages = rawImages.map((img) => ({
+    ...img,
+    url: normalizeImageUrl(img.url),
+  }))
 
   const [selectedIndex, setSelectedIndex] = useState(0)
   const currentImage = allImages[selectedIndex] || allImages[0]
