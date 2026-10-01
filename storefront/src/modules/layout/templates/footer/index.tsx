@@ -64,23 +64,14 @@ export default async function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-8 pb-14 border-b border-white/10">
           {/* Brand Mark Column (2 cols) */}
           <div className="lg:col-span-2 flex flex-col items-start pr-0 lg:pr-10">
-            <LocalizedClientLink href="/" className="group flex items-center gap-3.5 mb-5">
-              <div className="relative w-12 h-12 shrink-0 transition-transform duration-300 group-hover:scale-105">
+            <LocalizedClientLink href="/" className="group flex items-center mb-5">
+              <div className="relative h-12 w-52 transition-transform duration-300 group-hover:scale-[1.02]">
                 <Image
-                  src="/logo-icon.svg"
+                  src="/logo.svg"
                   alt="TamZen"
                   fill
-                  className="object-contain"
+                  className="object-contain object-left"
                 />
-              </div>
-
-              <div className="flex flex-col">
-                <span className="font-display font-bold text-xl tracking-[0.22em] text-[#FDFBF7] group-hover:text-[#E5C378] transition-colors uppercase leading-none">
-                  TamZen
-                </span>
-                <span className="text-[8px] uppercase tracking-[0.3em] font-mono text-[#E5C378]/80 mt-1">
-                  More Than Jewellery
-                </span>
               </div>
             </LocalizedClientLink>
 

@@ -42,25 +42,15 @@ export default async function Nav() {
               />
             </div>
 
-            {/* Mobile Header: Compact Logo */}
-            <div className="relative flex sm:hidden items-center gap-2">
-              <div className="relative w-8 h-8 shrink-0">
-                <Image
-                  src="/logo-icon.svg"
-                  alt="TamZen"
-                  fill
-                  priority
-                  className="object-contain"
-                />
-              </div>
-              <div className="flex flex-col">
-                <span className="font-display text-base font-black tracking-[0.2em] text-[#E5C378] uppercase leading-none">
-                  TAMZEN
-                </span>
-                <span className="text-[7.5px] tracking-wider text-[#E5C378]/80 font-medium mt-0.5 font-sans">
-                  எங்கள் வேர் எங்கள் அடையாளம்
-                </span>
-              </div>
+            {/* Mobile Header: Compact Full Logo */}
+            <div className="relative block sm:hidden h-9 w-36 transition-transform duration-300">
+              <Image
+                src="/logo.svg"
+                alt="TamZen"
+                fill
+                priority
+                className="object-contain object-left"
+              />
             </div>
           </LocalizedClientLink>
         </div>

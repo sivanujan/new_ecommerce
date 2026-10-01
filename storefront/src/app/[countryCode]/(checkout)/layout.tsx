@@ -1,3 +1,4 @@
+import Image from "next/image"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import ChevronDown from "@modules/common/icons/chevron-down"
 
@@ -26,36 +27,21 @@ export default function CheckoutLayout({
             </LocalizedClientLink>
           </div>
 
-          {/* Center: Official TamZen Logo & Cultural Emblem */}
+          {/* Center: Official TamZen Logo */}
           <div className="flex items-center justify-center">
             <LocalizedClientLink
               href="/"
-              className="group flex items-center gap-3 focus:outline-none"
+              className="group flex items-center focus:outline-none transition-transform duration-300 hover:scale-[1.02]"
               data-testid="store-link"
             >
-              {/* Cultural Emblem Mark */}
-              <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-[#E5C378]/40 bg-neutral-900 text-[#E5C378] flex items-center justify-center shadow-md transition-all duration-300 group-hover:scale-105 group-hover:border-[#E5C378]">
-                <svg
-                  className="w-4 h-4 sm:w-5 sm:h-5 text-[#E5C378]"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M4 18h16M5 14h14M3 8l4 5 5-7 5 7 4-5v10H3z" />
-                  <circle cx="12" cy="5" r="1.2" fill="currentColor" />
-                </svg>
-              </div>
-
-              <div className="flex flex-col text-left">
-                <span className="font-display text-lg sm:text-xl font-black tracking-[0.2em] text-white uppercase leading-none group-hover:text-neutral-200 transition-colors">
-                  TAMZEN
-                </span>
-                <span className="text-[8px] sm:text-[9px] tracking-wider text-[#E5C378] font-medium mt-1 font-sans">
-                  எங்கள் வேர் எங்கள் அடையாளம்
-                </span>
+              <div className="relative h-10 w-44 sm:w-48">
+                <Image
+                  src="/logo.svg"
+                  alt="TamZen"
+                  fill
+                  priority
+                  className="object-contain"
+                />
               </div>
             </LocalizedClientLink>
           </div>
