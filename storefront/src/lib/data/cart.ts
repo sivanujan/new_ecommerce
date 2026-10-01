@@ -376,6 +376,32 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
         phone: formData.get("billing_address.phone"),
       }
     await updateCart(data)
+
+    // Automatically assign the matching shipping method for the selected country
+    // so the shipping cost is immediately summed into the cart total
+    try {
+      const shippingOptionsRes = await sdk.client.fetch<{
+        shipping_options: HttpTypes.StoreCartShippingOption[]
+      }>("/store/shipping-options", {
+        query: { cart_id: cartId },
+        headers: await getAuthHeaders(),
+      })
+      const options = shippingOptionsRes.shipping_options?.filter(
+        (sm) => sm.service_zone?.fulfillment_set?.type !== "pickup"
+      )
+      if (options && options.length > 0) {
+        await sdk.store.cart.addShippingMethod(
+          cartId,
+          { option_id: options[0].id },
+          {},
+          await getAuthHeaders()
+        )
+        const cartCacheTag = await getCacheTag("cart")
+        if (cartCacheTag) {
+          revalidateTag(cartCacheTag)
+        }
+      }
+    } catch {}
   } catch (e: any) {
     return e.message
   }

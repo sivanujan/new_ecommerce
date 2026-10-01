@@ -29,14 +29,17 @@ const CountrySelect = forwardRef<HTMLSelectElement, CountrySelectProps>(
     )
 
     const countryOptions = useMemo(() => {
-      if (!region) {
+      if (!region || !region.countries) {
         return []
       }
 
-      return region.countries?.map((country) => ({
-        value: country.iso_2,
-        label: country.display_name,
-      }))
+      return region.countries
+        .map((country) => ({
+          value: country.iso_2?.toLowerCase(),
+          label: country.display_name || country.iso_2?.toUpperCase() || "",
+        }))
+        .filter((c) => Boolean(c.value && c.label))
+        .sort((a, b) => a.label.localeCompare(b.label))
     }, [region])
 
     return (

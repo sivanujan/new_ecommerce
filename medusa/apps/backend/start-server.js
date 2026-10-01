@@ -30,6 +30,14 @@ try {
   console.warn(`[TamZen Backend] Inventory audit completed or skipped:`, e.message)
 }
 
+// Automatically ensure TamZen tiered shipping rates are active and up to date
+try {
+  console.log(`[TamZen Backend] Verifying TamZen shipping rates...`)
+  execSync("npx medusa exec ./src/scripts/setup-tamzen-shipping.ts", { stdio: "inherit" })
+} catch (e) {
+  console.warn(`[TamZen Backend] Shipping setup completed or skipped:`, e.message)
+}
+
 const child = spawn("npx", ["medusa", "start", "-H", host, "-p", String(port)], {
   stdio: "inherit",
   shell: true,

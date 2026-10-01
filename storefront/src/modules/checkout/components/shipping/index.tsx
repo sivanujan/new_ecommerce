@@ -104,7 +104,13 @@ const Shipping: React.FC<ShippingProps> = ({
     if (_pickupMethods?.find((m) => m.id === shippingMethodId)) {
       setShowPickupOptions(PICKUP_OPTION_ON)
     }
-  }, [availableShippingMethods])
+  }, [availableShippingMethods, shippingMethodId])
+
+  useEffect(() => {
+    if (_shippingMethods && _shippingMethods.length > 0 && !shippingMethodId) {
+      handleSetShippingMethod(_shippingMethods[0].id, "shipping")
+    }
+  }, [_shippingMethods, shippingMethodId])
 
   const handleEdit = () => {
     router.push(pathname + "?step=delivery", { scroll: false })
