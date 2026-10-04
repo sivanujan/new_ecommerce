@@ -29,6 +29,7 @@ export default function ProductGallery({
   }))
 
   const [selectedIndex, setSelectedIndex] = useState(0)
+  const [errorIndices, setErrorIndices] = useState<Record<number, boolean>>({})
   const currentImage = allImages[selectedIndex] || allImages[0]
 
   const handlePrev = () => {
@@ -43,7 +44,7 @@ export default function ProductGallery({
     <div className="w-full flex flex-col gap-4">
       {/* Main Luxury Image Frame */}
       <div className="relative aspect-[4/5] sm:aspect-square w-full rounded-2xl sm:rounded-3xl overflow-hidden bg-[#131317] border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.6)] group">
-        {currentImage?.url ? (
+        {currentImage?.url && !errorIndices[selectedIndex] ? (
           <Image
             src={currentImage.url}
             alt={`${title} - View ${selectedIndex + 1}`}
@@ -52,10 +53,17 @@ export default function ProductGallery({
             unoptimized
             sizes="(max-width: 1024px) 100vw, 55vw"
             className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+            onError={() => setErrorIndices((prev) => ({ ...prev, [selectedIndex]: true }))}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-neutral-500 font-sans text-sm">
-            No image available
+          <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-[#1A1A20] to-[#0E0E12] p-8 text-center select-none">
+            <div className="w-16 h-16 rounded-full bg-[#E5C378]/10 border border-[#E5C378]/30 flex items-center justify-center text-[#E5C378] mb-3 shadow-[0_0_25px_rgba(229,195,120,0.15)]">
+              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+            </div>
+            <span className="text-xs font-mono uppercase tracking-[0.25em] text-[#E5C378] font-bold">TamZen Atelier</span>
+            <span className="text-xs text-neutral-400 mt-1 max-w-sm line-clamp-1">{title}</span>
           </div>
         )}
 
