@@ -1,10 +1,12 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
-import { useParams, useSearchParams } from "next/navigation"
+import { useState, useMemo, useEffect, useRef } from "react"
+import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { HttpTypes } from "@medusajs/types"
 import { addToCart } from "@lib/data/cart"
 import { getProductPrice } from "@lib/util/get-product-price"
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import Image from "next/image"
 
 type ProductDetailPanelProps = {
   product: HttpTypes.StoreProduct
@@ -28,11 +30,9 @@ export default function ProductDetailPanel({
   product,
   region,
 }: ProductDetailPanelProps) {
+  const router = useRouter()
   const searchParams = useSearchParams()
   const countryCode = (useParams().countryCode as string) || "fr"
-
-  // Check if multiple variants exist
-  const hasMultipleVariants = (product.variants?.length ?? 0) > 1
 
   // Options that have multiple values to choose from
   const visibleOptions = useMemo(() => {
@@ -41,15 +41,10 @@ export default function ProductDetailPanel({
     )
   }, [product.options])
 
-  // Initialize options:
-  // If single variant: preselect its options.
-  // If URL contains v_id matching a variant: preselect that variant.
-  // Otherwise, start empty so user explicitly picks their size.
-  const [options, setOptions] = useState<Record<string, string>>(() => {
-    if (!hasMultipleVariants && product.variants?.length === 1) {
-      return optionsAsKeymap(product.variants[0].options)
-    }
+  const hasMultipleVariants = (product.variants?.length ?? 0) > 1
 
+  // Pre-select first available variant or URL parameter so user can immediately add to cart
+  const [options, setOptions] = useState<Record<string, string>>(() => {
     const urlVariantId = searchParams.get("v_id")
     if (urlVariantId && product.variants) {
       const match = product.variants.find((v) => v.id === urlVariantId)
@@ -58,12 +53,20 @@ export default function ProductDetailPanel({
       }
     }
 
+    // Default to first variant's options so "Add to Cart" is immediately ready
+    if (product.variants && product.variants.length > 0) {
+      return optionsAsKeymap(product.variants[0].options)
+    }
+
     return {}
   })
 
   const [quantity, setQuantity] = useState(1)
   const [isAdding, setIsAdding] = useState(false)
   const [addedSuccess, setAddedSuccess] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [showToast, setShowToast] = useState(false)
+  const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const [openAccordion, setOpenAccordion] = useState<string | null>("specs")
 
   // Required option IDs that must be selected
@@ -71,12 +74,7 @@ export default function ProductDetailPanel({
     return visibleOptions.map((opt) => opt.id)
   }, [visibleOptions])
 
-  // Find first unselected option to prompt the user
-  const unselectedOption = useMemo(() => {
-    return visibleOptions.find((opt) => !options[opt.id])
-  }, [visibleOptions, options])
-
-  // Match selected variant
+  // Match selected variant based on current options
   const selectedVariant = useMemo(() => {
     if (!product.variants || product.variants.length === 0) {
       return undefined
@@ -87,22 +85,23 @@ export default function ProductDetailPanel({
       return product.variants[0]
     }
 
-    // If there are visible options to choose, ensure all are chosen
+    // If options need to be chosen, match them
     if (requiredOptionIds.length > 0) {
       const allSelected = requiredOptionIds.every((id) => !!options[id])
-      if (!allSelected) {
-        return undefined
+      if (allSelected) {
+        const match = product.variants.find((v) => {
+          const vMap = optionsAsKeymap(v.options)
+          return requiredOptionIds.every((id) => vMap[id] === options[id])
+        })
+        if (match) return match
       }
     }
 
-    // Find the matching variant
-    return product.variants.find((v) => {
-      const vMap = optionsAsKeymap(v.options)
-      return requiredOptionIds.every((id) => vMap[id] === options[id])
-    })
+    // Fallback to first variant if no specific match
+    return product.variants[0]
   }, [product.variants, hasMultipleVariants, requiredOptionIds, options])
 
-  // Sync URL shallowly with window.history.replaceState (prevents full page re-render)
+  // Sync URL shallowly with window.history.replaceState
   useEffect(() => {
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href)
@@ -144,19 +143,21 @@ export default function ProductDetailPanel({
     }
   }, [product, selectedVariant])
 
-  // Whether user can click Add to Cart
-  const canAddToCart = useMemo(() => {
-    if (isAdding) return false
-    if (hasMultipleVariants && !selectedVariant) return false
-    return inStock
-  }, [isAdding, hasMultipleVariants, selectedVariant, inStock])
+  // Fallback description if product has none entered in Medusa
+  const displayDescription = useMemo(() => {
+    if (product.description && product.description.trim().length > 0) {
+      return product.description.trim()
+    }
+    return `Sculpted with meticulous craftsmanship in solid 316L surgical-grade stainless steel. Engineered for everyday durability, complete waterproof resilience, and refined cultural elegance. Designed to endure a lifetime while preserving the rich heritage of Tamil identity.`
+  }, [product.description])
 
-  // Add to cart handler
+  // Add to cart handler with full Medusa cart integration & instant UI updates
   const handleAddToCart = async () => {
-    const variantToUse = selectedVariant || (!hasMultipleVariants ? product.variants?.[0] : null)
+    const variantToUse = selectedVariant || product.variants?.[0]
     if (!variantToUse?.id || !inStock) return
 
     setIsAdding(true)
+    setErrorMessage(null)
     setAddedSuccess(false)
 
     try {
@@ -165,10 +166,30 @@ export default function ProductDetailPanel({
         quantity,
         countryCode,
       })
+
       setAddedSuccess(true)
-      setTimeout(() => setAddedSuccess(false), 4000)
-    } catch (err) {
+      setShowToast(true)
+
+      // Refresh server components to immediately update cart counter in header
+      router.refresh()
+
+      // Broadcast custom event for any listening client listeners
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("cart-item-added"))
+      }
+
+      if (toastTimeoutRef.current) {
+        clearTimeout(toastTimeoutRef.current)
+      }
+      toastTimeoutRef.current = setTimeout(() => {
+        setShowToast(false)
+        setAddedSuccess(false)
+      }, 6000)
+    } catch (err: any) {
       console.error("Failed to add product to cart:", err)
+      setErrorMessage(
+        err?.message || "Could not add piece to cart. Please try again."
+      )
     } finally {
       setIsAdding(false)
     }
@@ -177,11 +198,77 @@ export default function ProductDetailPanel({
   const primaryCategory =
     (product as any).categories?.[0]?.name ||
     product.collection?.title ||
-    "Heritage Piece"
+    "Signature Piece"
 
   return (
-    <div className="w-full flex flex-col gap-6 lg:gap-7">
-      {/* 1. Category / Eyebrow Badge */}
+    <div className="w-full flex flex-col gap-6 lg:gap-7 relative">
+      {/* ============================================================ */}
+      {/* 1. FLOATING TOAST NOTIFICATION ON ADD TO CART */}
+      {/* ============================================================ */}
+      {showToast && (
+        <div className="fixed bottom-6 right-4 sm:right-6 z-50 max-w-md w-[calc(100vw-32px)] bg-[#141418]/95 border border-[#E5C378]/50 shadow-[0_10px_40px_rgba(0,0,0,0.8)] rounded-2xl p-4 backdrop-blur-xl animate-fadeIn">
+          <div className="flex items-start gap-3">
+            {/* Thumbnail */}
+            <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-neutral-900 border border-white/10 shrink-0">
+              {product.thumbnail ? (
+                <Image
+                  src={product.thumbnail}
+                  alt={product.title}
+                  fill
+                  sizes="48px"
+                  className="object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-[10px] text-[#E5C378]">
+                  TZ
+                </div>
+              )}
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5 text-[#E5C378] text-xs font-mono font-bold uppercase tracking-wider mb-0.5">
+                <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                <span>Added to Atelier Bag</span>
+              </div>
+              <p className="text-white font-serif font-bold text-sm truncate">
+                {product.title}
+              </p>
+              <p className="text-xs text-neutral-400 font-mono">
+                Qty: {quantity} • {priceInfo?.calculated_price || "EUR"}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowToast(false)}
+              className="text-neutral-400 hover:text-white p-1 text-sm transition-colors"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2 mt-3 pt-3 border-t border-white/10">
+            <LocalizedClientLink
+              href="/cart"
+              className="flex-1 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 text-white text-xs font-semibold uppercase tracking-wider text-center transition-colors"
+            >
+              View Bag
+            </LocalizedClientLink>
+            <LocalizedClientLink
+              href="/checkout"
+              className="flex-1 py-2 rounded-xl bg-gradient-to-r from-[#F3D798] via-[#E5C378] to-[#C99C47] text-neutral-950 text-xs font-bold uppercase tracking-wider text-center shadow-md hover:brightness-105 transition-all"
+            >
+              Checkout &rarr;
+            </LocalizedClientLink>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* 2. CATEGORY / EYEBROW BADGE */}
+      {/* ============================================================ */}
       <div className="flex items-center gap-2">
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.05] border border-white/15 text-[#E5C378] text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.25em]">
           <span className="w-1.5 h-1.5 rounded-full bg-[#E5C378] animate-pulse" />
@@ -194,10 +281,12 @@ export default function ProductDetailPanel({
         )}
       </div>
 
-      {/* 2. High-Contrast Bold Serif Title */}
+      {/* ============================================================ */}
+      {/* 3. HIGH-CONTRAST BOLD SERIF TITLE */}
+      {/* ============================================================ */}
       <div>
         <h1
-          className="font-display font-black text-3xl sm:text-4xl lg:text-5xl text-white uppercase tracking-tight leading-[1.1] drop-shadow-sm"
+          className="font-serif font-bold text-3xl sm:text-4xl lg:text-5xl text-[#FDFBF7] tracking-tight leading-[1.1] drop-shadow-sm"
           data-testid="product-title"
         >
           {product.title}
@@ -207,23 +296,19 @@ export default function ProductDetailPanel({
         <div className="inline-flex items-center gap-2.5 mt-2.5">
           <span className="w-4 h-[1px] bg-[#E5C378]/60" />
           <span className="text-xs sm:text-sm font-semibold text-[#F3D798] tracking-wider font-sans">
-            எங்கள் வேர் எங்கள் அடையாளம்
+            எங்கள் வேர் எங்கள் அடையாளம் • Wear Your Roots
           </span>
           <span className="w-4 h-[1px] bg-[#E5C378]/60" />
         </div>
       </div>
 
-      {/* 3. Prominent Price & Stock Status Bar */}
-      <div className="flex flex-wrap items-baseline gap-4 py-3 border-y border-white/10">
+      {/* ============================================================ */}
+      {/* 4. PROMINENT PRICE & STOCK STATUS BAR */}
+      {/* ============================================================ */}
+      <div className="flex flex-wrap items-baseline gap-4 py-3.5 border-y border-white/10">
         <div className="flex items-baseline gap-3">
-          {!selectedVariant && hasMultipleVariants && (
-            <span className="text-xs uppercase tracking-wider text-neutral-400 font-sans font-medium">
-              From
-            </span>
-          )}
-
           <span
-            className="font-display text-2xl sm:text-3xl lg:text-4xl font-black text-[#E5C378] tracking-tight"
+            className="font-display font-black text-2xl sm:text-3xl lg:text-4xl text-[#E5C378] tracking-tight"
             data-testid="product-price"
           >
             {priceInfo?.calculated_price || "—"}
@@ -244,43 +329,39 @@ export default function ProductDetailPanel({
         {/* Live Stock Badge */}
         <div className="ml-auto inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 text-xs font-medium">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span>
-            {selectedVariant
-              ? inStock
-                ? "In Stock — Ready to dispatch"
-                : "Out of Stock"
-              : "In Stock — Select options"}
-          </span>
+          <span>{inStock ? "In Stock — Ready for dispatch" : "Currently Out of Stock"}</span>
         </div>
       </div>
 
-      {/* 4. High-Contrast Readable Description */}
-      {product.description && (
-        <p className="text-neutral-200 text-sm sm:text-base font-light leading-relaxed font-sans">
-          {product.description}
-        </p>
-      )}
+      {/* ============================================================ */}
+      {/* 5. HIGH-CONTRAST PRODUCT DESCRIPTION */}
+      {/* ============================================================ */}
+      <div className="space-y-2 py-1">
+        <span className="text-[10px] uppercase font-mono tracking-[0.2em] text-[#E5C378] font-bold block">
+          The Piece
+        </span>
+        <div className="text-[#EDE8DF] text-sm sm:text-base font-light leading-relaxed font-sans whitespace-pre-line">
+          {displayDescription}
+        </div>
+      </div>
 
-      {/* 5. Variant Selectors (Clean static label, no stray cursor/line) */}
+      {/* ============================================================ */}
+      {/* 6. VARIANT SELECTORS (IF MULTIPLE OPTIONS EXIST) */}
+      {/* ============================================================ */}
       {hasMultipleVariants && visibleOptions.length > 0 && (
-        <div className="flex flex-col gap-5 py-2">
+        <div className="flex flex-col gap-4 py-2 border-t border-white/10">
           {visibleOptions.map((option) => {
             const currentVal = options[option.id]
 
             return (
-              <div key={option.id} className="flex flex-col gap-2.5">
-                {/* Clean label without colons or stray cursor */}
+              <div key={option.id} className="flex flex-col gap-2">
                 <div className="flex items-center justify-between text-xs uppercase tracking-wider font-semibold select-none">
                   <span className="text-neutral-300 tracking-[0.18em]">
                     {option.title}
                   </span>
-                  {currentVal ? (
+                  {currentVal && (
                     <span className="text-[#E5C378] font-bold tracking-wide">
                       {currentVal}
-                    </span>
-                  ) : (
-                    <span className="text-neutral-400 font-normal text-[11px] tracking-normal">
-                      Please select
                     </span>
                   )}
                 </div>
@@ -297,7 +378,7 @@ export default function ProductDetailPanel({
                         onClick={() => handleSelectOption(option.id, v.value)}
                         className={`px-5 py-2.5 rounded-full text-xs font-semibold tracking-wider transition-all duration-200 active:scale-95 cursor-pointer select-none ${
                           isSelected
-                            ? "bg-[#E5C378]/20 border-2 border-[#E5C378] text-[#F3D798] ring-2 ring-[#E5C378]/40 shadow-[0_0_15px_rgba(229,195,120,0.25)] font-bold"
+                            ? "bg-[#E5C378]/25 border-2 border-[#E5C378] text-[#F3D798] ring-2 ring-[#E5C378]/40 shadow-[0_0_15px_rgba(229,195,120,0.25)] font-bold"
                             : "bg-white/5 hover:bg-white/10 border border-white/20 text-neutral-200 hover:text-white hover:border-white/40"
                         }`}
                       >
@@ -312,7 +393,19 @@ export default function ProductDetailPanel({
         </div>
       )}
 
-      {/* 6. Quantity Stepper & Add to Cart CTA */}
+      {/* Error Message if Add to Cart Failed */}
+      {errorMessage && (
+        <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
+          <svg className="w-4 h-4 shrink-0 text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>{errorMessage}</span>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* 7. QUANTITY STEPPER & ADD TO CART CTA */}
+      {/* ============================================================ */}
       <div className="flex flex-col sm:flex-row items-stretch gap-3.5 pt-2">
         {/* Quantity Stepper */}
         <div className="inline-flex items-center justify-between border border-white/20 bg-white/[0.04] rounded-full px-4 py-2 sm:py-3 shrink-0">
@@ -321,7 +414,7 @@ export default function ProductDetailPanel({
             onClick={() => setQuantity((q) => Math.max(1, q - 1))}
             disabled={quantity <= 1 || isAdding}
             aria-label="Decrease quantity"
-            className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-300 hover:text-white hover:bg-white/10 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-300 hover:text-white hover:bg-white/10 disabled:opacity-30 disabled:hover:bg-transparent transition-all font-bold text-lg"
           >
             -
           </button>
@@ -333,7 +426,7 @@ export default function ProductDetailPanel({
             onClick={() => setQuantity((q) => q + 1)}
             disabled={isAdding}
             aria-label="Increase quantity"
-            className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-300 hover:text-white hover:bg-white/10 transition-all"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-300 hover:text-white hover:bg-white/10 transition-all font-bold text-lg"
           >
             +
           </button>
@@ -343,20 +436,20 @@ export default function ProductDetailPanel({
         <button
           type="button"
           onClick={handleAddToCart}
-          disabled={!canAddToCart || isAdding}
+          disabled={!inStock || isAdding}
           data-testid="add-product-button"
-          className={`flex-1 py-4 px-8 rounded-full font-bold uppercase tracking-[0.2em] text-xs sm:text-sm transition-all duration-300 flex items-center justify-center gap-3 shadow-lg select-none ${
-            !canAddToCart
+          className={`flex-1 py-4 px-8 rounded-full font-bold uppercase tracking-[0.2em] text-xs sm:text-sm transition-all duration-300 flex items-center justify-center gap-3 shadow-lg select-none cursor-pointer ${
+            !inStock
               ? "bg-neutral-800 text-neutral-400 border border-neutral-700 cursor-not-allowed opacity-80"
               : addedSuccess
               ? "bg-emerald-500 text-black shadow-[0_0_30px_rgba(16,185,129,0.4)]"
-              : "bg-gradient-to-r from-[#F3D798] via-[#E5C378] to-[#C99C47] text-neutral-950 hover:shadow-[0_0_30px_rgba(229,195,120,0.4)] hover:brightness-105 active:scale-[0.98] cursor-pointer"
+              : "bg-gradient-to-r from-[#F3D798] via-[#E5C378] to-[#C99C47] text-neutral-950 hover:shadow-[0_0_30px_rgba(229,195,120,0.4)] hover:brightness-105 active:scale-[0.98]"
           }`}
         >
           {isAdding ? (
             <>
               <svg className="animate-spin w-4 h-4 text-black" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth={4} />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
               </svg>
               <span>Securing Piece...</span>
@@ -366,13 +459,7 @@ export default function ProductDetailPanel({
               <svg className="w-5 h-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
-              <span>Added to Cart</span>
-            </>
-          ) : !selectedVariant && hasMultipleVariants ? (
-            <>
-              <span>
-                Select {unselectedOption?.title || "Option"}
-              </span>
+              <span>Added to Cart!</span>
             </>
           ) : !inStock ? (
             <>
@@ -389,7 +476,9 @@ export default function ProductDetailPanel({
         </button>
       </div>
 
-      {/* 7. Trust Badges Row */}
+      {/* ============================================================ */}
+      {/* 8. TRUST BADGES ROW */}
+      {/* ============================================================ */}
       <div className="grid grid-cols-3 gap-2.5 py-4 border-y border-white/10 text-center font-sans">
         <div className="flex flex-col items-center gap-1.5 p-2 rounded-xl bg-white/[0.02]">
           <svg className="w-4 h-4 text-[#E5C378]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
@@ -422,7 +511,9 @@ export default function ProductDetailPanel({
         </div>
       </div>
 
-      {/* 8. Luxury Accordion Sections */}
+      {/* ============================================================ */}
+      {/* 9. LUXURY ACCORDION SECTIONS */}
+      {/* ============================================================ */}
       <div className="flex flex-col divide-y divide-white/10 border-b border-white/10 font-sans">
         {/* Accordion Item 1: Product Specifications */}
         <div className="py-3">
@@ -450,7 +541,7 @@ export default function ProductDetailPanel({
               <div className="grid grid-cols-2 gap-4 bg-white/[0.02] p-4 rounded-xl border border-white/5">
                 <div>
                   <span className="text-neutral-400 block text-[10px] uppercase tracking-wider">Material</span>
-                  <span className="text-white font-medium">{product.material || "Solid 316L Stainless Steel"}</span>
+                  <span className="text-white font-medium">{product.material || "Solid 316L Surgical Steel"}</span>
                 </div>
                 <div>
                   <span className="text-neutral-400 block text-[10px] uppercase tracking-wider">Origin</span>
@@ -458,7 +549,7 @@ export default function ProductDetailPanel({
                 </div>
                 <div>
                   <span className="text-neutral-400 block text-[10px] uppercase tracking-wider">Finish</span>
-                  <span className="text-white font-medium">18K Vacuum Ion Plating / Silver</span>
+                  <span className="text-white font-medium">18K Vacuum Ion Plating / Polished Steel</span>
                 </div>
                 <div>
                   <span className="text-neutral-400 block text-[10px] uppercase tracking-wider">Hypoallergenic</span>

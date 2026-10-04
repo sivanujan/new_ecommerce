@@ -3,7 +3,7 @@ import { getRegion } from "@lib/data/regions"
 import { getProductPrice } from "@lib/util/get-product-price"
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
-import Image from "next/image"
+import ProductCardImage from "@modules/products/components/product-card-image"
 
 type RelatedProductsProps = {
   product: HttpTypes.StoreProduct
@@ -119,20 +119,7 @@ export default async function RelatedProducts({
             >
               {/* Image Frame */}
               <div className="relative aspect-square w-full overflow-hidden bg-neutral-900/90 border-b border-white/10">
-                {item.thumbnail ? (
-                  <Image
-                    src={item.thumbnail}
-                    alt={item.title || "Product image"}
-                    fill
-                    unoptimized
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                    className="object-cover object-center transform transition-transform duration-700 ease-out group-hover:scale-105"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-neutral-500 font-sans text-xs">
-                    No image
-                  </div>
-                )}
+                <ProductCardImage src={item.thumbnail} alt={item.title || "Product image"} />
 
                 {/* Subtle vignette */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />

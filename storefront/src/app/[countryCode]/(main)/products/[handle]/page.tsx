@@ -122,7 +122,12 @@ export default async function ProductPage(props: Props) {
 
   const pricedProduct = await listProducts({
     countryCode: params.countryCode,
-    queryParams: { handle: params.handle },
+    regionId: region.id,
+    queryParams: {
+      handle: params.handle,
+      fields:
+        "*variants.calculated_price,+variants.inventory_quantity,*variants.options,*options.values,*categories,*images,+metadata,+tags",
+    },
   }).then(({ response }) => response.products[0])
 
   if (!pricedProduct) {
