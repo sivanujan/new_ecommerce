@@ -53,7 +53,8 @@ export default async function StorePage(props: Params) {
       regionId: region?.id,
       queryParams: {
         limit: 100,
-        fields: "*variants.calculated_price,*categories",
+        fields:
+          "*variants.calculated_price,+variants.inventory_quantity,*variants.options,*options.values,*categories,*images,+metadata,+tags",
       },
     }).catch(() => ({ response: { products: [] } })),
   ])
@@ -65,7 +66,7 @@ export default async function StorePage(props: Params) {
     handle: cat.handle,
   }))
 
-  // Format products with live calculated EUR prices & categories
+  // Format products with live calculated EUR prices, categories, and variant details
   const products: FormattedCollectionProduct[] = (
     productsRaw?.response?.products || []
   ).map((product, index) => {
@@ -83,17 +84,42 @@ export default async function StorePage(props: Params) {
       handle: c.handle,
     }))
 
+    const categoryName = productCategories[0]?.name?.toLowerCase() || ""
+    const hasMultipleVariants = (product.variants?.length ?? 0) > 1
+    const defaultVariantId = product.variants?.[0]?.id
+
+    // Fallback description so NO product card is ever blank
+    let fallbackDesc = "Forged in solid 316L surgical stainless steel inspired by Tamil heritage. 100% waterproof and sweatproof."
+    if (categoryName.includes("sari") || categoryName.includes("silk") || product.title?.toLowerCase().includes("sari")) {
+      fallbackDesc = "Handcrafted Tamil heritage saree woven with pure silk and refined gold zari border motifs."
+    } else if (categoryName.includes("chain") || product.title?.toLowerCase().includes("chaine")) {
+      fallbackDesc = "Solid 18K gold vacuum-plated chain with reinforced clasp. Engineered for everyday durability."
+    } else if (categoryName.includes("ring") || product.title?.toLowerCase().includes("bague")) {
+      fallbackDesc = "Intricately engraved cultural ring forged in durable 316L steel with mirror-polished gold finish."
+    }
+
+    const description =
+      product.description?.trim() ||
+      product.subtitle?.trim() ||
+      fallbackDesc
+
     return {
       id: product.id,
       title: product.title,
       handle: product.handle,
       thumbnail,
-      description: product.description || product.subtitle || null,
+      description,
       categories: productCategories,
       price: cheapestPrice?.calculated_price ?? "€49.00",
       priceNumber: cheapestPrice?.calculated_price_number ?? 0,
+      originalPrice: cheapestPrice?.original_price || null,
+      priceType: cheapestPrice?.price_type || "default",
+      percentageDiff: cheapestPrice?.percentage_diff || null,
       createdAt: product.created_at || undefined,
       isNew: index === 0 || index === 2,
+      defaultVariantId,
+      hasMultipleVariants,
+      variantsCount: product.variants?.length ?? 0,
     }
   })
 
