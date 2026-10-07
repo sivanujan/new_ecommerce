@@ -2,18 +2,29 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Lock, Mail, ArrowRight, ShieldCheck, Sparkles, Loader2 } from "lucide-react"
+import {
+  Lock,
+  Mail,
+  ArrowRight,
+  ShieldCheck,
+  Sparkles,
+  Loader2,
+  Eye,
+  EyeOff,
+} from "lucide-react"
 
 export default function LoginPage() {
   const router = useRouter()
   const [email, setEmail] = useState("admin@tamzen.shop")
   const [password, setPassword] = useState("supersecret")
+  const [showPassword, setShowPassword] = useState(false)
   const [isPending, setIsPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const handleFillDemo = () => {
     setEmail("admin@tamzen.shop")
     setPassword("supersecret")
+    setError(null)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -44,34 +55,46 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-amber-50/20 to-slate-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+    <div className="min-h-screen bg-[#0A0A0C] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* Ambient luxury lighting */}
+      <div className="pointer-events-none absolute top-1/4 left-1/2 -translate-x-1/2 w-[550px] h-[550px] rounded-full bg-[#D4AF37]/5 blur-[120px]" />
+
+      <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
         {/* Brand Header */}
         <div className="flex flex-col items-center">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-600 to-amber-400 flex items-center justify-center shadow-lg shadow-amber-500/20 border border-amber-300/40">
-            <span className="font-serif font-black text-white text-2xl tracking-tighter">TZ</span>
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#E5C378] to-[#997926] p-[1px] shadow-xl shadow-amber-950/40">
+            <div className="w-full h-full bg-[#121217] rounded-2xl flex items-center justify-center">
+              <span className="font-serif font-black text-[#E5C378] text-2xl tracking-tighter">
+                TZ
+              </span>
+            </div>
           </div>
-          <h1 className="mt-5 text-center text-2xl font-bold tracking-tight text-slate-900 font-serif">
-            TamZen Store Manager
+          <h1 className="mt-5 text-center text-3xl font-serif font-bold tracking-tight text-[#F5F0E8]">
+            TamZen
           </h1>
-          <p className="mt-1 text-center text-xs tracking-wider uppercase font-medium text-amber-700 bg-amber-100/70 px-2.5 py-0.5 rounded-full border border-amber-200/60">
-            Admin Portal
+          <p className="mt-1 text-center text-xs tracking-[0.25em] uppercase font-mono font-bold text-[#D4AF37]/80">
+            Exclusive Atelier Admin
           </p>
         </div>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4">
-        <div className="bg-white py-8 px-6 sm:px-10 shadow-xl shadow-slate-200/70 rounded-2xl border border-slate-100">
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative z-10">
+        <div className="bg-[#121217] py-8 px-6 sm:px-10 shadow-2xl rounded-3xl border border-white/10 relative overflow-hidden">
+          {/* Top Gold Accent Border */}
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent" />
+
           <div className="mb-6">
-            <h2 className="text-lg font-semibold text-slate-800">Welcome Back</h2>
-            <p className="text-sm text-slate-500 mt-0.5">
-              Sign in to manage your jewelry catalog, orders, and products.
+            <h2 className="text-lg font-serif font-bold text-[#F5F0E8]">
+              Welcome Back
+            </h2>
+            <p className="text-xs text-[#9CA3AF] mt-1 leading-relaxed">
+              Sign in to manage catalog pieces, orders, and customer requests.
             </p>
           </div>
 
           {error && (
-            <div className="mb-5 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium flex items-start gap-2.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-rose-500 mt-1.5 shrink-0" />
+            <div className="mb-5 p-3.5 rounded-xl bg-rose-950/30 border border-rose-500/40 text-rose-200 text-xs font-medium flex items-start gap-2.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-400 mt-1.5 shrink-0" />
               <span>{error}</span>
             </div>
           )}
@@ -80,12 +103,12 @@ export default function LoginPage() {
             <div>
               <label
                 htmlFor="email"
-                className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"
+                className="block text-[11px] font-bold text-[#D4AF37] uppercase tracking-wider mb-1.5 font-mono"
               >
-                Email Address
+                Admin Email
               </label>
-              <div className="relative rounded-xl shadow-sm">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+              <div className="relative rounded-xl">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-[#9CA3AF]">
                   <Mail className="h-4 w-4" />
                 </div>
                 <input
@@ -97,7 +120,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="admin@tamzen.shop"
-                  className="block w-full rounded-xl border border-slate-200 pl-10 pr-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 transition-all bg-slate-50/50 hover:bg-white"
+                  className="block w-full rounded-xl border border-white/10 pl-10 pr-4 py-2.5 text-sm text-[#F5F0E8] placeholder:text-white/20 bg-[#181820] focus:border-[#D4AF37] focus:outline-none focus:ring-1 focus:ring-[#D4AF37]/50 transition-all"
                 />
               </div>
             </div>
@@ -105,25 +128,36 @@ export default function LoginPage() {
             <div>
               <label
                 htmlFor="password"
-                className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"
+                className="block text-[11px] font-bold text-[#D4AF37] uppercase tracking-wider mb-1.5 font-mono"
               >
                 Password
               </label>
-              <div className="relative rounded-xl shadow-sm">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+              <div className="relative rounded-xl">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-[#9CA3AF]">
                   <Lock className="h-4 w-4" />
                 </div>
                 <input
                   id="password"
                   name="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"
-                  className="block w-full rounded-xl border border-slate-200 pl-10 pr-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 transition-all bg-slate-50/50 hover:bg-white"
+                  className="block w-full rounded-xl border border-white/10 pl-10 pr-10 py-2.5 text-sm text-[#F5F0E8] placeholder:text-white/20 bg-[#181820] focus:border-[#D4AF37] focus:outline-none focus:ring-1 focus:ring-[#D4AF37]/50 transition-all"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-white/40 hover:text-[#F5F0E8] transition-colors"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
               </div>
             </div>
 
@@ -131,17 +165,17 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={isPending}
-                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl shadow-md shadow-amber-600/20 text-sm font-semibold text-white bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 disabled:opacity-70 transition-all active:scale-[0.99]"
+                className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs uppercase tracking-wider font-bold text-neutral-950 bg-gradient-to-r from-[#E5C378] to-[#D4AF37] hover:brightness-110 shadow-lg shadow-amber-950/40 focus:outline-none focus:ring-2 focus:ring-[#D4AF37] disabled:opacity-70 transition-all active:scale-[0.99]"
               >
                 {isPending ? (
                   <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <Loader2 className="h-4 w-4 animate-spin text-neutral-950" />
                     <span>Signing in...</span>
                   </>
                 ) : (
                   <>
-                    <span>Sign in to Dashboard</span>
-                    <ArrowRight className="h-4 w-4" />
+                    <span>Enter Admin Dashboard</span>
+                    <ArrowRight className="h-4 w-4 text-neutral-950" />
                   </>
                 )}
               </button>
@@ -149,24 +183,24 @@ export default function LoginPage() {
           </form>
 
           {/* Quick autofill helper */}
-          <div className="mt-6 pt-5 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-            <span className="flex items-center gap-1.5 font-medium">
-              <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
+          <div className="mt-6 pt-5 border-t border-white/5 flex items-center justify-between text-xs text-[#9CA3AF]">
+            <span className="flex items-center gap-1.5 text-[11px] font-medium text-emerald-400">
+              <ShieldCheck className="h-3.5 w-3.5" />
               Medusa Auth
             </span>
             <button
               type="button"
               onClick={handleFillDemo}
-              className="text-amber-700 hover:text-amber-800 font-semibold inline-flex items-center gap-1 hover:underline"
+              className="text-[#E5C378] hover:text-white font-medium inline-flex items-center gap-1 hover:underline text-xs"
             >
-              <Sparkles className="h-3 w-3 text-amber-500" />
-              Fill Admin Credentials
+              <Sparkles className="h-3 w-3 text-[#D4AF37]" />
+              Autofill Credentials
             </button>
           </div>
         </div>
 
-        <p className="mt-6 text-center text-xs text-slate-400">
-          TamZen Jewellery • Exclusive Boutique Management
+        <p className="mt-6 text-center text-xs text-[#9CA3AF]/60 font-mono tracking-wider">
+          TamZen • எங்கள் வேர் எங்கள் அடையாளம்
         </p>
       </div>
     </div>

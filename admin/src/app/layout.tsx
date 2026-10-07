@@ -1,9 +1,10 @@
 import "./globals.css"
 import type { Metadata } from "next"
+import { ToastProvider } from "@/components/ToastProvider"
 
 export const metadata: Metadata = {
-  title: "TamZen Admin | Store Management",
-  description: "Simple, easy store management for TamZen Boutique",
+  title: "TamZen Boutique | Custom Admin",
+  description: "Boutique store management for TamZen jewelry",
 }
 
 export default function RootLayout({
@@ -12,9 +13,9 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body className="min-h-screen bg-slate-50 text-slate-900 antialiased selection:bg-amber-100 selection:text-amber-900">
-        {children}
+    <html lang="en" className="dark">
+      <body className="min-h-screen bg-[#0A0A0C] text-[#F5F0E8] antialiased">
+        <ToastProvider>{children}</ToastProvider>
       </body>
     </html>
   )

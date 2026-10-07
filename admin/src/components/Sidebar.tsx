@@ -1,53 +1,96 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import {
   LayoutDashboard,
   Package,
   FolderTree,
   ShoppingBag,
+  Users,
   Settings,
   ExternalLink,
   LogOut,
   Sparkles,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react"
-import { logoutAction } from "@/lib/actions"
 
 const navItems = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
   { name: "Products", href: "/products", icon: Package },
   { name: "Categories", href: "/categories", icon: FolderTree },
   { name: "Orders", href: "/orders", icon: ShoppingBag },
+  { name: "Customers", href: "/customers", icon: Users },
   { name: "Settings", href: "/settings", icon: Settings },
 ]
 
 export default function Sidebar({ adminEmail }: { adminEmail?: string }) {
   const pathname = usePathname()
+  const router = useRouter()
+  const [isCollapsed, setIsCollapsed] = useState(false)
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" })
+      router.push("/login")
+      router.refresh()
+    } catch {
+      window.location.href = "/login"
+    }
+  }
 
   return (
-    <aside className="w-64 bg-white border-r border-slate-200/80 flex flex-col justify-between shrink-0 h-screen sticky top-0 shadow-sm">
+    <aside
+      className={`hidden md:flex flex-col justify-between shrink-0 h-screen sticky top-0 bg-[#121217] border-r border-white/10 transition-all duration-300 z-30 ${
+        isCollapsed ? "w-20" : "w-64"
+      }`}
+    >
       {/* Top Header */}
       <div>
-        <div className="h-16 flex items-center px-6 border-b border-slate-100 gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-600 to-amber-400 flex items-center justify-center text-white font-serif font-black shadow-sm shadow-amber-500/30">
-            TZ
-          </div>
-          <div>
-            <span className="font-serif font-bold text-slate-900 tracking-tight text-base block leading-none">
-              TamZen
-            </span>
-            <span className="text-[10px] font-mono tracking-wider uppercase text-amber-700 font-semibold">
-              Boutique Admin
-            </span>
-          </div>
+        <div className="h-16 flex items-center justify-between px-5 border-b border-white/5">
+          <Link href="/" className="flex items-center gap-3 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#E5C378] to-[#997926] p-[1px] shadow-sm shrink-0">
+              <div className="w-full h-full bg-[#121217] rounded-xl flex items-center justify-center font-serif font-black text-[#E5C378] text-sm">
+                TZ
+              </div>
+            </div>
+            {!isCollapsed && (
+              <div className="truncate">
+                <span className="font-serif font-bold text-[#F5F0E8] tracking-tight text-base block leading-none">
+                  TamZen
+                </span>
+                <span className="text-[10px] font-mono tracking-wider uppercase text-[#D4AF37] font-semibold">
+                  Atelier Admin
+                </span>
+              </div>
+            )}
+          </Link>
+
+          {/* Collapse Toggle */}
+          <button
+            type="button"
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="text-white/40 hover:text-[#D4AF37] p-1.5 rounded-lg hover:bg-white/5 transition-colors shrink-0"
+            title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {isCollapsed ? (
+              <ChevronRight className="h-4 w-4" />
+            ) : (
+              <ChevronLeft className="h-4 w-4" />
+            )}
+          </button>
         </div>
 
-        {/* Navigation Links */}
-        <nav className="p-4 space-y-1.5">
-          <div className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-            Menu
-          </div>
+        {/* Navigation Items */}
+        <nav className="p-3 space-y-1.5">
+          {!isCollapsed && (
+            <div className="px-3 py-1.5 text-[10px] font-mono uppercase tracking-[0.2em] text-[#9CA3AF]/60 font-bold">
+              Navigation
+            </div>
+          )}
+
           {navItems.map((item) => {
             const Icon = item.icon
             const isActive =
@@ -59,58 +102,71 @@ export default function Sidebar({ adminEmail }: { adminEmail?: string }) {
               <Link
                 key={item.name}
                 href={item.href}
-                className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                title={isCollapsed ? item.name : undefined}
+                className={`flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all group ${
                   isActive
-                    ? "bg-amber-50 text-amber-900 font-semibold shadow-sm border border-amber-200/60"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-                }`}
+                    ? "bg-[#D4AF37]/15 text-[#E5C378] font-bold border border-[#D4AF37]/30 shadow-sm shadow-amber-950/20"
+                    : "text-[#9CA3AF] hover:text-[#F5F0E8] hover:bg-white/5"
+                } ${isCollapsed ? "justify-center px-0" : ""}`}
               >
                 <Icon
-                  className={`h-4 w-4 ${
-                    isActive ? "text-amber-600" : "text-slate-400"
+                  className={`h-4 w-4 shrink-0 transition-transform group-hover:scale-110 ${
+                    isActive ? "text-[#E5C378]" : "text-[#9CA3AF]"
                   }`}
                 />
-                <span>{item.name}</span>
+                {!isCollapsed && <span>{item.name}</span>}
               </Link>
             )
           })}
         </nav>
       </div>
 
-      {/* Bottom Section */}
-      <div className="p-4 border-t border-slate-100 space-y-3">
-        {/* View Storefront Link */}
+      {/* Bottom Area: Live Store & Profile */}
+      <div className="p-3 border-t border-white/5 space-y-2">
+        {/* View Live Store */}
         <a
           href="http://localhost:8000/fr"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-between w-full px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-all group"
+          title="View Live Storefront"
+          className={`flex items-center justify-between w-full px-3 py-2.5 rounded-xl text-xs font-semibold text-[#F5F0E8] bg-white/5 hover:bg-[#D4AF37]/10 hover:border-[#D4AF37]/40 border border-white/5 transition-all group ${
+            isCollapsed ? "justify-center px-0" : ""
+          }`}
         >
           <span className="flex items-center gap-2">
-            <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-            <span>View Live Store</span>
+            <Sparkles className="h-3.5 w-3.5 text-[#D4AF37]" />
+            {!isCollapsed && <span>Live Store</span>}
           </span>
-          <ExternalLink className="h-3.5 w-3.5 text-slate-400 group-hover:text-slate-600 transition-colors" />
+          {!isCollapsed && (
+            <ExternalLink className="h-3.5 w-3.5 text-white/40 group-hover:text-[#D4AF37] transition-colors" />
+          )}
         </a>
 
-        {/* User Card & Logout */}
-        <div className="pt-2 flex items-center justify-between px-2">
-          <div className="min-w-0 pr-2">
-            <span className="block text-xs font-semibold text-slate-800 truncate">
-              {adminEmail || "Admin User"}
-            </span>
-            <span className="block text-[10px] text-slate-400">Store Manager</span>
-          </div>
+        {/* User Card */}
+        <div
+          className={`pt-2 flex items-center justify-between px-2 ${
+            isCollapsed ? "justify-center px-0" : ""
+          }`}
+        >
+          {!isCollapsed && (
+            <div className="min-w-0 pr-2">
+              <span className="block text-xs font-bold text-[#F5F0E8] truncate font-serif">
+                {adminEmail?.split("@")[0] || "TamZen"}
+              </span>
+              <span className="block text-[10px] text-[#9CA3AF] truncate font-mono">
+                {adminEmail || "admin@tamzen.shop"}
+              </span>
+            </div>
+          )}
 
-          <form action={logoutAction}>
-            <button
-              type="submit"
-              title="Sign out"
-              className="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-            >
-              <LogOut className="h-4 w-4" />
-            </button>
-          </form>
+          <button
+            type="button"
+            onClick={handleLogout}
+            title="Sign out"
+            className="p-2 rounded-xl text-white/40 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+          >
+            <LogOut className="h-4 w-4" />
+          </button>
         </div>
       </div>
     </aside>
