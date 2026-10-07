@@ -302,27 +302,101 @@ export async function updateOrderStatus(
   })
 }
 
+// Customers
+export async function listCustomers() {
+  const res = await adminFetch<{ customers: any[]; count: number }>(
+    "/admin/customers?limit=100"
+  )
+  return res.data?.customers || []
+}
+
+export async function getCustomer(id: string) {
+  const res = await adminFetch<{ customer: any }>(
+    `/admin/customers/${id}?fields=*orders`
+  )
+  return res.data?.customer || null
+}
+
 // Dashboard metrics
 export async function getDashboardStats() {
-  const [productsRes, ordersRes, categoriesRes] = await Promise.all([
+  const [productsRes, ordersRes, customersRes] = await Promise.all([
     listProducts(),
     listOrders(),
-    listCategories(),
+    listCustomers(),
   ])
 
   const products = productsRes || []
   const orders = ordersRes || []
-  const categories = categoriesRes || []
+  const customers = customersRes || []
 
-  // Calculate total revenue from orders
-  const revenue = orders.reduce((sum: number, o: any) => sum + (o.total || 0), 0)
+  // Unique customers count
+  const customerEmails = new Set(customers.map((c: any) => c.email).filter(Boolean))
+  orders.forEach((o: any) => {
+    const email = o.customer?.email || o.email
+    if (email) customerEmails.add(email)
+  })
+  const totalCustomers = Math.max(customers.length, customerEmails.size)
+
+  // Current month revenue
+  const now = new Date()
+  const currentYear = now.getFullYear()
+  const currentMonth = now.getMonth()
+
+  const monthlyOrders = orders.filter((o: any) => {
+    const d = new Date(o.created_at)
+    return d.getFullYear() === currentYear && d.getMonth() === currentMonth
+  })
+  const monthlyRevenue = (monthlyOrders.length > 0 ? monthlyOrders : orders).reduce(
+    (sum: number, o: any) => sum + (o.total || 0),
+    0
+  )
+  const totalRevenue = orders.reduce((sum: number, o: any) => sum + (o.total || 0), 0)
+
+  // 30-day timeline
+  const daysMap = new Map<
+    string,
+    { date: string; label: string; amount: number; count: number }
+  >()
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date()
+    d.setDate(d.getDate() - i)
+    const key = d.toISOString().split("T")[0]
+    const label = d.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+    daysMap.set(key, { date: key, label, amount: 0, count: 0 })
+  }
+
+  orders.forEach((o: any) => {
+    if (!o.created_at) return
+    const key = new Date(o.created_at).toISOString().split("T")[0]
+    if (daysMap.has(key)) {
+      const entry = daysMap.get(key)!
+      entry.amount += o.total || 0
+      entry.count += 1
+    }
+  })
+  const last30DaysSales = Array.from(daysMap.values())
+
+  // Low stock products (stock <= 25, sorted ascending)
+  const lowStockProducts = products
+    .map((p: any) => {
+      const stock =
+        p.variants?.[0]?.metadata?.stock_quantity ??
+        p.variants?.[0]?.inventory_quantity ??
+        0
+      return { ...p, currentStock: Number(stock) }
+    })
+    .filter((p: any) => p.currentStock <= 25)
+    .sort((a: any, b: any) => a.currentStock - b.currentStock)
+    .slice(0, 6)
 
   return {
     totalProducts: products.length,
     totalOrders: orders.length,
-    totalRevenue: revenue,
-    totalCategories: categories.length,
+    totalCustomers,
+    monthlyRevenue,
+    totalRevenue,
     recentOrders: orders.slice(0, 5),
-    recentProducts: products.slice(0, 5),
+    lowStockProducts,
+    last30DaysSales,
   }
 }
