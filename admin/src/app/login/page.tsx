@@ -1,17 +1,46 @@
 "use client"
 
-import { useActionState, useState } from "react"
-import { loginAction } from "@/lib/actions"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Lock, Mail, ArrowRight, ShieldCheck, Sparkles, Loader2 } from "lucide-react"
 
 export default function LoginPage() {
-  const [state, formAction, isPending] = useActionState(loginAction, null)
+  const router = useRouter()
   const [email, setEmail] = useState("admin@tamzen.shop")
   const [password, setPassword] = useState("supersecret")
+  const [isPending, setIsPending] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleFillDemo = () => {
     setEmail("admin@tamzen.shop")
     setPassword("supersecret")
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsPending(true)
+    setError(null)
+
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok || data.error) {
+        setError(data.error || "Invalid email or password.")
+      } else {
+        router.push("/")
+        router.refresh()
+      }
+    } catch (err: any) {
+      setError(err?.message || "Could not connect to authentication server.")
+    } finally {
+      setIsPending(false)
+    }
   }
 
   return (
@@ -40,14 +69,14 @@ export default function LoginPage() {
             </p>
           </div>
 
-          {state?.error && (
+          {error && (
             <div className="mb-5 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium flex items-start gap-2.5">
               <span className="w-1.5 h-1.5 rounded-full bg-rose-500 mt-1.5 shrink-0" />
-              <span>{state.error}</span>
+              <span>{error}</span>
             </div>
           )}
 
-          <form action={formAction} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label
                 htmlFor="email"
