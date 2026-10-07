@@ -15,6 +15,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   Eye,
+  Flame,
 } from "lucide-react"
 
 export const dynamic = "force-dynamic"
@@ -133,6 +134,67 @@ export default async function DashboardPage() {
                 <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
+          </div>
+        </div>
+
+        {/* Featured & Deals Showcase Card */}
+        <div className="bg-[#121217] rounded-3xl border border-[#D4AF37]/30 p-6 sm:p-7 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 group hover:border-[#D4AF37]/50 transition-colors">
+          <div className="flex items-start sm:items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#D4AF37] to-[#997A15] p-0.5 shadow-lg shadow-[#D4AF37]/20 flex items-center justify-center shrink-0">
+              <div className="w-full h-full bg-[#121217] rounded-[14px] flex items-center justify-center">
+                <Sparkles className="h-6 w-6 text-[#D4AF37]" />
+              </div>
+            </div>
+            <div>
+              <div className="flex items-center gap-2.5">
+                <h3 className="font-serif font-bold text-lg text-[#F5F0E8]">
+                  Homepage Highlights & Flash Deals
+                </h3>
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  Live Sync
+                </span>
+              </div>
+              <p className="text-xs text-[#9CA3AF] mt-1">
+                Curate signature pieces for the homepage rail and configure Deal of the Week flash countdowns
+              </p>
+
+              {/* Status Pills */}
+              <div className="flex flex-wrap items-center gap-2.5 mt-3 text-xs font-mono">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[#F5F0E8]">
+                  <Sparkles className="h-3.5 w-3.5 text-[#D4AF37]" />
+                  <span>
+                    <strong className="text-[#D4AF37]">{stats.highlights?.featured_product_ids?.length || 0}</strong> Featured Pieces
+                  </span>
+                </span>
+
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[#F5F0E8]">
+                  <Flame className="h-3.5 w-3.5 text-amber-400" />
+                  <span>
+                    <strong className="text-amber-400">{stats.highlights?.deal_product_ids?.length || 0}</strong> Deal Pieces
+                  </span>
+                </span>
+
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[#F5F0E8]">
+                  <Clock className="h-3.5 w-3.5 text-sky-400" />
+                  <span>
+                    {stats.highlights?.deal_end_time
+                      ? `Timer Set: ${new Date(stats.highlights.deal_end_time).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`
+                      : "Timer: Always Active"}
+                  </span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 w-full md:w-auto shrink-0">
+            <Link
+              href="/admin/featured"
+              className="flex-1 md:flex-none inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl text-xs font-semibold text-black bg-[#D4AF37] hover:bg-[#E5C158] transition-all shadow-md shadow-[#D4AF37]/20"
+            >
+              <span>Manage Highlights</span>
+              <ArrowRight className="h-4 w-4 text-black" />
+            </Link>
           </div>
         </div>
 

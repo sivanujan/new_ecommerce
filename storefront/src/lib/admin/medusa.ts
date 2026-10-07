@@ -415,17 +415,61 @@ export async function getCustomersWithMetrics() {
   return Array.from(customerMap.values())
 }
 
+// Highlights & Featured Deals
+export async function getAdminHighlights() {
+  const res = await adminFetch<{
+    highlights: {
+      featured_product_ids: string[]
+      deal_product_ids: string[]
+      deal_end_time: string | null
+    }
+    store_id?: string
+  }>("/admin/homepage-highlights")
+
+  return (
+    res.data?.highlights || {
+      featured_product_ids: [],
+      deal_product_ids: [],
+      deal_end_time: null,
+    }
+  )
+}
+
+export async function updateAdminHighlights(payload: {
+  featured_product_ids?: string[]
+  deal_product_ids?: string[]
+  deal_end_time?: string | null
+}) {
+  return await adminFetch<{
+    message: string
+    highlights: {
+      featured_product_ids: string[]
+      deal_product_ids: string[]
+      deal_end_time: string | null
+    }
+  }>("/admin/homepage-highlights", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  })
+}
+
 // Dashboard metrics
 export async function getDashboardStats() {
-  const [productsRes, ordersRes, customersRes] = await Promise.all([
+  const [productsRes, ordersRes, customersRes, highlightsRes] = await Promise.all([
     listProducts(),
     listOrders(),
     listCustomers(),
+    getAdminHighlights(),
   ])
 
   const products = productsRes || []
   const orders = ordersRes || []
   const customers = customersRes || []
+  const highlights = highlightsRes || {
+    featured_product_ids: [],
+    deal_product_ids: [],
+    deal_end_time: null,
+  }
 
   const customerEmails = new Set(customers.map((c: any) => c.email).filter(Boolean))
   orders.forEach((o: any) => {
@@ -492,5 +536,6 @@ export async function getDashboardStats() {
     recentOrders: orders.slice(0, 5),
     lowStockProducts,
     last30DaysSales,
+    highlights,
   }
 }

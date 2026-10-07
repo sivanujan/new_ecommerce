@@ -1,7 +1,7 @@
 "use server"
 
 import { cookies } from "next/headers"
-import { revalidatePath } from "next/cache"
+import { revalidatePath, revalidateTag } from "next/cache"
 import { redirect } from "next/navigation"
 import {
   createProduct,
@@ -13,6 +13,7 @@ import {
   updateOrderStatus,
   updateStore,
   updateCurrentUser,
+  updateAdminHighlights,
 } from "./medusa"
 
 const rawBackendUrl = process.env.MEDUSA_BACKEND_URL || "http://localhost:9000"
@@ -355,4 +356,25 @@ export async function updateAdminPasswordAction(formData: FormData) {
 
   revalidatePath("/admin/settings")
   return { success: true }
+}
+
+export async function updateHomepageHighlightsAction(payload: {
+  featured_product_ids: string[]
+  deal_product_ids: string[]
+  deal_end_time: string | null
+}) {
+  const res = await updateAdminHighlights(payload)
+  if (res.error) {
+    return { error: res.error }
+  }
+
+  revalidatePath("/admin/featured")
+  revalidatePath("/admin")
+  revalidatePath("/[countryCode]", "page")
+  try {
+    revalidateTag("homepage-highlights")
+  } catch {
+    // Ignore in dev edge contexts if any
+  }
+  return { success: true, highlights: res.data?.highlights }
 }
