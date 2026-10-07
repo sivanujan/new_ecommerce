@@ -1,6 +1,9 @@
 import { cookies } from "next/headers"
 
-const rawBackendUrl = process.env.MEDUSA_BACKEND_URL || "http://localhost:9000"
+let rawBackendUrl = (process.env.MEDUSA_BACKEND_URL || "http://localhost:9000").replace("localhost", "127.0.0.1").trim()
+if (!rawBackendUrl.startsWith("http://") && !rawBackendUrl.startsWith("https://")) {
+  rawBackendUrl = `https://${rawBackendUrl}`
+}
 const BACKEND_URL = rawBackendUrl.replace(/\/+$/, "")
 const DEFAULT_SALES_CHANNEL_ID = "sc_01M4AZ8B99DQHGQ3RFP2YR865W"
 

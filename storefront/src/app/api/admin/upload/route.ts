@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
 
-const rawBackendUrl = process.env.MEDUSA_BACKEND_URL || "http://localhost:9000"
+let rawBackendUrl = (process.env.MEDUSA_BACKEND_URL || "http://localhost:9000").replace("localhost", "127.0.0.1").trim()
+if (!rawBackendUrl.startsWith("http://") && !rawBackendUrl.startsWith("https://")) {
+  rawBackendUrl = `https://${rawBackendUrl}`
+}
 const BACKEND_URL = rawBackendUrl.replace(/\/+$/, "")
 
 export async function POST(req: NextRequest) {
