@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import {
   ArrowLeft,
   Package,
@@ -10,31 +11,59 @@ import {
   CheckCircle2,
   Clock,
   Truck,
+  XCircle,
   AlertCircle,
   Loader2,
+  CreditCard,
+  Hash,
+  Copy,
+  ExternalLink,
+  ShieldCheck,
+  Send,
+  Ban,
 } from "lucide-react"
 import { updateOrderStatusAction } from "@/lib/actions"
+import { useToast } from "@/components/ToastProvider"
 
 export default function OrderDetailClient({ order }: { order: any }) {
-  const currentStatus = order.metadata?.order_status || order.status || "Processing"
-  const [status, setStatus] = useState(currentStatus)
-  const [isUpdating, setIsUpdating] = useState(false)
-  const [message, setMessage] = useState<string | null>(null)
+  const router = useRouter()
+  const toast = useToast()
 
-  const handleStatusChange = async (newStatus: string) => {
+  const currentStatus =
+    order.metadata?.order_status ||
+    order.fulfillment_status ||
+    order.status ||
+    "Processing"
+
+  const [status, setStatus] = useState(currentStatus)
+  const [trackingNumber, setTrackingNumber] = useState(
+    order.metadata?.tracking_number || ""
+  )
+  const [isUpdating, setIsUpdating] = useState(false)
+
+  // Modals for actions
+  const [showShipModal, setShowShipModal] = useState(false)
+  const [showCancelModal, setShowCancelModal] = useState(false)
+  const [shipTrackingInput, setShipTrackingInput] = useState(trackingNumber)
+
+  const handleUpdateStatus = async (newStatus: string, trackNum?: string) => {
     setIsUpdating(true)
-    setMessage(null)
     try {
-      const res = await updateOrderStatusAction(order.id, newStatus)
+      const res = await updateOrderStatusAction(order.id, newStatus, trackNum)
       if (res.error) {
-        setMessage(res.error)
+        toast.error(res.error)
       } else {
         setStatus(newStatus)
-        setMessage("Order status updated successfully!")
-        setTimeout(() => setMessage(null), 3000)
+        if (trackNum !== undefined) {
+          setTrackingNumber(trackNum)
+        }
+        toast.success(`Order marked as "${newStatus}"!`)
+        setShowShipModal(false)
+        setShowCancelModal(false)
+        router.refresh()
       }
     } catch (err: any) {
-      setMessage(err?.message || "Failed to update status")
+      toast.error(err?.message || "Failed to update order status")
     } finally {
       setIsUpdating(false)
     }
@@ -50,160 +79,441 @@ export default function OrderDetailClient({ order }: { order: any }) {
     minute: "2-digit",
   })
 
+  const isDelivered =
+    status.toLowerCase().includes("deliv") ||
+    status.toLowerCase().includes("complet")
+  const isShipped = status.toLowerCase().includes("ship")
+  const isCancelled = status.toLowerCase().includes("cancel")
+
+  // Copy tracking helper
+  const copyTracking = () => {
+    if (!trackingNumber) return
+    navigator.clipboard.writeText(trackingNumber)
+    toast.success("Tracking number copied to clipboard!")
+  }
+
   return (
-    <div className="space-y-6">
-      {/* Top back navigation & status badge */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div className="space-y-8">
+      {/* Top Header & Navigation */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-2">
         <Link
           href="/orders"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors"
+          className="inline-flex items-center gap-2 text-xs font-medium text-[#9CA3AF] hover:text-[#D4AF37] transition-colors"
         >
-          <ArrowLeft className="h-3.5 w-3.5" />
+          <ArrowLeft className="h-4 w-4" />
           <span>Back to All Orders</span>
         </Link>
 
-        {/* Status update widget */}
-        <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm">
-          <span className="text-xs font-semibold text-slate-600">Update Status:</span>
-          <select
-            value={status}
-            disabled={isUpdating}
-            onChange={(e) => handleStatusChange(e.target.value)}
-            className="text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 focus:outline-none focus:border-amber-500"
-          >
-            <option value="Processing">Processing</option>
-            <option value="Shipped">Shipped</option>
-            <option value="Delivered">Delivered</option>
-            <option value="Completed">Completed</option>
-            <option value="Cancelled">Cancelled</option>
-          </select>
-          {isUpdating && <Loader2 className="h-3.5 w-3.5 animate-spin text-amber-600" />}
+        {/* Action Buttons: Mark as Shipped, Mark as Delivered, Cancel */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          {/* Mark as Shipped Button */}
+          {!isShipped && !isDelivered && !isCancelled && (
+            <button
+              type="button"
+              disabled={isUpdating}
+              onClick={() => setShowShipModal(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-black bg-[#D4AF37] hover:bg-[#E5C158] transition-all shadow-md shadow-[#D4AF37]/20 disabled:opacity-50"
+            >
+              <Truck className="h-4 w-4 text-black" />
+              <span>Mark as Shipped</span>
+            </button>
+          )}
+
+          {/* Mark as Delivered Button */}
+          {isShipped && !isDelivered && !isCancelled && (
+            <button
+              type="button"
+              disabled={isUpdating}
+              onClick={() => handleUpdateStatus("Delivered")}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-emerald-950 bg-emerald-400 hover:bg-emerald-300 transition-all shadow-md disabled:opacity-50"
+            >
+              <CheckCircle2 className="h-4 w-4" />
+              <span>Mark as Delivered</span>
+            </button>
+          )}
+
+          {/* Cancel Order Button */}
+          {!isCancelled && !isDelivered && (
+            <button
+              type="button"
+              disabled={isUpdating}
+              onClick={() => setShowCancelModal(true)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 transition-colors disabled:opacity-50"
+            >
+              <Ban className="h-3.5 w-3.5" />
+              <span>Cancel Order</span>
+            </button>
+          )}
+
+          {/* Re-open / Mark as Processing if cancelled */}
+          {isCancelled && (
+            <button
+              type="button"
+              disabled={isUpdating}
+              onClick={() => handleUpdateStatus("Processing")}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-[#F5F0E8] bg-white/5 hover:bg-white/10 border border-white/10 transition-colors"
+            >
+              <Clock className="h-3.5 w-3.5 text-[#D4AF37]" />
+              <span>Reactivate Order</span>
+            </button>
+          )}
         </div>
       </div>
 
-      {message && (
-        <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2">
-          <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-          <span>{message}</span>
-        </div>
-      )}
+      {/* Main Order Overview Card */}
+      <div className="bg-[#121217] rounded-3xl border border-white/10 p-6 sm:p-7 shadow-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+        <div>
+          <div className="flex items-center gap-3">
+            <h2 className="font-serif font-bold text-2xl text-[#F5F0E8]">
+              Order #{order.display_id || order.id.slice(-8)}
+            </h2>
+            <span
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${
+                isDelivered
+                  ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
+                  : isShipped
+                  ? "bg-sky-500/15 text-sky-400 border-sky-500/30"
+                  : isCancelled
+                  ? "bg-rose-500/15 text-rose-400 border-rose-500/30"
+                  : "bg-amber-500/15 text-amber-400 border-amber-500/30"
+              }`}
+            >
+              {isDelivered ? (
+                <CheckCircle2 className="h-3.5 w-3.5" />
+              ) : isShipped ? (
+                <Truck className="h-3.5 w-3.5" />
+              ) : isCancelled ? (
+                <XCircle className="h-3.5 w-3.5" />
+              ) : (
+                <Clock className="h-3.5 w-3.5" />
+              )}
+              <span>{status}</span>
+            </span>
+          </div>
 
-      {/* Main Grid: Details */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left 2 Cols: Order Items */}
+          <p className="text-xs text-[#9CA3AF] mt-1.5 font-mono">
+            Placed on {dateFormatted} via TamZen Online Boutique
+          </p>
+        </div>
+
+        <div className="text-left sm:text-right">
+          <span className="text-xs uppercase tracking-wider text-[#9CA3AF] block font-semibold">
+            Order Total
+          </span>
+          <span className="font-serif font-bold text-2xl text-[#D4AF37] block mt-0.5">
+            €{(order.total || 0).toFixed(2)} EUR
+          </span>
+          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-400 mt-1">
+            <ShieldCheck className="h-3.5 w-3.5" />
+            <span>Payment Verified</span>
+          </span>
+        </div>
+      </div>
+
+      {/* Grid: 2 columns on desktop */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left 2 Columns: Items & Shipment */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-4">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-              <div>
-                <span className="text-xs text-slate-400 font-mono">Order Identifier</span>
-                <h2 className="text-lg font-bold text-slate-900 font-mono">
-                  #{order.display_id || order.id}
-                </h2>
-              </div>
-              <span className="text-xs text-slate-500">{dateFormatted}</span>
+          {/* Order Items Card */}
+          <div className="bg-[#121217] rounded-3xl border border-white/10 p-6 sm:p-7 shadow-xl space-y-6">
+            <div className="flex items-center justify-between border-b border-white/5 pb-4">
+              <h3 className="font-serif font-bold text-lg text-[#F5F0E8] flex items-center gap-2">
+                <Package className="h-5 w-5 text-[#D4AF37]" />
+                <span>Purchased Jewelry</span>
+              </h3>
+              <span className="text-xs text-[#9CA3AF]">
+                {order.items?.length || 0} {(order.items?.length || 0) === 1 ? "piece" : "pieces"}
+              </span>
             </div>
 
-            {/* Line Items */}
-            <div className="divide-y divide-slate-100">
-              {(order.items || []).map((item: any) => (
-                <div key={item.id} className="py-4 flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center">
-                      {item.thumbnail ? (
-                        <img src={item.thumbnail} alt={item.title} className="w-full h-full object-cover" />
-                      ) : (
-                        <Package className="h-5 w-5 text-slate-400" />
-                      )}
-                    </div>
-                    <div>
-                      <span className="font-semibold text-slate-900 text-sm block">
+            <div className="divide-y divide-white/5">
+              {(order.items || []).map((item: any) => {
+                const itemImg = item.thumbnail
+                const unitPrice = item.unit_price ? (item.unit_price).toFixed(2) : "0.00"
+                const itemTotal = item.total ? (item.total).toFixed(2) : (item.unit_price * (item.quantity || 1)).toFixed(2)
+
+                return (
+                  <div
+                    key={item.id}
+                    className="py-4 first:pt-0 last:pb-0 flex items-center gap-4"
+                  >
+                    {itemImg ? (
+                      <img
+                        src={itemImg}
+                        alt=""
+                        className="w-16 h-16 rounded-2xl object-cover border border-white/10 flex-shrink-0"
+                      />
+                    ) : (
+                      <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white/30 flex-shrink-0">
+                        <Package className="h-7 w-7" />
+                      </div>
+                    )}
+
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-medium text-sm text-[#F5F0E8] truncate">
                         {item.title}
-                      </span>
-                      <span className="text-xs text-slate-400">
-                        Qty: {item.quantity} × €{((item.unit_price || 0) / 1).toFixed(2)}
+                      </h4>
+                      {item.variant_title && (
+                        <p className="text-xs text-[#9CA3AF] mt-0.5">
+                          Option: <span className="text-[#D4AF37]">{item.variant_title}</span>
+                        </p>
+                      )}
+                      <p className="text-xs text-[#9CA3AF]/60 font-mono mt-1">
+                        Qty: {item.quantity || 1} × €{unitPrice}
+                      </p>
+                    </div>
+
+                    <div className="text-right">
+                      <span className="font-serif font-bold text-sm text-[#F5F0E8]">
+                        €{itemTotal}
                       </span>
                     </div>
                   </div>
+                )
+              })}
+            </div>
+          </div>
 
-                  <span className="font-bold text-slate-900 text-sm">
-                    €{((item.quantity || 1) * (item.unit_price || 0)).toFixed(2)}
+          {/* Shipment & Tracking Card */}
+          {trackingNumber && (
+            <div className="bg-[#121217] rounded-3xl border border-[#D4AF37]/30 p-6 sm:p-7 shadow-xl space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Truck className="h-5 w-5 text-[#D4AF37]" />
+                  <h4 className="font-serif font-bold text-base text-[#F5F0E8]">
+                    Tracking Information
+                  </h4>
+                </div>
+                <span className="text-xs font-semibold uppercase tracking-wider text-[#D4AF37] bg-[#D4AF37]/10 px-2.5 py-1 rounded-full border border-[#D4AF37]/30">
+                  Shipped
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between p-3.5 rounded-2xl bg-[#0D0D12] border border-white/10">
+                <div className="flex items-center gap-3">
+                  <Hash className="h-4 w-4 text-[#9CA3AF]" />
+                  <span className="font-mono text-sm text-[#F5F0E8] font-bold">
+                    {trackingNumber}
                   </span>
                 </div>
-              ))}
-            </div>
 
-            {/* Total breakdown */}
-            <div className="pt-4 border-t border-slate-100 space-y-2 text-xs text-slate-600">
-              <div className="flex justify-between">
-                <span>Subtotal</span>
-                <span className="font-semibold text-slate-800">
-                  €{(order.item_subtotal || order.total || 0).toFixed(2)}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span>Standard Express Shipping (France / EU)</span>
-                <span className="font-semibold text-emerald-600">
-                  {order.shipping_total ? `€${order.shipping_total.toFixed(2)}` : "Free"}
-                </span>
-              </div>
-              <div className="flex justify-between pt-2 border-t border-slate-100 text-sm font-bold text-slate-900">
-                <span>Total Amount Paid (TVA Inclusive)</span>
-                <span className="text-base text-amber-700">
-                  €{(order.total || 0).toFixed(2)}
-                </span>
+                <button
+                  type="button"
+                  onClick={copyTracking}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-[#F5F0E8] transition-colors"
+                >
+                  <Copy className="h-3.5 w-3.5" />
+                  <span>Copy</span>
+                </button>
               </div>
             </div>
-          </div>
+          )}
         </div>
 
-        {/* Right Col: Customer & Shipping Information */}
+        {/* Right 1 Column: Customer, Shipping Address, Payment Breakdown */}
         <div className="space-y-6">
           {/* Customer Card */}
-          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-3">
-            <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
-              <User className="h-4 w-4 text-amber-600" />
-              <span>Customer Details</span>
-            </h3>
+          <div className="bg-[#121217] rounded-3xl border border-white/10 p-6 shadow-xl space-y-4">
+            <div className="flex items-center gap-2 border-b border-white/5 pb-3">
+              <User className="h-4 w-4 text-[#D4AF37]" />
+              <h4 className="font-serif font-bold text-base text-[#F5F0E8]">
+                Collector Details
+              </h4>
+            </div>
 
-            <div className="text-xs space-y-1.5 text-slate-600">
-              <p className="font-semibold text-slate-800 text-sm">
-                {shipping.first_name || customer.first_name
-                  ? `${shipping.first_name || customer.first_name} ${shipping.last_name || customer.last_name || ""}`
-                  : "Customer"}
-              </p>
-              <p className="font-mono text-slate-500">
-                {customer.email || order.email || "No email"}
-              </p>
-              {shipping.phone && <p>Tel: {shipping.phone}</p>}
+            <div className="space-y-2 text-xs">
+              <div>
+                <span className="text-[#9CA3AF] block text-[11px] uppercase tracking-wider font-semibold">
+                  Full Name
+                </span>
+                <span className="font-medium text-sm text-[#F5F0E8]">
+                  {customer.first_name
+                    ? `${customer.first_name} ${customer.last_name || ""}`
+                    : shipping.first_name
+                    ? `${shipping.first_name} ${shipping.last_name || ""}`
+                    : "Guest Collector"}
+                </span>
+              </div>
+
+              <div>
+                <span className="text-[#9CA3AF] block text-[11px] uppercase tracking-wider font-semibold">
+                  Email
+                </span>
+                <a
+                  href={`mailto:${customer.email || order.email}`}
+                  className="font-mono text-xs text-[#D4AF37] hover:underline"
+                >
+                  {customer.email || order.email || "No email provided"}
+                </a>
+              </div>
+
+              {shipping.phone && (
+                <div>
+                  <span className="text-[#9CA3AF] block text-[11px] uppercase tracking-wider font-semibold">
+                    Phone
+                  </span>
+                  <span className="font-mono text-xs text-[#F5F0E8]">
+                    {shipping.phone}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Delivery Address Card */}
-          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-3">
-            <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-amber-600" />
-              <span>Shipping Address</span>
-            </h3>
+          {/* Shipping Address Card */}
+          <div className="bg-[#121217] rounded-3xl border border-white/10 p-6 shadow-xl space-y-4">
+            <div className="flex items-center gap-2 border-b border-white/5 pb-3">
+              <MapPin className="h-4 w-4 text-[#D4AF37]" />
+              <h4 className="font-serif font-bold text-base text-[#F5F0E8]">
+                Shipping Address
+              </h4>
+            </div>
 
-            <div className="text-xs text-slate-600 leading-relaxed">
-              {shipping.address_1 ? (
-                <>
-                  <p>{shipping.address_1}</p>
-                  {shipping.address_2 && <p>{shipping.address_2}</p>}
-                  <p>
-                    {shipping.postal_code} {shipping.city}
-                  </p>
-                  <p className="uppercase font-semibold text-slate-800 mt-1">
-                    {shipping.country_code || "France"}
-                  </p>
-                </>
-              ) : (
-                <p className="text-slate-400 italic">No delivery address provided.</p>
+            <div className="text-xs text-[#F5F0E8] space-y-1 leading-relaxed">
+              <p className="font-semibold">
+                {shipping.first_name} {shipping.last_name}
+              </p>
+              <p className="text-[#9CA3AF]">{shipping.address_1}</p>
+              {shipping.address_2 && (
+                <p className="text-[#9CA3AF]">{shipping.address_2}</p>
               )}
+              <p className="text-[#9CA3AF]">
+                {shipping.postal_code} {shipping.city}
+              </p>
+              <p className="font-semibold uppercase tracking-wider text-[#D4AF37]">
+                {shipping.country_code}
+              </p>
+            </div>
+          </div>
+
+          {/* Payment & Financial Breakdown Card */}
+          <div className="bg-[#121217] rounded-3xl border border-white/10 p-6 shadow-xl space-y-4">
+            <div className="flex items-center gap-2 border-b border-white/5 pb-3">
+              <CreditCard className="h-4 w-4 text-[#D4AF37]" />
+              <h4 className="font-serif font-bold text-base text-[#F5F0E8]">
+                Payment Summary
+              </h4>
+            </div>
+
+            <div className="space-y-2 text-xs">
+              <div className="flex justify-between text-[#9CA3AF]">
+                <span>Items Subtotal</span>
+                <span className="text-[#F5F0E8] font-mono">
+                  €{(order.item_subtotal || order.subtotal || order.total || 0).toFixed(2)}
+                </span>
+              </div>
+
+              <div className="flex justify-between text-[#9CA3AF]">
+                <span>Insured Luxury Shipping</span>
+                <span className="text-emerald-400 font-medium">Free</span>
+              </div>
+
+              <div className="flex justify-between text-[#9CA3AF]">
+                <span>Applicable VAT</span>
+                <span className="text-[#F5F0E8] font-mono">Included</span>
+              </div>
+
+              <div className="pt-2 border-t border-white/5 flex justify-between items-baseline font-bold">
+                <span className="text-xs text-[#F5F0E8]">Total</span>
+                <span className="font-serif text-lg text-[#D4AF37]">
+                  €{(order.total || 0).toFixed(2)} EUR
+                </span>
+              </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Mark as Shipped Modal */}
+      {showShipModal && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#121217] rounded-3xl max-w-md w-full p-6 sm:p-7 border border-white/10 shadow-2xl space-y-5">
+            <div className="w-12 h-12 rounded-2xl bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] flex items-center justify-center mx-auto">
+              <Truck className="h-6 w-6" />
+            </div>
+
+            <div className="text-center">
+              <h3 className="font-serif font-bold text-lg text-[#F5F0E8]">
+                Ship Order #{order.display_id || order.id.slice(-6)}
+              </h3>
+              <p className="text-xs text-[#9CA3AF] mt-1 leading-relaxed">
+                Add an optional carrier tracking number for the customer package.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-[#9CA3AF]">
+                Tracking Number <span className="text-xs font-normal lowercase text-[#9CA3AF]/60">(optional)</span>
+              </label>
+              <input
+                type="text"
+                value={shipTrackingInput}
+                onChange={(e) => setShipTrackingInput(e.target.value)}
+                placeholder="e.g. DHL-984729103 or LP-82739182FR"
+                className="w-full px-4 py-3 rounded-2xl bg-[#0D0D12] border border-white/10 text-sm text-[#F5F0E8] placeholder-white/20 focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none font-mono"
+              />
+            </div>
+
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowShipModal(false)}
+                className="flex-1 py-3 rounded-2xl text-xs font-semibold text-[#F5F0E8] bg-white/5 hover:bg-white/10 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isUpdating}
+                onClick={() => handleUpdateStatus("Shipped", shipTrackingInput)}
+                className="flex-1 py-3 rounded-2xl text-xs font-semibold text-black bg-[#D4AF37] hover:bg-[#E5C158] transition-all shadow-lg shadow-[#D4AF37]/20 flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {isUpdating && <Loader2 className="h-4 w-4 animate-spin text-black" />}
+                <span>Confirm Shipment</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cancel Order Modal */}
+      {showCancelModal && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#121217] rounded-3xl max-w-sm w-full p-6 border border-white/10 shadow-2xl space-y-4 text-center">
+            <div className="w-12 h-12 rounded-2xl bg-rose-950/50 border border-rose-500/30 text-rose-400 flex items-center justify-center mx-auto">
+              <Ban className="h-6 w-6" />
+            </div>
+
+            <div>
+              <h3 className="font-serif font-bold text-lg text-[#F5F0E8]">
+                Cancel Order #{order.display_id || order.id.slice(-6)}?
+              </h3>
+              <p className="text-xs text-[#9CA3AF] mt-1 leading-relaxed">
+                Are you sure you want to cancel this order? This will mark the order as Cancelled in the management system.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowCancelModal(false)}
+                className="flex-1 py-2.5 rounded-xl text-xs font-semibold text-[#F5F0E8] bg-white/5 hover:bg-white/10 transition-colors"
+              >
+                Keep Order
+              </button>
+              <button
+                type="button"
+                disabled={isUpdating}
+                onClick={() => handleUpdateStatus("Cancelled")}
+                className="flex-1 py-2.5 rounded-xl text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 shadow-md transition-colors flex items-center justify-center gap-1.5 disabled:opacity-60"
+              >
+                {isUpdating && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                <span>Cancel Order</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

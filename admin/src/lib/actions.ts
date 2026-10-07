@@ -249,12 +249,17 @@ export async function deleteCategoryAction(id: string) {
   return { success: true }
 }
 
-export async function updateOrderStatusAction(orderId: string, status: string) {
-  const result = await updateOrderStatus(orderId, status)
+export async function updateOrderStatusAction(
+  orderId: string,
+  status: string,
+  trackingNumber?: string
+) {
+  const result = await updateOrderStatus(orderId, status, trackingNumber)
   if (result.error) {
     return { error: result.error }
   }
   revalidatePath(`/orders/${orderId}`)
   revalidatePath("/orders")
+  revalidatePath("/")
   return { success: true }
 }

@@ -287,13 +287,18 @@ export async function getOrder(id: string) {
   return res.data?.order || null
 }
 
-export async function updateOrderStatus(id: string, status: string) {
-  // Save order status in metadata or archive/cancel
+export async function updateOrderStatus(
+  id: string,
+  status: string,
+  trackingNumber?: string
+) {
+  const metadata: any = { order_status: status }
+  if (trackingNumber) {
+    metadata.tracking_number = trackingNumber
+  }
   return adminFetch(`/admin/orders/${id}`, {
     method: "POST",
-    body: JSON.stringify({
-      metadata: { order_status: status },
-    }),
+    body: JSON.stringify({ metadata }),
   })
 }
 
