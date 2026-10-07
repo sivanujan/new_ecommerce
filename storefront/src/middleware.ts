@@ -117,6 +117,32 @@ async function getCountryCode(
  * Middleware to handle region selection and onboarding status.
  */
 export async function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname
+
+  // 1. Static assets bypass
+  if (pathname.includes(".")) {
+    return NextResponse.next()
+  }
+
+  // 2. Admin Login Route (/admin-login) - never redirect to /fr/admin-login
+  if (pathname === "/admin-login" || pathname === "/admin-login/") {
+    const adminToken = request.cookies.get("tamzen_admin_token")?.value
+    if (adminToken) {
+      return NextResponse.redirect(new URL("/admin", request.url))
+    }
+    return NextResponse.next()
+  }
+
+  // 3. Protected Admin Routes (/admin and /admin/*) - never redirect to /fr/admin...
+  if (pathname === "/admin" || pathname.startsWith("/admin/")) {
+    const adminToken = request.cookies.get("tamzen_admin_token")?.value
+    if (!adminToken) {
+      // Customer tokens or no token -> redirect to /admin-login
+      return NextResponse.redirect(new URL("/admin-login", request.url))
+    }
+    return NextResponse.next()
+  }
+
   let redirectUrl = request.nextUrl.href
 
   let response = NextResponse.redirect(redirectUrl, 307)
