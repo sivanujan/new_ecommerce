@@ -197,12 +197,17 @@ export async function deleteProductAction(id: string) {
 export async function createCategoryAction(formData: FormData) {
   const name = formData.get("name")?.toString().trim()
   const description = formData.get("description")?.toString().trim()
+  const imageUrl = formData.get("imageUrl")?.toString().trim()
 
   if (!name) {
     return { error: "Category name is required." }
   }
 
-  const result = await createCategory({ name, description })
+  const result = await createCategory({
+    name,
+    description,
+    imageUrl: imageUrl || undefined,
+  })
   if (result.error) {
     return { error: result.error }
   }
@@ -215,17 +220,23 @@ export async function createCategoryAction(formData: FormData) {
 export async function updateCategoryAction(id: string, formData: FormData) {
   const name = formData.get("name")?.toString().trim()
   const description = formData.get("description")?.toString().trim()
+  const imageUrl = formData.get("imageUrl")?.toString().trim()
 
   if (!name) {
     return { error: "Category name is required." }
   }
 
-  const result = await updateCategory(id, { name, description })
+  const result = await updateCategory(id, {
+    name,
+    description,
+    imageUrl: imageUrl !== undefined ? imageUrl : undefined,
+  })
   if (result.error) {
     return { error: result.error }
   }
 
   revalidatePath("/categories")
+  revalidatePath("/products")
   return { success: true }
 }
 

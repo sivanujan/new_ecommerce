@@ -72,27 +72,35 @@ export async function listCategories() {
   return res.data?.product_categories || []
 }
 
-export async function createCategory(data: { name: string; description?: string }) {
+export async function createCategory(data: { name: string; description?: string; imageUrl?: string }) {
   const handle = data.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
+  const payload: any = {
+    name: data.name,
+    description: data.description || "",
+    handle,
+    is_active: true,
+    is_internal: false,
+  }
+  if (data.imageUrl) {
+    payload.metadata = { image_url: data.imageUrl }
+  }
   return adminFetch("/admin/product-categories", {
     method: "POST",
-    body: JSON.stringify({
-      name: data.name,
-      description: data.description || "",
-      handle,
-      is_active: true,
-      is_internal: false,
-    }),
+    body: JSON.stringify(payload),
   })
 }
 
-export async function updateCategory(id: string, data: { name: string; description?: string }) {
+export async function updateCategory(id: string, data: { name: string; description?: string; imageUrl?: string }) {
+  const payload: any = {
+    name: data.name,
+    description: data.description || "",
+  }
+  if (data.imageUrl !== undefined) {
+    payload.metadata = { image_url: data.imageUrl }
+  }
   return adminFetch(`/admin/product-categories/${id}`, {
     method: "POST",
-    body: JSON.stringify({
-      name: data.name,
-      description: data.description || "",
-    }),
+    body: JSON.stringify(payload),
   })
 }
 

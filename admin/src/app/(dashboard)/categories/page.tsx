@@ -1,21 +1,35 @@
 import Navbar from "@/components/Navbar"
 import CategoriesClient from "@/components/CategoriesClient"
-import { listCategories } from "@/lib/medusa"
+import { listCategories, listProducts } from "@/lib/medusa"
 
 export const dynamic = "force-dynamic"
 
 export default async function CategoriesPage() {
-  const categories = await listCategories()
+  const [categories, products] = await Promise.all([
+    listCategories(),
+    listProducts(),
+  ])
+
+  // Compute product counts for each category
+  const categoriesWithCounts = categories.map((cat: any) => {
+    const count = products.filter((p: any) =>
+      p.categories?.some((c: any) => c.id === cat.id)
+    ).length
+    return {
+      ...cat,
+      productCount: count,
+    }
+  })
 
   return (
     <div>
       <Navbar
-        title="Categories"
-        subtitle="Manage product collections and taxonomy"
+        title="Collections & Categories"
+        subtitle="Organize jewelry pieces into curated storefront categories"
       />
 
-      <div className="p-8 max-w-7xl mx-auto">
-        <CategoriesClient initialCategories={categories} />
+      <div className="p-6 sm:p-8 max-w-7xl mx-auto">
+        <CategoriesClient initialCategories={categoriesWithCounts} />
       </div>
     </div>
   )
