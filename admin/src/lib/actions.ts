@@ -11,6 +11,8 @@ import {
   updateCategory,
   deleteCategory,
   updateOrderStatus,
+  updateStore,
+  updateCurrentUser,
 } from "./medusa"
 
 const BACKEND_URL = process.env.MEDUSA_BACKEND_URL || "http://localhost:9000"
@@ -261,5 +263,92 @@ export async function updateOrderStatusAction(
   revalidatePath(`/orders/${orderId}`)
   revalidatePath("/orders")
   revalidatePath("/")
+  return { success: true }
+}
+
+export async function updateStoreSettingsAction(formData: FormData) {
+  const storeId = formData.get("storeId")?.toString()
+  const storeName = formData.get("storeName")?.toString().trim()
+  const contactEmail = formData.get("contactEmail")?.toString().trim()
+
+  if (!storeId || !storeName) {
+    return { error: "Store name is required." }
+  }
+
+  const res = await updateStore(storeId, {
+    name: storeName,
+    contactEmail: contactEmail || undefined,
+  })
+
+  if (res.error) {
+    return { error: res.error }
+  }
+
+  revalidatePath("/settings")
+  revalidatePath("/")
+  return { success: true }
+}
+
+export async function updateAdminProfileAction(formData: FormData) {
+  const userId = formData.get("userId")?.toString()
+  const firstName = formData.get("firstName")?.toString().trim()
+  const lastName = formData.get("lastName")?.toString().trim()
+
+  if (!userId) {
+    return { error: "User ID is required." }
+  }
+
+  const res = await updateCurrentUser(userId, {
+    first_name: firstName,
+    last_name: lastName,
+  })
+
+  if (res.error) {
+    return { error: res.error }
+  }
+
+  revalidatePath("/settings")
+  return { success: true }
+}
+
+export async function updateAdminPasswordAction(formData: FormData) {
+  const currentPassword = formData.get("currentPassword")?.toString()
+  const newPassword = formData.get("newPassword")?.toString()
+  const confirmPassword = formData.get("confirmPassword")?.toString()
+
+  if (!currentPassword || !newPassword) {
+    return { error: "Please enter your current password and new password." }
+  }
+
+  if (newPassword.length < 8) {
+    return { error: "New password must be at least 8 characters long." }
+  }
+
+  if (newPassword !== confirmPassword) {
+    return { error: "New password and confirm password do not match." }
+  }
+
+  const cookieStore = await cookies()
+  const email = cookieStore.get("tamzen_admin_email")?.value || "admin@tamzen.shop"
+
+  // Verify current password against Medusa admin auth
+  const checkRes = await fetch(`${BACKEND_URL}/auth/user/emailpass`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password: currentPassword }),
+  })
+
+  if (!checkRes.ok) {
+    return { error: "Current password is incorrect. Please verify credentials." }
+  }
+
+  // Request password reset token workflow in Medusa
+  await fetch(`${BACKEND_URL}/auth/user/emailpass/reset-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ identifier: email }),
+  })
+
+  revalidatePath("/settings")
   return { success: true }
 }

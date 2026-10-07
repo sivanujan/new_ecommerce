@@ -66,6 +66,42 @@ export async function getDefaultSalesChannels(): Promise<{ id: string; name: str
   return res.data?.sales_channels || []
 }
 
+// Stores & Settings
+export async function getStore() {
+  const res = await adminFetch<{ stores: any[] }>("/admin/stores")
+  return res.data?.stores?.[0] || null
+}
+
+export async function updateStore(
+  id: string,
+  data: { name?: string; contactEmail?: string }
+) {
+  const payload: any = {}
+  if (data.name) payload.name = data.name
+  if (data.contactEmail !== undefined) {
+    payload.metadata = { contact_email: data.contactEmail }
+  }
+  return adminFetch(`/admin/stores/${id}`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  })
+}
+
+export async function getCurrentUser() {
+  const res = await adminFetch<{ user: any }>("/admin/users/me")
+  return res.data?.user || null
+}
+
+export async function updateCurrentUser(
+  id: string,
+  data: { first_name?: string; last_name?: string }
+) {
+  return adminFetch(`/admin/users/${id}`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  })
+}
+
 // Categories
 export async function listCategories() {
   const res = await adminFetch<{ product_categories: any[] }>("/admin/product-categories?limit=100")
@@ -399,4 +435,71 @@ export async function getDashboardStats() {
     lowStockProducts,
     last30DaysSales,
   }
+}
+
+export async function getCustomersWithMetrics() {
+  const [customersRes, ordersRes] = await Promise.all([
+    listCustomers(),
+    listOrders(),
+  ])
+
+  const customers = customersRes || []
+  const orders = ordersRes || []
+
+  const customerMap = new Map<string, any>()
+
+  customers.forEach((c: any) => {
+    customerMap.set(c.id, {
+      id: c.id,
+      first_name: c.first_name || "Collector",
+      last_name: c.last_name || "",
+      email: c.email || "No email",
+      phone: c.phone || null,
+      created_at: c.created_at || new Date().toISOString(),
+      orders: [],
+      ordersCount: 0,
+      totalSpent: 0,
+      isRegistered: true,
+    })
+  })
+
+  orders.forEach((o: any) => {
+    const custId = o.customer_id
+    const custEmail = o.customer?.email || o.email
+    if (!custEmail && !custId) return
+
+    let target: any = null
+    if (custId && customerMap.has(custId)) {
+      target = customerMap.get(custId)
+    } else {
+      for (const val of customerMap.values()) {
+        if (val.email && custEmail && val.email.toLowerCase() === custEmail.toLowerCase()) {
+          target = val
+          break
+        }
+      }
+    }
+
+    if (!target) {
+      target = {
+        id: custId || `client_${custEmail.replace(/[^a-zA-Z0-9]/g, "_")}`,
+        first_name: o.customer?.first_name || o.shipping_address?.first_name || "Client",
+        last_name: o.customer?.last_name || o.shipping_address?.last_name || "",
+        email: custEmail,
+        phone: o.shipping_address?.phone || null,
+        created_at: o.created_at,
+        orders: [],
+        ordersCount: 0,
+        totalSpent: 0,
+        isRegistered: false,
+      }
+      customerMap.set(target.id, target)
+    }
+
+    target.orders.push(o)
+    target.ordersCount += 1
+    target.totalSpent += (o.total || 0)
+  })
+
+  return Array.from(customerMap.values())
 }
