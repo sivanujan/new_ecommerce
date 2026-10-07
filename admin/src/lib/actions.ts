@@ -72,16 +72,29 @@ export async function createProductAction(formData: FormData) {
   const title = formData.get("title")?.toString().trim()
   const description = formData.get("description")?.toString().trim()
   const price = parseFloat(formData.get("price")?.toString() || "0")
+  const compareAtPriceStr = formData.get("compareAtPrice")?.toString()
+  const compareAtPrice = compareAtPriceStr ? parseFloat(compareAtPriceStr) : undefined
   const categoryId = formData.get("categoryId")?.toString() || undefined
   const stock = parseInt(formData.get("stock")?.toString() || "0", 10)
   const isPublished = formData.get("isPublished") === "true"
   const imagesRaw = formData.get("images")?.toString() || "[]"
+  const optionTitle = formData.get("optionTitle")?.toString() || undefined
+  const optionValuesRaw = formData.get("optionValues")?.toString()
 
   let images: string[] = []
   try {
     images = JSON.parse(imagesRaw)
   } catch {
     images = []
+  }
+
+  let optionValues: string[] | undefined = undefined
+  if (optionValuesRaw) {
+    try {
+      optionValues = JSON.parse(optionValuesRaw)
+    } catch {
+      optionValues = optionValuesRaw.split(",").map((s) => s.trim()).filter(Boolean)
+    }
   }
 
   if (!title) {
@@ -96,10 +109,13 @@ export async function createProductAction(formData: FormData) {
     title,
     description,
     price,
+    compareAtPrice,
     categoryId: categoryId || undefined,
     stock,
     images,
     isPublished,
+    optionTitle,
+    optionValues,
   })
 
   if (result.error) {
@@ -115,6 +131,7 @@ export async function updateProductAction(id: string, formData: FormData) {
   const title = formData.get("title")?.toString().trim()
   const description = formData.get("description")?.toString().trim()
   const priceStr = formData.get("price")?.toString()
+  const compareAtPriceStr = formData.get("compareAtPrice")?.toString()
   const categoryId = formData.get("categoryId")?.toString() || undefined
   const stockStr = formData.get("stock")?.toString()
   const isPublishedStr = formData.get("isPublished")?.toString()
@@ -142,6 +159,9 @@ export async function updateProductAction(id: string, formData: FormData) {
   if (priceStr) {
     updateData.price = parseFloat(priceStr)
   }
+  if (compareAtPriceStr !== undefined) {
+    updateData.compareAtPrice = compareAtPriceStr ? parseFloat(compareAtPriceStr) : null
+  }
   if (stockStr) {
     updateData.stock = parseInt(stockStr, 10)
   }
@@ -159,6 +179,7 @@ export async function updateProductAction(id: string, formData: FormData) {
   }
 
   revalidatePath("/products")
+  revalidatePath(`/products/${id}/edit`)
   revalidatePath("/")
   return { success: true }
 }

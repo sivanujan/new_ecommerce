@@ -121,10 +121,13 @@ export async function createProduct(input: {
   title: string
   description?: string
   price: number
+  compareAtPrice?: number
   categoryId?: string
   stock: number
   images: string[]
   isPublished: boolean
+  optionTitle?: string
+  optionValues?: string[]
 }) {
   const salesChannels = await getDefaultSalesChannels()
   const salesChannelIds = salesChannels.map((sc) => ({ id: sc.id }))
@@ -134,6 +137,24 @@ export async function createProduct(input: {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "") + "-" + Math.random().toString(36).substring(2, 6)
 
+  const optTitle = input.optionTitle?.trim() || "Option"
+  const optValues =
+    input.optionValues && input.optionValues.length > 0
+      ? input.optionValues.map((v) => v.trim()).filter(Boolean)
+      : ["Default"]
+
+  const variants = optValues.map((val) => ({
+    title: val === "Default" ? "Default" : `${input.title} – ${val}`,
+    options: { [optTitle]: val },
+    prices: [{ currency_code: "eur", amount: Number(input.price) }],
+    manage_inventory: false,
+    allow_backorder: true,
+    metadata: {
+      stock_quantity: Number(input.stock) || 0,
+      compare_at_price: input.compareAtPrice ? Number(input.compareAtPrice) : null,
+    },
+  }))
+
   const payload: any = {
     title: input.title,
     handle,
@@ -142,19 +163,8 @@ export async function createProduct(input: {
     thumbnail: input.images[0] || null,
     images: input.images.map((url) => ({ url })),
     sales_channels: salesChannelIds,
-    options: [{ title: "Option", values: ["Default"] }],
-    variants: [
-      {
-        title: "Default",
-        options: { Option: "Default" },
-        prices: [{ currency_code: "eur", amount: Number(input.price) }],
-        manage_inventory: false,
-        allow_backorder: true,
-        metadata: {
-          stock_quantity: Number(input.stock) || 0,
-        },
-      },
-    ],
+    options: [{ title: optTitle, values: optValues }],
+    variants,
   }
 
   if (input.categoryId) {
@@ -182,6 +192,7 @@ export async function updateProduct(
     title: string
     description?: string
     price?: number
+    compareAtPrice?: number | null
     categoryId?: string
     stock?: number
     images?: string[]
@@ -202,8 +213,8 @@ export async function updateProduct(
     payload.images = input.images.map((url) => ({ url }))
   }
 
-  if (input.categoryId) {
-    payload.categories = [{ id: input.categoryId }]
+  if (input.categoryId !== undefined) {
+    payload.categories = input.categoryId ? [{ id: input.categoryId }] : []
   }
 
   // Update base product
@@ -212,8 +223,12 @@ export async function updateProduct(
     body: JSON.stringify(payload),
   })
 
-  // If price or stock is updated, update the primary variant
-  if (input.price !== undefined || input.stock !== undefined) {
+  // If price, compareAtPrice, or stock is updated, update the primary variant
+  if (
+    input.price !== undefined ||
+    input.stock !== undefined ||
+    input.compareAtPrice !== undefined
+  ) {
     const existing = await getProduct(id)
     const variant = existing?.variants?.[0]
     if (variant) {
@@ -221,12 +236,18 @@ export async function updateProduct(
       if (input.price !== undefined) {
         variantPayload.prices = [{ currency_code: "eur", amount: Number(input.price) }]
       }
+      const existingMetadata = variant.metadata || {}
+      const updatedMetadata: any = { ...existingMetadata }
       if (input.stock !== undefined) {
-        variantPayload.metadata = {
-          ...(variant.metadata || {}),
-          stock_quantity: Number(input.stock),
-        }
+        updatedMetadata.stock_quantity = Number(input.stock)
       }
+      if (input.compareAtPrice !== undefined) {
+        updatedMetadata.compare_at_price = input.compareAtPrice
+          ? Number(input.compareAtPrice)
+          : null
+      }
+      variantPayload.metadata = updatedMetadata
+
       await adminFetch(`/admin/products/${id}/variants/${variant.id}`, {
         method: "POST",
         body: JSON.stringify(variantPayload),

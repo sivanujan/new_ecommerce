@@ -1,6 +1,6 @@
 import Navbar from "@/components/Navbar"
 import { listCategories } from "@/lib/medusa"
-import AddProductForm from "@/components/AddProductForm"
+import ProductForm from "@/components/ProductForm"
 
 export const dynamic = "force-dynamic"
 
@@ -10,12 +10,12 @@ export default async function NewProductPage() {
   return (
     <div>
       <Navbar
-        title="Add New Product"
-        subtitle="Create a new creation and publish it directly to your store"
+        title="Add New Piece"
+        subtitle="Create a new creation and publish it directly to your live storefront"
       />
 
-      <div className="p-8 max-w-4xl mx-auto">
-        <AddProductForm categories={categories} />
+      <div className="p-6 sm:p-8 max-w-5xl mx-auto">
+        <ProductForm categories={categories} />
       </div>
     </div>
   )

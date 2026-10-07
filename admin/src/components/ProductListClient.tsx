@@ -9,13 +9,16 @@ import {
   ExternalLink,
   Edit,
   Trash2,
-  Filter,
-  CheckCircle2,
-  AlertCircle,
   Eye,
   Loader2,
+  ChevronLeft,
+  ChevronRight,
+  Sparkles,
 } from "lucide-react"
 import { deleteProductAction } from "@/lib/actions"
+import { useToast } from "@/components/ToastProvider"
+
+const ITEMS_PER_PAGE = 8
 
 export default function ProductListClient({
   initialProducts,
@@ -24,13 +27,17 @@ export default function ProductListClient({
   initialProducts: any[]
   categories: any[]
 }) {
+  const toast = useToast()
   const [products, setProducts] = useState(initialProducts)
   const [search, setSearch] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [selectedStatus, setSelectedStatus] = useState("all")
-  const [deletingId, setDeletingId] = useState<string | null>(null)
-  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
 
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [confirmDeleteProduct, setConfirmDeleteProduct] = useState<any | null>(null)
+
+  // Filter products
   const filteredProducts = products.filter((p) => {
     const matchesSearch =
       p.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -48,22 +55,30 @@ export default function ProductListClient({
     return matchesSearch && matchesCategory && matchesStatus
   })
 
-  const handleDelete = async (id: string, title: string) => {
-    if (!confirm(`Are you sure you want to delete "${title}"? This cannot be undone.`)) {
-      return
-    }
+  // Pagination calculation
+  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE) || 1
+  const paginatedProducts = filteredProducts.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  )
+
+  const handleDelete = async () => {
+    if (!confirmDeleteProduct) return
+    const id = confirmDeleteProduct.id
+    const title = confirmDeleteProduct.title
 
     setDeletingId(id)
     try {
       const res = await deleteProductAction(id)
       if (res.error) {
-        setMessage({ type: "error", text: res.error })
+        toast.error(res.error)
       } else {
         setProducts((prev) => prev.filter((p) => p.id !== id))
-        setMessage({ type: "success", text: `"${title}" has been deleted successfully.` })
+        toast.success(`"${title}" has been deleted.`)
+        setConfirmDeleteProduct(null)
       }
     } catch (err: any) {
-      setMessage({ type: "error", text: err?.message || "Failed to delete product." })
+      toast.error(err?.message || "Failed to delete product.")
     } finally {
       setDeletingId(null)
     }
@@ -71,53 +86,33 @@ export default function ProductListClient({
 
   return (
     <div className="space-y-6">
-      {/* Alert banner if message */}
-      {message && (
-        <div
-          className={`p-4 rounded-xl text-xs font-semibold flex items-center justify-between border ${
-            message.type === "success"
-              ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-              : "bg-rose-50 text-rose-800 border-rose-200"
-          }`}
-        >
-          <div className="flex items-center gap-2">
-            {message.type === "success" ? (
-              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-            ) : (
-              <AlertCircle className="h-4 w-4 text-rose-600" />
-            )}
-            <span>{message.text}</span>
-          </div>
-          <button
-            onClick={() => setMessage(null)}
-            className="text-slate-400 hover:text-slate-600 font-bold"
-          >
-            ×
-          </button>
-        </div>
-      )}
-
-      {/* Filters and Search Bar */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
+      {/* Top Search & Filter Bar */}
+      <div className="bg-[#121217] p-4 rounded-2xl border border-white/10 shadow-lg flex flex-col md:flex-row gap-3 items-center justify-between">
         {/* Search */}
         <div className="relative w-full md:w-80">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9CA3AF]" />
           <input
             type="text"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value)
+              setCurrentPage(1)
+            }}
             placeholder="Search products by name..."
-            className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-white/10 text-xs text-[#F5F0E8] placeholder:text-white/20 bg-[#181820] focus:border-[#D4AF37] focus:outline-none focus:ring-1 focus:ring-[#D4AF37]/50 transition-all"
           />
         </div>
 
-        {/* Filter dropdowns */}
+        {/* Filters and New Product Action */}
         <div className="flex items-center gap-3 w-full md:w-auto">
           {/* Category Filter */}
           <select
             value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700 bg-white focus:outline-none focus:border-amber-500"
+            onChange={(e) => {
+              setSelectedCategory(e.target.value)
+              setCurrentPage(1)
+            }}
+            className="px-3 py-2.5 rounded-xl border border-white/10 text-xs text-[#F5F0E8] bg-[#181820] focus:outline-none focus:border-[#D4AF37]"
           >
             <option value="all">All Categories ({categories.length})</option>
             {categories.map((c) => (
@@ -130,84 +125,103 @@ export default function ProductListClient({
           {/* Status Filter */}
           <select
             value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            className="px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-700 bg-white focus:outline-none focus:border-amber-500"
+            onChange={(e) => {
+              setSelectedStatus(e.target.value)
+              setCurrentPage(1)
+            }}
+            className="px-3 py-2.5 rounded-xl border border-white/10 text-xs text-[#F5F0E8] bg-[#181820] focus:outline-none focus:border-[#D4AF37]"
           >
             <option value="all">All Statuses</option>
-            <option value="published">Published</option>
-            <option value="draft">Draft</option>
+            <option value="published">Live</option>
+            <option value="draft">Hidden</option>
           </select>
 
-          {/* New Product Button */}
+          {/* Add Product Button */}
           <Link
             href="/products/new"
-            className="shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-white bg-amber-600 hover:bg-amber-700 shadow-sm transition-all"
+            className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider text-neutral-950 bg-gradient-to-r from-[#E5C378] to-[#D4AF37] hover:brightness-110 shadow-md shadow-amber-950/30 transition-all active:scale-[0.98]"
           >
-            <Plus className="h-3.5 w-3.5" />
+            <Plus className="h-3.5 w-3.5 text-neutral-950" />
             <span>Add Product</span>
           </Link>
         </div>
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+      {/* Products Table Card */}
+      <div className="bg-[#121217] rounded-3xl border border-white/10 shadow-2xl overflow-hidden relative">
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#D4AF37]/40 to-transparent" />
+
         {filteredProducts.length === 0 ? (
-          <div className="py-16 text-center">
-            <Package className="h-8 w-8 text-slate-300 mx-auto mb-2" />
-            <p className="text-sm font-semibold text-slate-700">No products found</p>
-            <p className="text-xs text-slate-400 mt-1">
-              Try adjusting your search terms or filters.
+          <div className="py-20 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-[#181820] border border-white/5 text-[#D4AF37] flex items-center justify-center mx-auto mb-3">
+              <Package className="h-7 w-7" />
+            </div>
+            <p className="text-base font-serif font-bold text-[#F5F0E8]">
+              No Creations Found
             </p>
+            <p className="text-xs text-[#9CA3AF] mt-1 max-w-sm mx-auto">
+              No products match your current filters. Add a new product or reset your search.
+            </p>
+            <Link
+              href="/products/new"
+              className="mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-neutral-950 bg-[#E5C378] hover:bg-[#D4AF37] transition-all"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span>Add First Product</span>
+            </Link>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 border-b border-slate-100 text-slate-500 font-semibold uppercase tracking-wider text-[10px]">
+              <thead className="bg-[#181820] border-b border-white/5 text-[#9CA3AF] font-mono uppercase tracking-[0.15em] text-[10px]">
                 <tr>
-                  <th className="py-3 px-4">Product</th>
-                  <th className="py-3 px-4">Category</th>
-                  <th className="py-3 px-4">Price (EUR)</th>
-                  <th className="py-3 px-4">Stock</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
+                  <th className="py-3.5 px-5">Piece</th>
+                  <th className="py-3.5 px-4">Category</th>
+                  <th className="py-3.5 px-4">Price (EUR)</th>
+                  <th className="py-3.5 px-4">Stock</th>
+                  <th className="py-3.5 px-4">Status</th>
+                  <th className="py-3.5 px-5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filteredProducts.map((p) => {
+              <tbody className="divide-y divide-white/5">
+                {paginatedProducts.map((p) => {
                   const price = p.variants?.[0]?.prices?.[0]?.amount
                   const stock =
                     p.variants?.[0]?.metadata?.stock_quantity ??
                     p.variants?.[0]?.inventory_quantity ??
                     50
                   const thumbnail = p.thumbnail || p.images?.[0]?.url
-                  const isPublished = p.status === "published"
-                  const categoryName = p.categories?.[0]?.name || "None"
+                  const isLive = p.status === "published"
+                  const categoryName = p.categories?.[0]?.name || "Unassigned"
 
                   return (
                     <tr
                       key={p.id}
-                      className="hover:bg-slate-50/70 transition-colors group"
+                      className="hover:bg-white/[0.02] transition-colors group"
                     >
-                      {/* Image & Title */}
-                      <td className="py-3.5 px-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center">
+                      {/* Thumbnail & Title */}
+                      <td className="py-3.5 px-5">
+                        <div className="flex items-center gap-3.5">
+                          <div className="w-12 h-12 rounded-xl bg-[#181820] border border-white/10 overflow-hidden shrink-0 flex items-center justify-center">
                             {thumbnail ? (
                               <img
                                 src={thumbnail}
                                 alt={p.title}
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-cover transform transition-transform duration-300 group-hover:scale-110"
                               />
                             ) : (
-                              <Package className="h-5 w-5 text-slate-400" />
+                              <Package className="h-5 w-5 text-white/30" />
                             )}
                           </div>
                           <div>
-                            <span className="font-semibold text-slate-900 group-hover:text-amber-700 transition-colors block text-sm">
+                            <Link
+                              href={`/products/${p.id}/edit`}
+                              className="font-serif font-bold text-sm text-[#F5F0E8] group-hover:text-[#E5C378] transition-colors block"
+                            >
                               {p.title}
-                            </span>
-                            <span className="text-[11px] text-slate-400 font-mono">
-                              handle: /{p.handle}
+                            </Link>
+                            <span className="text-[11px] text-[#9CA3AF]/60 font-mono">
+                              /{p.handle}
                             </span>
                           </div>
                         </div>
@@ -215,59 +229,76 @@ export default function ProductListClient({
 
                       {/* Category */}
                       <td className="py-3.5 px-4">
-                        <span className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-slate-100 text-slate-700">
+                        <span className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-[#181820] border border-white/5 text-[#E5C378]">
                           {categoryName}
                         </span>
                       </td>
 
                       {/* Price */}
-                      <td className="py-3.5 px-4 font-semibold text-slate-900">
-                        {price !== undefined ? `€${Number(price).toFixed(2)}` : "—"}
-                      </td>
-
-                      {/* Stock */}
                       <td className="py-3.5 px-4">
-                        <span
-                          className={`font-semibold ${
-                            stock > 10
-                              ? "text-emerald-700"
-                              : stock > 0
-                              ? "text-amber-700"
-                              : "text-rose-700"
-                          }`}
-                        >
-                          {stock} in stock
+                        <span className="font-serif font-bold text-sm text-[#F5F0E8]">
+                          {price !== undefined ? `€${Number(price).toFixed(2)}` : "—"}
                         </span>
                       </td>
 
-                      {/* Status */}
+                      {/* Stock Level Badge */}
                       <td className="py-3.5 px-4">
                         <span
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider ${
-                            isPublished
-                              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                              : "bg-slate-100 text-slate-600 border border-slate-200"
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-medium ${
+                            stock > 5
+                              ? "bg-emerald-950/30 text-emerald-400 border border-emerald-500/30"
+                              : stock > 0
+                              ? "bg-amber-950/30 text-amber-400 border border-amber-500/30"
+                              : "bg-rose-950/30 text-rose-400 border border-rose-500/30"
                           }`}
                         >
                           <span
                             className={`w-1.5 h-1.5 rounded-full ${
-                              isPublished ? "bg-emerald-500" : "bg-slate-400"
+                              stock > 5
+                                ? "bg-emerald-400"
+                                : stock > 0
+                                ? "bg-amber-400 animate-pulse"
+                                : "bg-rose-400"
                             }`}
                           />
-                          <span>{isPublished ? "Published" : "Draft"}</span>
+                          <span>
+                            {stock > 5
+                              ? `${stock} in stock`
+                              : stock > 0
+                              ? `Low stock (${stock})`
+                              : "Sold out"}
+                          </span>
+                        </span>
+                      </td>
+
+                      {/* Status (Live / Hidden) */}
+                      <td className="py-3.5 px-4">
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase font-bold tracking-wider ${
+                            isLive
+                              ? "bg-[#D4AF37]/15 text-[#E5C378] border border-[#D4AF37]/40"
+                              : "bg-white/5 text-[#9CA3AF] border border-white/10"
+                          }`}
+                        >
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full ${
+                              isLive ? "bg-[#D4AF37] animate-pulse" : "bg-white/30"
+                            }`}
+                          />
+                          <span>{isLive ? "Live" : "Hidden"}</span>
                         </span>
                       </td>
 
                       {/* Actions */}
-                      <td className="py-3.5 px-4 text-right">
+                      <td className="py-3.5 px-5 text-right">
                         <div className="flex items-center justify-end gap-1.5">
                           {/* View in Storefront */}
                           <a
                             href={`http://localhost:8000/fr/products/${p.handle}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            title="View on Storefront"
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                            title="View on Live Store"
+                            className="p-2 rounded-xl text-white/40 hover:text-[#E5C378] hover:bg-white/5 transition-colors"
                           >
                             <Eye className="h-4 w-4" />
                           </a>
@@ -275,24 +306,20 @@ export default function ProductListClient({
                           {/* Edit */}
                           <Link
                             href={`/products/${p.id}/edit`}
-                            title="Edit Product"
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-amber-700 hover:bg-amber-50 transition-colors"
+                            title="Edit Piece"
+                            className="p-2 rounded-xl text-white/40 hover:text-[#E5C378] hover:bg-white/5 transition-colors"
                           >
                             <Edit className="h-4 w-4" />
                           </Link>
 
                           {/* Delete */}
                           <button
-                            onClick={() => handleDelete(p.id, p.title)}
-                            disabled={deletingId === p.id}
-                            title="Delete Product"
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-700 hover:bg-rose-50 transition-colors disabled:opacity-50"
+                            type="button"
+                            onClick={() => setConfirmDeleteProduct(p)}
+                            title="Delete Piece"
+                            className="p-2 rounded-xl text-white/40 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
                           >
-                            {deletingId === p.id ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <Trash2 className="h-4 w-4" />
-                            )}
+                            <Trash2 className="h-4 w-4" />
                           </button>
                         </div>
                       </td>
@@ -303,7 +330,83 @@ export default function ProductListClient({
             </table>
           </div>
         )}
+
+        {/* Pagination Bar */}
+        {filteredProducts.length > ITEMS_PER_PAGE && (
+          <div className="px-5 py-4 border-t border-white/5 flex items-center justify-between text-xs text-[#9CA3AF]">
+            <span className="font-mono text-[11px]">
+              Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} -{" "}
+              {Math.min(currentPage * ITEMS_PER_PAGE, filteredProducts.length)} of{" "}
+              {filteredProducts.length} items
+            </span>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                disabled={currentPage <= 1}
+                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                className="p-1.5 rounded-lg border border-white/10 hover:border-[#D4AF37]/50 disabled:opacity-30 disabled:pointer-events-none transition-colors"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+
+              <span className="font-mono text-xs px-2 text-[#F5F0E8]">
+                Page {currentPage} of {totalPages}
+              </span>
+
+              <button
+                type="button"
+                disabled={currentPage >= totalPages}
+                onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                className="p-1.5 rounded-lg border border-white/10 hover:border-[#D4AF37]/50 disabled:opacity-30 disabled:pointer-events-none transition-colors"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {confirmDeleteProduct && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#121217] rounded-3xl max-w-sm w-full p-6 border border-white/10 shadow-2xl space-y-4 text-center">
+            <div className="w-12 h-12 rounded-2xl bg-rose-950/50 border border-rose-500/30 text-rose-400 flex items-center justify-center mx-auto">
+              <Trash2 className="h-6 w-6" />
+            </div>
+
+            <div>
+              <h3 className="font-serif font-bold text-lg text-[#F5F0E8]">
+                Delete "{confirmDeleteProduct.title}"?
+              </h3>
+              <p className="text-xs text-[#9CA3AF] mt-1 leading-relaxed">
+                This will remove the piece from your active catalog and the live storefront. This action cannot be undone.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setConfirmDeleteProduct(null)}
+                className="flex-1 py-2.5 rounded-xl text-xs font-semibold text-[#F5F0E8] bg-white/5 hover:bg-white/10 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={deletingId === confirmDeleteProduct.id}
+                onClick={handleDelete}
+                className="flex-1 py-2.5 rounded-xl text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 shadow-md transition-colors flex items-center justify-center gap-1.5 disabled:opacity-60"
+              >
+                {deletingId === confirmDeleteProduct.id && (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                )}
+                <span>Confirm Delete</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

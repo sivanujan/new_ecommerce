@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation"
 import Navbar from "@/components/Navbar"
-import EditProductForm from "@/components/EditProductForm"
+import ProductForm from "@/components/ProductForm"
 import { getProduct, listCategories } from "@/lib/medusa"
 
 export const dynamic = "force-dynamic"
@@ -23,12 +23,12 @@ export default async function EditProductPage({
   return (
     <div>
       <Navbar
-        title="Edit Product"
+        title="Edit Piece"
         subtitle={`Editing "${product.title}"`}
       />
 
-      <div className="p-8 max-w-4xl mx-auto">
-        <EditProductForm product={product} categories={categories} />
+      <div className="p-6 sm:p-8 max-w-5xl mx-auto">
+        <ProductForm product={product} categories={categories} />
       </div>
     </div>
   )
