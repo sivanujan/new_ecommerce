@@ -311,6 +311,13 @@ export async function deleteProduct(id: string) {
   })
 }
 
+export async function updateProductStatus(id: string, status: "published" | "draft") {
+  return adminFetch(`/admin/products/${id}`, {
+    method: "POST",
+    body: JSON.stringify({ status }),
+  })
+}
+
 // Orders
 export async function listOrders() {
   const res = await adminFetch<{ orders: any[] }>(
@@ -391,7 +398,7 @@ export async function getCustomersWithMetrics() {
     if (custId && customerMap.has(custId)) {
       target = customerMap.get(custId)
     } else {
-      for (const val of customerMap.values()) {
+      for (const val of Array.from(customerMap.values())) {
         if (val.email && custEmail && val.email.toLowerCase() === custEmail.toLowerCase()) {
           target = val
           break

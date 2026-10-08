@@ -7,6 +7,7 @@ import {
   createProduct,
   updateProduct,
   deleteProduct,
+  updateProductStatus,
   createCategory,
   updateCategory,
   deleteCategory,
@@ -204,6 +205,71 @@ export async function deleteProductAction(id: string) {
   return { success: true }
 }
 
+export async function bulkDeleteProductsAction(ids: string[]) {
+  if (!ids || ids.length === 0) {
+    return { success: true, count: 0 }
+  }
+
+  let successCount = 0
+  const errors: string[] = []
+
+  for (const id of ids) {
+    try {
+      const res = await deleteProduct(id)
+      if (res.error) {
+        errors.push(`Failed to delete piece ${id}: ${res.error}`)
+      } else {
+        successCount++
+      }
+    } catch (err: any) {
+      errors.push(`Error deleting ${id}: ${err?.message || "Unknown error"}`)
+    }
+  }
+
+  revalidatePath("/admin/products")
+  revalidatePath("/admin")
+  revalidatePath("/[countryCode]/store", "page")
+
+  if (errors.length > 0 && successCount === 0) {
+    return { error: errors[0], success: false, count: 0 }
+  }
+
+  return { success: true, count: successCount, errors: errors.length > 0 ? errors : undefined }
+}
+
+export async function bulkUpdateProductStatusAction(ids: string[], isPublished: boolean) {
+  if (!ids || ids.length === 0) {
+    return { success: true, count: 0 }
+  }
+
+  const targetStatus = isPublished ? "published" : "draft"
+  let successCount = 0
+  const errors: string[] = []
+
+  for (const id of ids) {
+    try {
+      const res = await updateProductStatus(id, targetStatus)
+      if (res.error) {
+        errors.push(`Failed to update status for ${id}: ${res.error}`)
+      } else {
+        successCount++
+      }
+    } catch (err: any) {
+      errors.push(`Error updating ${id}: ${err?.message || "Unknown error"}`)
+    }
+  }
+
+  revalidatePath("/admin/products")
+  revalidatePath("/admin")
+  revalidatePath("/[countryCode]/store", "page")
+
+  if (errors.length > 0 && successCount === 0) {
+    return { error: errors[0], success: false, count: 0 }
+  }
+
+  return { success: true, count: successCount, errors: errors.length > 0 ? errors : undefined }
+}
+
 export async function createCategoryAction(formData: FormData) {
   const name = formData.get("name")?.toString().trim()
   const description = formData.get("description")?.toString().trim()
@@ -257,6 +323,37 @@ export async function deleteCategoryAction(id: string) {
   }
   revalidatePath("/admin/categories")
   return { success: true }
+}
+
+export async function bulkDeleteCategoriesAction(ids: string[]) {
+  if (!ids || ids.length === 0) {
+    return { success: true, count: 0 }
+  }
+
+  let successCount = 0
+  const errors: string[] = []
+
+  for (const id of ids) {
+    try {
+      const res = await deleteCategory(id)
+      if (res.error) {
+        errors.push(`Failed to delete category ${id}: ${res.error}`)
+      } else {
+        successCount++
+      }
+    } catch (err: any) {
+      errors.push(`Error deleting category ${id}: ${err?.message || "Unknown error"}`)
+    }
+  }
+
+  revalidatePath("/admin/categories")
+  revalidatePath("/admin/products")
+
+  if (errors.length > 0 && successCount === 0) {
+    return { error: errors[0], success: false, count: 0 }
+  }
+
+  return { success: true, count: successCount, errors: errors.length > 0 ? errors : undefined }
 }
 
 export async function updateOrderStatusAction(

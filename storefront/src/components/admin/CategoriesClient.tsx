@@ -12,11 +12,13 @@ import {
   UploadCloud,
   Package,
   Search,
+  CheckSquare,
 } from "lucide-react"
 import {
   createCategoryAction,
   updateCategoryAction,
   deleteCategoryAction,
+  bulkDeleteCategoriesAction,
 } from "@/lib/admin/actions"
 import { useToast } from "@/components/admin/ToastProvider"
 
@@ -31,6 +33,10 @@ export default function CategoriesClient({
 
   const [categories, setCategories] = useState(initialCategories)
   const [search, setSearch] = useState("")
+
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false)
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false)
 
   const [showAddModal, setShowAddModal] = useState(false)
   const [editingCategory, setEditingCategory] = useState<any | null>(null)
@@ -50,6 +56,51 @@ export default function CategoriesClient({
       (c.description || "").toLowerCase().includes(search.toLowerCase())
     )
   })
+
+  const isAllSelected =
+    filteredCategories.length > 0 &&
+    filteredCategories.every((c) => selectedIds.includes(c.id))
+
+  const isSomeSelected =
+    filteredCategories.some((c) => selectedIds.includes(c.id)) && !isAllSelected
+
+  const toggleSelectAll = () => {
+    if (isAllSelected) {
+      const visibleIds = new Set(filteredCategories.map((c) => c.id))
+      setSelectedIds((prev) => prev.filter((id) => !visibleIds.has(id)))
+    } else {
+      const newSelected = new Set([...selectedIds, ...filteredCategories.map((c) => c.id)])
+      setSelectedIds(Array.from(newSelected))
+    }
+  }
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    )
+  }
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return
+    setIsBulkDeleting(true)
+    try {
+      const countToDelete = selectedIds.length
+      const res = await bulkDeleteCategoriesAction(selectedIds)
+      if (res.error) {
+        toast.error(res.error)
+      } else {
+        setCategories((prev) => prev.filter((c) => !selectedIds.includes(c.id)))
+        setSelectedIds([])
+        setShowBulkDeleteModal(false)
+        toast.success(`Deleted ${countToDelete} ${countToDelete === 1 ? "category" : "categories"}.`)
+        router.refresh()
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to delete categories.")
+    } finally {
+      setIsBulkDeleting(false)
+    }
+  }
 
   const openEditModal = (cat: any) => {
     setEditingCategory(cat)
@@ -237,6 +288,18 @@ export default function CategoriesClient({
             <table className="w-full text-left text-xs">
               <thead className="bg-[#181820] border-b border-white/5 text-[#9CA3AF] font-bold uppercase tracking-widest text-[10px]">
                 <tr>
+                  <th className="py-4 px-4 w-12 text-center">
+                    <input
+                      type="checkbox"
+                      checked={isAllSelected}
+                      ref={(el) => {
+                        if (el) el.indeterminate = isSomeSelected
+                      }}
+                      onChange={toggleSelectAll}
+                      className="w-4 h-4 rounded border-white/20 bg-[#181820] text-[#D4AF37] focus:ring-[#D4AF37] accent-[#D4AF37] cursor-pointer transition-all"
+                      title={isAllSelected ? "Deselect all" : "Select all categories"}
+                    />
+                  </th>
                   <th className="py-4 px-6">Collection</th>
                   <th className="py-4 px-6">Description</th>
                   <th className="py-4 px-6">Pieces Assigned</th>
@@ -247,12 +310,25 @@ export default function CategoriesClient({
               <tbody className="divide-y divide-white/5">
                 {filteredCategories.map((c) => {
                   const bannerImg = c.metadata?.image_url
+                  const isSelected = selectedIds.includes(c.id)
 
                   return (
                     <tr
                       key={c.id}
-                      className="hover:bg-white/[0.02] transition-colors group"
+                      className={`transition-colors group ${
+                        isSelected
+                          ? "bg-[#D4AF37]/[0.08] hover:bg-[#D4AF37]/[0.12]"
+                          : "hover:bg-white/[0.02]"
+                      }`}
                     >
+                      <td className="py-4 px-4 text-center">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggleSelect(c.id)}
+                          className="w-4 h-4 rounded border-white/20 bg-[#181820] text-[#D4AF37] focus:ring-[#D4AF37] accent-[#D4AF37] cursor-pointer transition-all"
+                        />
+                      </td>
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-3.5">
                           {bannerImg ? (
@@ -516,6 +592,109 @@ export default function CategoriesClient({
               >
                 {isDeleting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
                 <span>Confirm Delete</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Floating Bulk Action Bar */}
+      {selectedIds.length > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-[#14141B]/95 backdrop-blur-xl border border-[#D4AF37]/40 shadow-2xl shadow-black/90 rounded-2xl px-5 py-3.5 flex items-center gap-4 transition-all animate-in fade-in slide-in-from-bottom-3 duration-200">
+          <div className="flex items-center gap-2.5">
+            <span className="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse" />
+            <span className="px-2.5 py-1 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/30 text-[#D4AF37] font-semibold text-xs whitespace-nowrap">
+              {selectedIds.length} {selectedIds.length === 1 ? "category" : "categories"} selected
+            </span>
+          </div>
+
+          <div className="h-4 w-px bg-white/10 hidden sm:block" />
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                if (isAllSelected) {
+                  setSelectedIds([])
+                } else {
+                  setSelectedIds(filteredCategories.map((c) => c.id))
+                }
+              }}
+              className="text-xs text-[#9CA3AF] hover:text-[#F5F0E8] px-3 py-1.5 rounded-xl hover:bg-white/5 transition-colors whitespace-nowrap"
+            >
+              {isAllSelected ? "Deselect All" : "Select All Visible"}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setSelectedIds([])}
+              className="p-1.5 rounded-xl text-[#9CA3AF] hover:text-[#F5F0E8] hover:bg-white/5 transition-colors"
+              title="Clear selection"
+            >
+              <X className="h-4 w-4" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowBulkDeleteModal(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs shadow-lg shadow-rose-600/30 transition-all whitespace-nowrap"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              <span>Delete ({selectedIds.length})</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Delete Modal */}
+      {showBulkDeleteModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#121217] rounded-3xl max-w-md w-full p-6 sm:p-7 border border-white/10 shadow-2xl space-y-5 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-rose-950/50 border border-rose-500/30 text-rose-400 flex items-center justify-center mx-auto shadow-inner">
+              <Trash2 className="h-7 w-7" />
+            </div>
+
+            <div>
+              <h3 className="font-serif font-bold text-xl text-[#F5F0E8]">
+                Delete {selectedIds.length} {selectedIds.length === 1 ? "Category" : "Categories"}?
+              </h3>
+              <p className="text-xs text-[#9CA3AF] mt-2 leading-relaxed">
+                This will remove the selected {selectedIds.length} {selectedIds.length === 1 ? "category" : "categories"} from your store navigation. Pieces assigned to these categories will not be deleted.
+              </p>
+            </div>
+
+            {/* Selected Items Preview */}
+            <div className="bg-[#0D0D12] rounded-2xl p-3 border border-white/5 max-h-36 overflow-y-auto text-left space-y-1.5">
+              {categories
+                .filter((c) => selectedIds.includes(c.id))
+                .map((c) => (
+                  <div
+                    key={c.id}
+                    className="flex items-center justify-between text-xs py-1.5 px-2.5 rounded-lg bg-white/[0.02]"
+                  >
+                    <span className="font-medium text-[#F5F0E8] truncate">{c.name}</span>
+                    <span className="text-[10px] text-[#9CA3AF] font-mono">/{c.handle}</span>
+                  </div>
+                ))}
+            </div>
+
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                disabled={isBulkDeleting}
+                onClick={() => setShowBulkDeleteModal(false)}
+                className="flex-1 py-2.5 rounded-xl text-xs font-semibold text-[#F5F0E8] bg-white/5 hover:bg-white/10 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isBulkDeleting}
+                onClick={handleBulkDelete}
+                className="flex-1 py-2.5 rounded-xl text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 shadow-md transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
+              >
+                {isBulkDeleting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                <span>Confirm Delete ({selectedIds.length})</span>
               </button>
             </div>
           </div>

@@ -10,12 +10,19 @@ import {
   Edit,
   Trash2,
   Eye,
+  EyeOff,
   Loader2,
   ChevronLeft,
   ChevronRight,
   Sparkles,
+  CheckSquare,
+  X,
 } from "lucide-react"
-import { deleteProductAction } from "@/lib/admin/actions"
+import {
+  deleteProductAction,
+  bulkDeleteProductsAction,
+  bulkUpdateProductStatusAction,
+} from "@/lib/admin/actions"
 import { useToast } from "@/components/admin/ToastProvider"
 
 const ITEMS_PER_PAGE = 8
@@ -33,6 +40,11 @@ export default function ProductListClient({
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [selectedStatus, setSelectedStatus] = useState("all")
   const [currentPage, setCurrentPage] = useState(1)
+
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false)
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false)
+  const [isBulkUpdating, setIsBulkUpdating] = useState(false)
 
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [confirmDeleteProduct, setConfirmDeleteProduct] = useState<any | null>(null)
@@ -67,6 +79,80 @@ export default function ProductListClient({
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   )
+
+  const isAllVisibleSelected =
+    paginatedProducts.length > 0 &&
+    paginatedProducts.every((p) => selectedIds.includes(p.id))
+
+  const isSomeVisibleSelected =
+    paginatedProducts.some((p) => selectedIds.includes(p.id)) && !isAllVisibleSelected
+
+  const toggleSelectAllVisible = () => {
+    if (isAllVisibleSelected) {
+      const pageIds = new Set(paginatedProducts.map((p) => p.id))
+      setSelectedIds((prev) => prev.filter((id) => !pageIds.has(id)))
+    } else {
+      const pageIds = paginatedProducts.map((p) => p.id)
+      const newSelected = new Set([...selectedIds, ...pageIds])
+      setSelectedIds(Array.from(newSelected))
+    }
+  }
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    )
+  }
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return
+    setIsBulkDeleting(true)
+    try {
+      const count = selectedIds.length
+      const res = await bulkDeleteProductsAction(selectedIds)
+      if (res.error) {
+        toast.error(res.error)
+      } else {
+        setProducts((prev) => prev.filter((p) => !selectedIds.includes(p.id)))
+        setSelectedIds([])
+        setShowBulkDeleteModal(false)
+        toast.success(`Deleted ${count} ${count === 1 ? "piece" : "pieces"}.`)
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to delete pieces")
+    } finally {
+      setIsBulkDeleting(false)
+    }
+  }
+
+  const handleBulkStatus = async (isPublished: boolean) => {
+    if (selectedIds.length === 0) return
+    setIsBulkUpdating(true)
+    try {
+      const count = selectedIds.length
+      const targetStatus = isPublished ? "published" : "draft"
+      const res = await bulkUpdateProductStatusAction(selectedIds, isPublished)
+      if (res.error) {
+        toast.error(res.error)
+      } else {
+        setProducts((prev) =>
+          prev.map((p) =>
+            selectedIds.includes(p.id) ? { ...p, status: targetStatus } : p
+          )
+        )
+        toast.success(
+          `Updated ${count} ${count === 1 ? "piece" : "pieces"} to ${
+            isPublished ? "Live on Store" : "Hidden Draft"
+          }.`
+        )
+        setSelectedIds([])
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to update piece status")
+    } finally {
+      setIsBulkUpdating(false)
+    }
+  }
 
   const handleDelete = async () => {
     if (!confirmDeleteProduct) return
@@ -182,6 +268,18 @@ export default function ProductListClient({
             <table className="w-full text-left text-xs bg-transparent">
               <thead className="bg-[#181820] border-b border-white/5 text-[#9CA3AF] font-bold uppercase tracking-widest text-[10px]">
                 <tr>
+                  <th className="py-4 px-4 w-12 text-center">
+                    <input
+                      type="checkbox"
+                      checked={isAllVisibleSelected}
+                      ref={(el) => {
+                        if (el) el.indeterminate = isSomeVisibleSelected
+                      }}
+                      onChange={toggleSelectAllVisible}
+                      className="w-4 h-4 rounded border-white/20 bg-[#181820] text-[#D4AF37] focus:ring-[#D4AF37] accent-[#D4AF37] cursor-pointer transition-all"
+                      title={isAllVisibleSelected ? "Deselect page" : "Select all visible pieces"}
+                    />
+                  </th>
                   <th className="py-4 px-6">Piece & Details</th>
                   <th className="py-4 px-6">Collection</th>
                   <th className="py-4 px-6">Price (EUR)</th>
@@ -192,6 +290,7 @@ export default function ProductListClient({
               </thead>
               <tbody className="divide-y divide-white/5 bg-transparent">
                 {paginatedProducts.map((p) => {
+                  const isSelected = selectedIds.includes(p.id)
                   // Prioritize the latest uploaded image as thumbnail
                   const latestImg = p.images && p.images.length > 0
                     ? [...p.images].sort((a: any, b: any) => {
@@ -212,8 +311,20 @@ export default function ProductListClient({
                   return (
                     <tr
                       key={p.id}
-                      className="hover:bg-white/[0.04] transition-colors group bg-transparent"
+                      className={`transition-colors group bg-transparent ${
+                        isSelected
+                          ? "bg-[#D4AF37]/[0.08] hover:bg-[#D4AF37]/[0.12]"
+                          : "hover:bg-white/[0.04]"
+                      }`}
                     >
+                      <td className="py-4 px-4 text-center">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggleSelect(p.id)}
+                          className="w-4 h-4 rounded border-white/20 bg-[#181820] text-[#D4AF37] focus:ring-[#D4AF37] accent-[#D4AF37] cursor-pointer transition-all"
+                        />
+                      </td>
                       {/* Thumbnail & Title */}
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-3.5">
@@ -415,6 +526,166 @@ export default function ProductListClient({
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
                 )}
                 <span>Confirm Delete</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Floating Bulk Action Bar */}
+      {selectedIds.length > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-[#14141B]/95 backdrop-blur-xl border border-[#D4AF37]/40 shadow-2xl shadow-black/90 rounded-2xl px-5 py-3.5 flex items-center gap-3 sm:gap-4 flex-wrap sm:flex-nowrap justify-center transition-all animate-in fade-in slide-in-from-bottom-3 duration-200">
+          <div className="flex items-center gap-2.5">
+            <span className="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse" />
+            <span className="px-2.5 py-1 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/30 text-[#D4AF37] font-semibold text-xs whitespace-nowrap">
+              {selectedIds.length} {selectedIds.length === 1 ? "piece" : "pieces"} selected
+            </span>
+          </div>
+
+          <div className="h-4 w-px bg-white/10 hidden sm:block" />
+
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Quick Select/Deselect visible */}
+            <button
+              type="button"
+              onClick={() => {
+                if (isAllVisibleSelected) {
+                  setSelectedIds([])
+                } else {
+                  const visibleIds = paginatedProducts.map((p) => p.id)
+                  setSelectedIds(Array.from(new Set([...selectedIds, ...visibleIds])))
+                }
+              }}
+              className="text-xs text-[#9CA3AF] hover:text-[#F5F0E8] px-2.5 py-1.5 rounded-xl hover:bg-white/5 transition-colors whitespace-nowrap"
+            >
+              {isAllVisibleSelected ? "Deselect Page" : "Select Page"}
+            </button>
+
+            {/* Bulk Publish */}
+            <button
+              type="button"
+              disabled={isBulkUpdating}
+              onClick={() => handleBulkStatus(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600/90 hover:bg-emerald-600 text-white font-semibold text-xs shadow-md shadow-emerald-600/20 transition-all whitespace-nowrap disabled:opacity-50"
+              title="Publish selected pieces to live store"
+            >
+              {isBulkUpdating ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                <Eye className="h-3.5 w-3.5" />
+              )}
+              <span>Publish</span>
+            </button>
+
+            {/* Bulk Draft */}
+            <button
+              type="button"
+              disabled={isBulkUpdating}
+              onClick={() => handleBulkStatus(false)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-600/90 hover:bg-amber-600 text-white font-semibold text-xs shadow-md shadow-amber-600/20 transition-all whitespace-nowrap disabled:opacity-50"
+              title="Set selected pieces as draft"
+            >
+              {isBulkUpdating ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                <EyeOff className="h-3.5 w-3.5" />
+              )}
+              <span>Set as Draft</span>
+            </button>
+
+            {/* Bulk Delete */}
+            <button
+              type="button"
+              onClick={() => setShowBulkDeleteModal(true)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs shadow-md shadow-rose-600/20 transition-all whitespace-nowrap"
+              title="Delete selected pieces"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              <span>Delete ({selectedIds.length})</span>
+            </button>
+
+            {/* Deselect */}
+            <button
+              type="button"
+              onClick={() => setSelectedIds([])}
+              className="p-1.5 rounded-xl text-[#9CA3AF] hover:text-[#F5F0E8] hover:bg-white/5 transition-colors"
+              title="Clear all selection"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Delete Confirmation Modal */}
+      {showBulkDeleteModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#121217] rounded-3xl max-w-md w-full p-6 sm:p-7 border border-white/10 shadow-2xl space-y-5 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-rose-950/50 border border-rose-500/30 text-rose-400 flex items-center justify-center mx-auto shadow-inner">
+              <Trash2 className="h-7 w-7" />
+            </div>
+
+            <div>
+              <h3 className="font-serif font-bold text-xl text-[#F5F0E8]">
+                Delete {selectedIds.length} {selectedIds.length === 1 ? "Piece" : "Pieces"}?
+              </h3>
+              <p className="text-xs text-[#9CA3AF] mt-2 leading-relaxed">
+                This will permanently remove the selected {selectedIds.length} {selectedIds.length === 1 ? "piece" : "pieces"} from your active catalog and the live storefront. This action cannot be undone.
+              </p>
+            </div>
+
+            {/* Preview of items to delete */}
+            <div className="bg-[#0D0D12] rounded-2xl p-3 border border-white/5 max-h-44 overflow-y-auto text-left space-y-2">
+              {products
+                .filter((p) => selectedIds.includes(p.id))
+                .map((p) => {
+                  const thumbnail = p.thumbnail || p.images?.[0]?.url
+                  return (
+                    <div
+                      key={p.id}
+                      className="flex items-center justify-between text-xs py-1.5 px-2.5 rounded-xl bg-white/[0.02]"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-8 h-8 rounded-lg bg-[#181820] border border-white/10 overflow-hidden shrink-0 flex items-center justify-center">
+                          {thumbnail ? (
+                            <img
+                              src={thumbnail}
+                              alt=""
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <Package className="h-3.5 w-3.5 text-white/30" />
+                          )}
+                        </div>
+                        <span className="font-medium text-[#F5F0E8] truncate">
+                          {p.title}
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-[#9CA3AF] font-mono shrink-0 pl-2">
+                        /{p.handle}
+                      </span>
+                    </div>
+                  )
+                })}
+            </div>
+
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                disabled={isBulkDeleting}
+                onClick={() => setShowBulkDeleteModal(false)}
+                className="flex-1 py-2.5 rounded-xl text-xs font-semibold text-[#F5F0E8] bg-white/5 hover:bg-white/10 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isBulkDeleting}
+                onClick={handleBulkDelete}
+                className="flex-1 py-2.5 rounded-xl text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 shadow-md transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
+              >
+                {isBulkDeleting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                <span>Confirm Delete ({selectedIds.length})</span>
               </button>
             </div>
           </div>
