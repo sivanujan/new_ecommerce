@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
-import { Tag, Check, Trash2, Loader2, Sparkles, AlertCircle } from "lucide-react"
+import { Tag, Check, Trash2, Loader2, AlertCircle } from "lucide-react"
 import { applyPromotions } from "@lib/data/cart"
 import { convertToLocale } from "@lib/util/money"
 import { HttpTypes } from "@medusajs/types"
@@ -40,12 +40,12 @@ const DiscountCode: React.FC<DiscountCodeProps> = ({ cart }) => {
     }
   }
 
-  const handleApply = async (e?: React.FormEvent, customCode?: string) => {
+  const handleApply = async (e?: React.FormEvent) => {
     if (e) e.preventDefault()
     setErrorMessage("")
     setSuccessMessage("")
 
-    const codeToApply = (customCode || codeValue).trim().toUpperCase()
+    const codeToApply = codeValue.trim().toUpperCase()
     if (!codeToApply) {
       setErrorMessage("Please enter a promo code.")
       return
@@ -104,7 +104,7 @@ const DiscountCode: React.FC<DiscountCodeProps> = ({ cart }) => {
                 type="text"
                 value={codeValue}
                 onChange={(e) => setCodeValue(e.target.value.toUpperCase())}
-                placeholder="e.g. TAMZEN10"
+                placeholder="Enter promo code"
                 className="w-full px-3.5 py-2.5 rounded-xl bg-[#0D0D12] border border-white/15 text-xs font-mono tracking-wider text-[#F5F0E8] placeholder-neutral-500 focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none transition-all uppercase"
                 disabled={isLoading}
               />
@@ -112,7 +112,7 @@ const DiscountCode: React.FC<DiscountCodeProps> = ({ cart }) => {
             <button
               type="submit"
               disabled={isLoading || !codeValue.trim()}
-              className="px-4 py-2.5 rounded-xl bg-[#D4AF37] hover:bg-[#E5C158] text-black font-semibold text-xs transition-all shadow-md shadow-[#D4AF37]/20 flex items-center gap-1.5 disabled:opacity-40 disabled:pointer-events-none shrink-0"
+              className="px-4 py-2.5 rounded-xl bg-[#D4AF37] hover:bg-[#E5C158] text-black font-semibold text-xs transition-all shadow-md shadow-[#D4AF37]/20 flex items-center gap-1.5 disabled:opacity-40 disabled:pointer-events-none shrink-0 cursor-pointer"
             >
               {isLoading ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin text-black" />
@@ -121,21 +121,6 @@ const DiscountCode: React.FC<DiscountCodeProps> = ({ cart }) => {
               )}
             </button>
           </form>
-
-          {/* Quick chip suggestion if TAMZEN10 not applied yet */}
-          {!promotions.some((p) => p.code === "TAMZEN10") && (
-            <div className="flex items-center gap-1.5 text-[11px] text-neutral-400">
-              <span className="text-neutral-500">Hint:</span>
-              <button
-                type="button"
-                onClick={() => handleApply(undefined, "TAMZEN10")}
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#D4AF37]/10 hover:bg-[#D4AF37]/20 border border-[#D4AF37]/30 text-[#D4AF37] font-mono text-[10px] font-semibold transition-colors"
-              >
-                <Sparkles className="h-2.5 w-2.5" />
-                <span>Try "TAMZEN10" for 10% off</span>
-              </button>
-            </div>
-          )}
 
           {/* Error & Success Messages */}
           {errorMessage && (

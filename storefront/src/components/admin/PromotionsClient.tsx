@@ -219,7 +219,7 @@ export default function PromotionsClient({
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search promo codes (e.g. TAMZEN10)..."
+            placeholder="Search promo codes..."
             className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-[#121217] border border-white/10 text-xs text-[#F5F0E8] placeholder-white/20 focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none transition-all"
           />
         </div>
@@ -499,7 +499,7 @@ export default function PromotionsClient({
                     required
                     value={code}
                     onChange={(e) => setCode(e.target.value.toUpperCase())}
-                    placeholder="e.g. TAMZEN10, WELCOME20, EELAM15"
+                    placeholder="e.g. SUMMER10, WELCOME20, VIP15"
                     className="w-full px-4 py-3 rounded-2xl bg-[#0D0D12] border border-white/10 text-sm font-mono tracking-wider text-[#F5F0E8] placeholder-white/20 focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none transition-all uppercase"
                   />
                   <div className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[10px] text-[#D4AF37] font-semibold bg-[#D4AF37]/10 px-2 py-0.5 rounded-md border border-[#D4AF37]/20">
