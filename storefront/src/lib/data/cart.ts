@@ -67,13 +67,40 @@ export async function getOrSetCart(countryCode: string) {
   if (!cart) {
     const locale = await getLocale()
     const cartResp = await sdk.store.cart.create(
-      { region_id: region.id, locale: locale || undefined },
+      {
+        region_id: region.id,
+        locale: locale || undefined,
+        shipping_address: {
+          country_code: countryCode.toLowerCase(),
+        },
+      },
       {},
       headers
     )
     cart = cartResp.cart
 
     await setCartId(cart.id)
+
+    // Automatically assign matching shipping option for initial country
+    try {
+      const shippingOptionsRes = await sdk.client.fetch<{
+        shipping_options: HttpTypes.StoreCartShippingOption[]
+      }>("/store/shipping-options", {
+        query: { cart_id: cart.id },
+        headers,
+      })
+      const options = shippingOptionsRes?.shipping_options?.filter(
+        (sm) => sm.service_zone?.fulfillment_set?.type !== "pickup"
+      )
+      if (options && options.length > 0) {
+        await sdk.store.cart.addShippingMethod(
+          cart.id,
+          { option_id: options[0].id },
+          {},
+          headers
+        )
+      }
+    } catch {}
 
     const cartCacheTag = await getCacheTag("carts")
     revalidateTag(cartCacheTag)
@@ -396,9 +423,13 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
           {},
           await getAuthHeaders()
         )
-        const cartCacheTag = await getCacheTag("cart")
+        const cartCacheTag = await getCacheTag("carts")
         if (cartCacheTag) {
           revalidateTag(cartCacheTag)
+        }
+        const fulfillmentCacheTag = await getCacheTag("fulfillment")
+        if (fulfillmentCacheTag) {
+          revalidateTag(fulfillmentCacheTag)
         }
       }
     } catch {}
@@ -409,6 +440,75 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
   redirect(
     `/${formData.get("shipping_address.country_code")}/checkout?step=delivery`
   )
+}
+
+/**
+ * Dynamically updates the shipping country on the cart and auto-selects
+ * the exact tiered shipping method for that country, immediately recalculating
+ * shipping fees and cart totals.
+ */
+export async function setShippingCountry(countryCode: string) {
+  const cartId = await getCartId()
+  if (!cartId || !countryCode) return null
+
+  const headers = {
+    ...(await getAuthHeaders()),
+  }
+
+  try {
+    const code = countryCode.toLowerCase()
+
+    // 1. Update the cart's shipping address country_code
+    await sdk.store.cart.update(
+      cartId,
+      {
+        shipping_address: {
+          country_code: code,
+        },
+      },
+      {},
+      headers
+    )
+
+    // 2. Fetch the matching shipping option for this country
+    const shippingOptionsRes = await sdk.client
+      .fetch<{
+        shipping_options: HttpTypes.StoreCartShippingOption[]
+      }>("/store/shipping-options", {
+        query: { cart_id: cartId },
+        headers,
+      })
+      .catch(() => null)
+
+    const options = shippingOptionsRes?.shipping_options?.filter(
+      (sm) => sm.service_zone?.fulfillment_set?.type !== "pickup"
+    )
+
+    // 3. Assign the matching shipping option to the cart
+    if (options && options.length > 0) {
+      await sdk.store.cart.addShippingMethod(
+        cartId,
+        { option_id: options[0].id },
+        {},
+        headers
+      )
+    }
+
+    // 4. Invalidate cache tags so cart totals and options update immediately
+    const cartCacheTag = await getCacheTag("carts")
+    if (cartCacheTag) {
+      revalidateTag(cartCacheTag)
+    }
+    const fulfillmentCacheTag = await getCacheTag("fulfillment")
+    if (fulfillmentCacheTag) {
+      revalidateTag(fulfillmentCacheTag)
+    }
+
+    return { success: true }
+  } catch (error: any) {
+    console.error("[setShippingCountry] Error updating shipping country:", error)
+    return { success: false, error: error.message }
+  }
 }
 
 /**
@@ -468,7 +568,41 @@ export async function updateRegion(countryCode: string, currentPath: string) {
   }
 
   if (cartId) {
-    await updateCart({ region_id: region.id })
+    const headers = {
+      ...(await getAuthHeaders()),
+    }
+    await sdk.store.cart.update(
+      cartId,
+      {
+        region_id: region.id,
+        shipping_address: {
+          country_code: countryCode.toLowerCase(),
+        },
+      },
+      {},
+      headers
+    )
+
+    try {
+      const shippingOptionsRes = await sdk.client.fetch<{
+        shipping_options: HttpTypes.StoreCartShippingOption[]
+      }>("/store/shipping-options", {
+        query: { cart_id: cartId },
+        headers,
+      })
+      const options = shippingOptionsRes?.shipping_options?.filter(
+        (sm) => sm.service_zone?.fulfillment_set?.type !== "pickup"
+      )
+      if (options && options.length > 0) {
+        await sdk.store.cart.addShippingMethod(
+          cartId,
+          { option_id: options[0].id },
+          {},
+          headers
+        )
+      }
+    } catch {}
+
     const cartCacheTag = await getCacheTag("carts")
     revalidateTag(cartCacheTag)
   }

@@ -2,7 +2,9 @@ import { HttpTypes } from "@medusajs/types"
 import Checkbox from "@modules/common/components/checkbox"
 import CheckoutInput from "../checkout-input"
 import { mapKeys } from "lodash"
-import React, { useEffect, useMemo, useState } from "react"
+import { setShippingCountry } from "@lib/data/cart"
+import { useRouter } from "next/navigation"
+import React, { useEffect, useMemo, useState, useTransition } from "react"
 import AddressSelect from "../address-select"
 import CountrySelect from "../country-select"
 
@@ -17,6 +19,9 @@ const ShippingAddress = ({
   checked: boolean
   onChange: () => void
 }) => {
+  const router = useRouter()
+  const [isUpdatingShipping, startUpdatingShipping] = useTransition()
+
   const [formData, setFormData] = useState<Record<string, any>>({
     "shipping_address.first_name": cart?.shipping_address?.first_name || "",
     "shipping_address.last_name": cart?.shipping_address?.last_name || "",
@@ -71,6 +76,19 @@ const ShippingAddress = ({
     }
   }
 
+  const handleSelectSavedAddress = (
+    address?: HttpTypes.StoreCartAddress,
+    email?: string
+  ) => {
+    setFormAddress(address, email)
+    if (address?.country_code) {
+      startUpdatingShipping(async () => {
+        await setShippingCountry(address.country_code!)
+        router.refresh()
+      })
+    }
+  }
+
   useEffect(() => {
     // Ensure cart is not null and has a shipping_address before setting form data
     if (cart && cart.shipping_address) {
@@ -93,6 +111,18 @@ const ShippingAddress = ({
     })
   }
 
+  const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newCountry = e.target.value
+    handleChange(e)
+
+    if (newCountry) {
+      startUpdatingShipping(async () => {
+        await setShippingCountry(newCountry)
+        router.refresh()
+      })
+    }
+  }
+
   return (
     <>
       {customer && (addressesInRegion?.length || 0) > 0 && (
@@ -107,7 +137,7 @@ const ShippingAddress = ({
                 key.replace("shipping_address.", "")
               ) as HttpTypes.StoreCartAddress
             }
-            onSelect={setFormAddress}
+            onSelect={handleSelectSavedAddress}
           />
         </div>
       )}
@@ -167,15 +197,23 @@ const ShippingAddress = ({
           required
           data-testid="shipping-city-input"
         />
-        <CountrySelect
-          name="shipping_address.country_code"
-          autoComplete="country"
-          region={cart?.region}
-          value={formData["shipping_address.country_code"] ?? ""}
-          onChange={handleChange}
-          required
-          data-testid="shipping-country-select"
-        />
+        <div className="flex flex-col w-full">
+          <CountrySelect
+            name="shipping_address.country_code"
+            autoComplete="country"
+            region={cart?.region}
+            value={formData["shipping_address.country_code"] ?? ""}
+            onChange={handleCountryChange}
+            required
+            data-testid="shipping-country-select"
+          />
+          {isUpdatingShipping && (
+            <div className="mt-1 flex items-center gap-1.5 text-[11px] text-[#E5C378] font-mono animate-pulse">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#E5C378]" />
+              <span>Calculating destination shipping rate...</span>
+            </div>
+          )}
+        </div>
         <div className="sm:col-span-2">
           <CheckoutInput
             label="State / Province (optional)"

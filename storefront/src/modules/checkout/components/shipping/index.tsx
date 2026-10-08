@@ -107,8 +107,11 @@ const Shipping: React.FC<ShippingProps> = ({
   }, [availableShippingMethods, shippingMethodId])
 
   useEffect(() => {
-    if (_shippingMethods && _shippingMethods.length > 0 && !shippingMethodId) {
-      handleSetShippingMethod(_shippingMethods[0].id, "shipping")
+    if (_shippingMethods && _shippingMethods.length > 0) {
+      const isCurrentValid = _shippingMethods.some((m) => m.id === shippingMethodId)
+      if (!isCurrentValid) {
+        handleSetShippingMethod(_shippingMethods[0].id, "shipping")
+      }
     }
   }, [_shippingMethods, shippingMethodId])
 
