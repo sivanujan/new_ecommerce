@@ -66,6 +66,7 @@ export default function ProductDetailPanel({
   const [addedSuccess, setAddedSuccess] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [showToast, setShowToast] = useState(false)
+  const [copiedPromo, setCopiedPromo] = useState(false)
   const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const [openAccordion, setOpenAccordion] = useState<string | null>("specs")
 
@@ -473,6 +474,42 @@ export default function ProductDetailPanel({
               <span>Add to Cart</span>
             </>
           )}
+        </button>
+      </div>
+
+      {/* Atelier Promo Code Offer Banner */}
+      <div className="flex items-center justify-between p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-[#D4AF37]/15 via-[#D4AF37]/5 to-transparent border border-[#D4AF37]/30 my-1 font-sans">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-[#D4AF37]/20 border border-[#D4AF37]/40 flex items-center justify-center text-[#D4AF37] shrink-0">
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+              <line x1="7" y1="7" x2="7.01" y2="7" />
+            </svg>
+          </div>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-semibold text-[#F5F0E8]">
+                Atelier Promo Code:
+              </span>
+              <span className="font-mono text-xs font-bold px-2 py-0.5 rounded-md bg-[#D4AF37]/20 border border-[#D4AF37]/40 text-[#D4AF37]">
+                TAMZEN10
+              </span>
+            </div>
+            <span className="text-[10px] text-neutral-400 block mt-0.5">
+              Enter at checkout bag to save 10% on your entire order
+            </span>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            navigator.clipboard.writeText("TAMZEN10")
+            setCopiedPromo(true)
+            setTimeout(() => setCopiedPromo(false), 2000)
+          }}
+          className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-[#D4AF37] hover:text-black text-xs font-semibold text-white transition-all shrink-0 ml-2 shadow-sm"
+        >
+          {copiedPromo ? "Copied!" : "Copy"}
         </button>
       </div>
 

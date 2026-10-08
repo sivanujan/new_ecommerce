@@ -487,6 +487,22 @@ export default function ProductForm({ product, categories }: ProductFormProps) {
               </div>
             </div>
 
+            {/* Promo Codes Helper */}
+            <div className="p-3.5 rounded-2xl bg-[#D4AF37]/10 border border-[#D4AF37]/25 flex items-center justify-between text-xs gap-3">
+              <div className="flex items-center gap-2.5">
+                <Sparkles className="h-4 w-4 text-[#D4AF37] shrink-0" />
+                <span className="text-[#F5F0E8] font-medium text-xs">
+                  Looking to offer checkout discount codes?
+                </span>
+              </div>
+              <Link
+                href="/admin/promotions"
+                className="text-xs font-semibold text-[#D4AF37] hover:text-[#E5C158] hover:underline whitespace-nowrap shrink-0"
+              >
+                Manage Promo Codes →
+              </Link>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-[#9CA3AF] mb-2">

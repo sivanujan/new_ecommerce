@@ -15,6 +15,9 @@ import {
   updateStore,
   updateCurrentUser,
   updateAdminHighlights,
+  createPromotion,
+  deletePromotion,
+  updatePromotionStatus,
 } from "./medusa"
 
 let rawBackendUrl = (process.env.MEDUSA_BACKEND_URL || "http://localhost:9000").replace("localhost", "127.0.0.1").trim()
@@ -477,4 +480,93 @@ export async function updateHomepageHighlightsAction(payload: {
     // Ignore in dev edge contexts if any
   }
   return { success: true, highlights: res.data?.highlights }
+}
+
+export async function createPromotionAction(formData: FormData) {
+  const code = formData.get("code")?.toString().trim().toUpperCase()
+  const discountType = formData.get("discountType")?.toString() || "percentage"
+  const valueStr = formData.get("value")?.toString() || "10"
+  const value = parseFloat(valueStr)
+
+  if (!code) {
+    return { error: "Promo code is required." }
+  }
+
+  if (isNaN(value) || value <= 0) {
+    return { error: "Please enter a valid discount value greater than 0." }
+  }
+
+  if (discountType === "percentage" && value > 100) {
+    return { error: "Percentage discount cannot exceed 100%." }
+  }
+
+  const result = await createPromotion({
+    code,
+    type: "standard",
+    status: "active",
+    applicationMethod: {
+      type: discountType === "percentage" ? "percentage" : "fixed",
+      value: value,
+      currencyCode: "eur",
+      allocation: "across",
+      targetType: "order",
+    },
+  })
+
+  if (result.error) {
+    return { error: result.error }
+  }
+
+  revalidatePath("/admin/promotions")
+  revalidatePath("/admin")
+  return { success: true, promotion: result.data?.promotion }
+}
+
+export async function deletePromotionAction(id: string) {
+  const result = await deletePromotion(id)
+  if (result.error) {
+    return { error: result.error }
+  }
+  revalidatePath("/admin/promotions")
+  return { success: true }
+}
+
+export async function bulkDeletePromotionsAction(ids: string[]) {
+  if (!ids || ids.length === 0) {
+    return { success: true, count: 0 }
+  }
+
+  let successCount = 0
+  const errors: string[] = []
+
+  for (const id of ids) {
+    try {
+      const res = await deletePromotion(id)
+      if (res.error) {
+        errors.push(`Failed to delete promotion ${id}: ${res.error}`)
+      } else {
+        successCount++
+      }
+    } catch (err: any) {
+      errors.push(`Error deleting ${id}: ${err?.message || "Unknown error"}`)
+    }
+  }
+
+  revalidatePath("/admin/promotions")
+
+  if (errors.length > 0 && successCount === 0) {
+    return { error: errors[0], success: false, count: 0 }
+  }
+
+  return { success: true, count: successCount, errors: errors.length > 0 ? errors : undefined }
+}
+
+export async function togglePromotionStatusAction(id: string, currentStatus: string) {
+  const nextStatus = currentStatus === "active" ? "draft" : "active"
+  const res = await updatePromotionStatus(id, nextStatus)
+  if (res.error) {
+    return { error: res.error }
+  }
+  revalidatePath("/admin/promotions")
+  return { success: true, status: nextStatus }
 }

@@ -318,6 +318,60 @@ export async function updateProductStatus(id: string, status: "published" | "dra
   })
 }
 
+// Promotions
+export async function listPromotions() {
+  const res = await adminFetch<{ promotions: any[] }>(
+    "/admin/promotions?limit=100&fields=*application_method,*campaign&order=-created_at"
+  )
+  return res.data?.promotions || []
+}
+
+export async function createPromotion(input: {
+  code: string
+  type?: "standard" | "buyget"
+  status?: "active" | "draft"
+  isAutomatic?: boolean
+  applicationMethod: {
+    type: "percentage" | "fixed"
+    targetType?: "order" | "items"
+    value: number
+    currencyCode?: string
+    allocation?: "across" | "each"
+  }
+}) {
+  const payload: any = {
+    code: input.code.toUpperCase().trim(),
+    type: input.type || "standard",
+    status: input.status || "active",
+    is_automatic: !!input.isAutomatic,
+    application_method: {
+      type: input.applicationMethod.type,
+      target_type: input.applicationMethod.targetType || "order",
+      value: Number(input.applicationMethod.value),
+      currency_code: input.applicationMethod.currencyCode || "eur",
+      allocation: input.applicationMethod.allocation || "across",
+    },
+  }
+
+  return adminFetch<{ promotion: any }>("/admin/promotions", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  })
+}
+
+export async function deletePromotion(id: string) {
+  return adminFetch(`/admin/promotions/${id}`, {
+    method: "DELETE",
+  })
+}
+
+export async function updatePromotionStatus(id: string, status: "active" | "draft") {
+  return adminFetch(`/admin/promotions/${id}`, {
+    method: "POST",
+    body: JSON.stringify({ status }),
+  })
+}
+
 // Orders
 export async function listOrders() {
   const res = await adminFetch<{ orders: any[] }>(
