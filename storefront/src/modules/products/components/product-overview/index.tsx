@@ -169,28 +169,21 @@ export default function ProductOverview({
     return result
   }, [selectedColor, colorImagesMap, product.images, initialImages, featuredCoverUrl])
 
-  // Handle option changes from ProductDetailPanel
-  const handleOptionChange = (
-    _optionId: string,
-    _value: string,
-    allOptions: Record<string, string>
-  ) => {
-    if (colorOption) {
-      const chosenColor = allOptions[colorOption.id]
-      if (chosenColor && chosenColor !== selectedColor) {
-        setSelectedColor(chosenColor)
+  // Direct color select handler from swatch click
+  const handleSelectColor = (chosenColor: string) => {
+    if (chosenColor && chosenColor !== selectedColor) {
+      setSelectedColor(chosenColor)
 
-        // Reflect selected color in URL (?color=gold)
-        if (typeof window !== "undefined") {
-          const url = new URL(window.location.href)
-          url.searchParams.set("color", chosenColor.toLowerCase())
-          window.history.replaceState({}, "", url.toString())
-        }
+      // Reflect selected color in URL (?color=gold)
+      if (typeof window !== "undefined") {
+        const url = new URL(window.location.href)
+        url.searchParams.set("color", chosenColor.toLowerCase())
+        window.history.replaceState({}, "", url.toString())
       }
     }
   }
 
-  // Update selectedColor if URL changes
+  // Update selectedColor if URL changes externally
   useEffect(() => {
     const urlColorParam = searchParams.get("color")
     if (urlColorParam) {
@@ -226,8 +219,8 @@ export default function ProductOverview({
         <ProductDetailPanel
           product={product}
           region={region}
-          initialColor={selectedColor}
-          onOptionChange={handleOptionChange}
+          selectedColor={selectedColor}
+          onSelectColor={handleSelectColor}
         />
       </div>
     </div>

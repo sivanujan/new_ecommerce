@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useMemo, useEffect, useRef } from "react"
-import { useParams, useRouter, useSearchParams } from "next/navigation"
+import { useState, useMemo, useRef } from "react"
+import { useParams, useRouter } from "next/navigation"
 import { HttpTypes } from "@medusajs/types"
 import { addToCart } from "@lib/data/cart"
 import { getProductPrice } from "@lib/util/get-product-price"
@@ -11,12 +11,9 @@ import Image from "next/image"
 type ProductDetailPanelProps = {
   product: HttpTypes.StoreProduct
   region: HttpTypes.StoreRegion
-  initialColor?: string
-  onOptionChange?: (
-    optionId: string,
-    value: string,
-    allOptions: Record<string, string>
-  ) => void
+  selectedColor: string
+  onSelectColor: (color: string) => void
+  onOptionChange?: (optionId: string, value: string) => void
 }
 
 const COLOR_SWATCH_GRADIENTS: Record<string, string> = {
@@ -58,11 +55,11 @@ const optionsAsKeymap = (
 export default function ProductDetailPanel({
   product,
   region,
-  initialColor,
+  selectedColor,
+  onSelectColor,
   onOptionChange,
 }: ProductDetailPanelProps) {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const countryCode = (useParams().countryCode as string) || "fr"
 
   // Options that have multiple values to choose from
@@ -82,31 +79,17 @@ export default function ProductDetailPanel({
     })
   }, [product.options])
 
-  // Initialize options state with initialColor or searchParams or first variant
+  // Local options map for non-color options (or initial variant choices)
   const [options, setOptions] = useState<Record<string, string>>(() => {
     const initialMap: Record<string, string> = {}
 
-    // Check URL parameters ?color=...
-    const urlColor = searchParams.get("color")
-    const targetColor =
-      urlColor || initialColor
-
-    if (colorOption && targetColor) {
-      const matchVal = colorOption.values?.find(
-        (v: any) => v.value.toLowerCase() === targetColor.toLowerCase()
-      )
-      if (matchVal) {
-        initialMap[colorOption.id] = matchVal.value
-      }
-    }
-
-    // Default to first variant's options for any other option
     if (product.variants && product.variants.length > 0) {
       const firstMap = optionsAsKeymap(product.variants[0].options)
-      return {
-        ...firstMap,
-        ...initialMap,
-      }
+      Object.assign(initialMap, firstMap)
+    }
+
+    if (colorOption && selectedColor) {
+      initialMap[colorOption.id] = selectedColor
     }
 
     return initialMap
@@ -125,63 +108,61 @@ export default function ProductDetailPanel({
     return visibleOptions.map((opt) => opt.id)
   }, [visibleOptions])
 
-  // Match selected variant based on current options
+  // Match selected variant based on selectedColor and secondary options
   const selectedVariant = useMemo(() => {
     if (!product.variants || product.variants.length === 0) {
       return undefined
     }
 
-    // If options need to be chosen, match them
-    if (requiredOptionIds.length > 0) {
-      const allSelected = requiredOptionIds.every((id) => !!options[id])
-      if (allSelected) {
-        const match = product.variants.find((v) => {
-          const vMap = optionsAsKeymap(v.options)
-          return requiredOptionIds.every((id) => vMap[id] === options[id])
-        })
-        if (match) return match
-      }
-    }
+    const lowerSelected = (selectedColor || "").toLowerCase()
 
-    // Match by color if color option is set
-    if (colorOption && options[colorOption.id]) {
-      const chosenColor = options[colorOption.id].toLowerCase()
-      const match = product.variants.find((v) => {
-        const vColor =
-          (v.metadata as any)?.color?.toLowerCase() ||
-          v.title?.toLowerCase()
-        return vColor && vColor.includes(chosenColor)
-      })
-      if (match) return match
-    }
+    // Match variant that corresponds to selectedColor
+    const matched = product.variants.find((v) => {
+      const vColor =
+        (v.metadata as any)?.color?.toLowerCase() ||
+        v.options?.find((o: any) =>
+          /color|metal|finish/i.test(o.option?.title || o.title || "")
+        )?.value?.toLowerCase() ||
+        v.title?.toLowerCase()
+
+      const colorMatches = vColor && vColor.includes(lowerSelected)
+
+      // Also verify any non-color options if present
+      if (colorMatches && colorOption) {
+        const vMap = optionsAsKeymap(v.options)
+        const otherOptionsMatch = requiredOptionIds
+          .filter((id) => id !== colorOption.id)
+          .every((id) => vMap[id] === options[id])
+        return otherOptionsMatch
+      }
+
+      return colorMatches
+    })
+
+    if (matched) return matched
 
     // Fallback to first variant
     return product.variants[0]
-  }, [product.variants, requiredOptionIds, options, colorOption])
+  }, [product.variants, selectedColor, colorOption, requiredOptionIds, options])
 
-  // Sync URL search params shallowly with selected color
-  useEffect(() => {
-    if (typeof window !== "undefined" && colorOption && options[colorOption.id]) {
-      const currentUrlColor = searchParams.get("color")
-      const newColor = options[colorOption.id].toLowerCase()
-      if (currentUrlColor !== newColor) {
-        const url = new URL(window.location.href)
-        url.searchParams.set("color", newColor)
-        window.history.replaceState({}, "", url.toString())
-      }
-    }
-  }, [options, colorOption, searchParams])
-
-  // Update option value when user clicks a swatch or pill
-  const handleSelectOption = (optionId: string, value: string) => {
-    setOptions((prev) => {
-      const next = {
+  // Click handler for color swatches
+  const handleColorClick = (colorName: string) => {
+    if (colorOption) {
+      setOptions((prev) => ({
         ...prev,
-        [optionId]: value,
-      }
-      onOptionChange?.(optionId, value, next)
-      return next
-    })
+        [colorOption.id]: colorName,
+      }))
+    }
+    onSelectColor(colorName)
+  }
+
+  // Click handler for other option pills
+  const handleSelectOption = (optionId: string, value: string) => {
+    setOptions((prev) => ({
+      ...prev,
+      [optionId]: value,
+    }))
+    onOptionChange?.(optionId, value)
   }
 
   // Stock assessment
@@ -401,7 +382,6 @@ export default function ProductDetailPanel({
       {hasMultipleVariants && visibleOptions.length > 0 && (
         <div className="flex flex-col gap-5 py-3 border-t border-white/10">
           {visibleOptions.map((option) => {
-            const currentVal = options[option.id]
             const isColorOption =
               (option.title || "").toLowerCase().includes("color") ||
               (option.title || "").toLowerCase().includes("metal") ||
@@ -413,18 +393,17 @@ export default function ProductDetailPanel({
                   <span className="text-neutral-300 tracking-[0.18em]">
                     {option.title}
                   </span>
-                  {currentVal && (
-                    <span className="text-[#E5C378] font-bold tracking-wide">
-                      {currentVal}
-                    </span>
-                  )}
+                  <span className="text-[#E5C378] font-bold tracking-wide">
+                    {isColorOption ? selectedColor : options[option.id] || ""}
+                  </span>
                 </div>
 
                 {/* Elegant 3 Color Swatches (Round Dots: Silver, Gold, Black with Gold Ring) */}
                 {isColorOption ? (
                   <div className="flex flex-wrap items-center gap-3 pt-0.5">
                     {(option.values ?? []).map((v) => {
-                      const isSelected = currentVal === v.value
+                      const isSelected =
+                        (selectedColor || "").toLowerCase() === (v.value || "").toLowerCase()
                       const lower = v.value.toLowerCase()
                       const gradient = getExactColorGradient(v.value)
 
@@ -432,7 +411,7 @@ export default function ProductDetailPanel({
                         <button
                           key={v.id || v.value}
                           type="button"
-                          onClick={() => handleSelectOption(option.id, v.value)}
+                          onClick={() => handleColorClick(v.value)}
                           className={`group relative flex items-center gap-3 px-4.5 py-2.5 rounded-full border transition-all duration-200 cursor-pointer select-none ${
                             isSelected
                               ? "bg-[#16161D] border-[#D4AF37] ring-2 ring-[#D4AF37] ring-offset-2 ring-offset-[#0A0A0E] shadow-[0_0_20px_rgba(212,175,55,0.35)] font-bold"
@@ -473,7 +452,7 @@ export default function ProductDetailPanel({
                   /* Standard Variant Pills for Size/Length */
                   <div className="flex flex-wrap gap-2.5">
                     {(option.values ?? []).map((v) => {
-                      const isSelected = currentVal === v.value
+                      const isSelected = options[option.id] === v.value
 
                       return (
                         <button
