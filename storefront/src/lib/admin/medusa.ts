@@ -168,7 +168,11 @@ export async function createProduct(input: {
   categoryId?: string
   stock: number
   images: string[]
+  thumbnail?: string
   isPublished: boolean
+  options?: { title: string; values: string[] }[]
+  colorImages?: Record<string, string[]>
+  metadata?: Record<string, any>
   optionTitle?: string
   optionValues?: string[]
 }) {
@@ -183,34 +187,93 @@ export async function createProduct(input: {
     "-" +
     Math.random().toString(36).substring(2, 6)
 
-  const optTitle = input.optionTitle?.trim() || "Option"
-  const optValues =
-    input.optionValues && input.optionValues.length > 0
-      ? input.optionValues.map((v) => v.trim()).filter(Boolean)
-      : ["Default"]
+  // Determine options structure
+  let finalOptions: { title: string; values: string[] }[] = []
+  if (input.options && input.options.length > 0) {
+    finalOptions = input.options
+      .map((opt) => ({
+        title: opt.title.trim(),
+        values: opt.values.map((v) => v.trim()).filter(Boolean),
+      }))
+      .filter((opt) => opt.title && opt.values.length > 0)
+  } else if (input.optionTitle && input.optionValues && input.optionValues.length > 0) {
+    finalOptions = [
+      {
+        title: input.optionTitle.trim(),
+        values: input.optionValues.map((v) => v.trim()).filter(Boolean),
+      },
+    ]
+  }
 
-  const variants = optValues.map((val) => ({
-    title: val === "Default" ? "Default" : `${input.title} – ${val}`,
-    options: { [optTitle]: val },
-    prices: [{ currency_code: "eur", amount: Number(input.price) }],
-    manage_inventory: false,
-    allow_backorder: true,
-    metadata: {
-      stock_quantity: Number(input.stock) || 0,
-      compare_at_price: input.compareAtPrice ? Number(input.compareAtPrice) : null,
-    },
-  }))
+  if (finalOptions.length === 0) {
+    finalOptions = [{ title: "Option", values: ["Default"] }]
+  }
+
+  // Cartesian product generator for option combinations
+  function cartesian(arr: { title: string; values: string[] }[]) {
+    return arr.reduce<Record<string, string>[]>(
+      (acc, curr) => {
+        const next: Record<string, string>[] = []
+        for (const prev of acc) {
+          for (const val of curr.values) {
+            next.push({ ...prev, [curr.title]: val })
+          }
+        }
+        return next
+      },
+      [{}]
+    )
+  }
+
+  const combinations = cartesian(finalOptions)
+  const variants = combinations.map((combo) => {
+    const titleParts = Object.values(combo).filter(Boolean)
+    const variantTitle = titleParts.length > 0 ? titleParts.join(" / ") : "Default"
+    const colorVal = combo["Color"] || combo["color"]
+    const colorImgs = colorVal && input.colorImages ? input.colorImages[colorVal] : []
+
+    return {
+      title: variantTitle === "Default" ? "Default" : `${input.title} – ${variantTitle}`,
+      options: combo,
+      prices: [{ currency_code: "eur", amount: Number(input.price) }],
+      manage_inventory: false,
+      allow_backorder: true,
+      metadata: {
+        stock_quantity: Number(input.stock) || 0,
+        compare_at_price: input.compareAtPrice ? Number(input.compareAtPrice) : null,
+        image_url: colorImgs?.[0] || input.thumbnail || input.images[0] || null,
+      },
+    }
+  })
+
+  // Ensure featured thumbnail is at the front of images list
+  const featured = input.thumbnail || (input.images && input.images[0]) || null
+  const orderedImages = [...(input.images || [])]
+  if (featured && orderedImages.includes(featured)) {
+    const idx = orderedImages.indexOf(featured)
+    if (idx > 0) {
+      orderedImages.splice(idx, 1)
+      orderedImages.unshift(featured)
+    }
+  } else if (featured && !orderedImages.includes(featured)) {
+    orderedImages.unshift(featured)
+  }
 
   const payload: any = {
     title: input.title,
     handle,
     description: input.description || "",
     status: input.isPublished ? "published" : "draft",
-    thumbnail: input.images[0] || null,
-    images: input.images.map((url) => ({ url })),
+    thumbnail: featured,
+    images: orderedImages.map((url) => ({ url })),
     sales_channels: salesChannelIds,
-    options: [{ title: optTitle, values: optValues }],
+    options: finalOptions,
     variants,
+    metadata: {
+      ...(input.metadata || {}),
+      featured_image: featured,
+      color_images: input.colorImages || {},
+    },
   }
 
   if (input.categoryId) {
@@ -243,7 +306,10 @@ export async function updateProduct(
     categoryId?: string
     stock?: number
     images?: string[]
+    thumbnail?: string
     isPublished?: boolean
+    colorImages?: Record<string, string[]>
+    metadata?: Record<string, any>
   }
 ) {
   const payload: any = {
@@ -255,14 +321,40 @@ export async function updateProduct(
     payload.status = input.isPublished ? "published" : "draft"
   }
 
+  const featured = input.thumbnail || (input.images && input.images[0]) || undefined
+  if (featured) {
+    payload.thumbnail = featured
+  }
+
   if (input.images && input.images.length > 0) {
-    payload.thumbnail = input.images[0]
-    payload.images = input.images.map((url) => ({ url }))
+    const reordered = [...input.images]
+    if (featured) {
+      const idx = reordered.indexOf(featured)
+      if (idx > 0) {
+        reordered.splice(idx, 1)
+        reordered.unshift(featured)
+      }
+    }
+    payload.images = reordered.map((url) => ({ url }))
   }
 
   if (input.categoryId !== undefined) {
     payload.categories = input.categoryId ? [{ id: input.categoryId }] : []
   }
+
+  const existing = await getProduct(id)
+  const existingMetadata = existing?.metadata || {}
+  const nextMetadata: any = {
+    ...existingMetadata,
+    ...(input.metadata || {}),
+  }
+  if (featured) {
+    nextMetadata.featured_image = featured
+  }
+  if (input.colorImages !== undefined) {
+    nextMetadata.color_images = input.colorImages
+  }
+  payload.metadata = nextMetadata
 
   // Update base product
   const updateRes = await adminFetch(`/admin/products/${id}`, {
@@ -270,15 +362,14 @@ export async function updateProduct(
     body: JSON.stringify(payload),
   })
 
-  // Update variant price / stock / compareAtPrice
+  // Update variant price / stock / compareAtPrice across variants
   if (
     input.price !== undefined ||
     input.stock !== undefined ||
     input.compareAtPrice !== undefined
   ) {
-    const existing = await getProduct(id)
-    const variant = existing?.variants?.[0]
-    if (variant) {
+    const variants = existing?.variants || []
+    for (const variant of variants) {
       const variantPayload: any = {}
       if (input.price !== undefined) {
         variantPayload.prices = [{ currency_code: "eur", amount: Number(input.price) }]

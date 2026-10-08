@@ -88,7 +88,10 @@ export async function createProductAction(formData: FormData) {
   const categoryId = formData.get("categoryId")?.toString() || undefined
   const stock = parseInt(formData.get("stock")?.toString() || "0", 10)
   const isPublished = formData.get("isPublished") === "true"
+  const thumbnail = formData.get("thumbnail")?.toString().trim() || undefined
   const imagesRaw = formData.get("images")?.toString() || "[]"
+  const optionsRaw = formData.get("options")?.toString()
+  const colorImagesRaw = formData.get("colorImages")?.toString()
   const optionTitle = formData.get("optionTitle")?.toString() || undefined
   const optionValuesRaw = formData.get("optionValues")?.toString()
 
@@ -97,6 +100,24 @@ export async function createProductAction(formData: FormData) {
     images = JSON.parse(imagesRaw)
   } catch {
     images = []
+  }
+
+  let options: { title: string; values: string[] }[] | undefined = undefined
+  if (optionsRaw) {
+    try {
+      options = JSON.parse(optionsRaw)
+    } catch {
+      options = undefined
+    }
+  }
+
+  let colorImages: Record<string, string[]> | undefined = undefined
+  if (colorImagesRaw) {
+    try {
+      colorImages = JSON.parse(colorImagesRaw)
+    } catch {
+      colorImages = undefined
+    }
   }
 
   let optionValues: string[] | undefined = undefined
@@ -124,7 +145,10 @@ export async function createProductAction(formData: FormData) {
     categoryId: categoryId || undefined,
     stock,
     images,
+    thumbnail,
     isPublished,
+    options,
+    colorImages,
     optionTitle,
     optionValues,
   })
@@ -147,7 +171,9 @@ export async function updateProductAction(id: string, formData: FormData) {
   const categoryId = formData.get("categoryId")?.toString() || undefined
   const stockStr = formData.get("stock")?.toString()
   const isPublishedStr = formData.get("isPublished")?.toString()
+  const thumbnail = formData.get("thumbnail")?.toString().trim() || undefined
   const imagesRaw = formData.get("images")?.toString()
+  const colorImagesRaw = formData.get("colorImages")?.toString()
 
   if (!title) {
     return { error: "Product name is required." }
@@ -162,12 +188,27 @@ export async function updateProductAction(id: string, formData: FormData) {
     }
   }
 
+  let colorImages: Record<string, string[]> | undefined = undefined
+  if (colorImagesRaw) {
+    try {
+      colorImages = JSON.parse(colorImagesRaw)
+    } catch {
+      colorImages = undefined
+    }
+  }
+
   const updateData: any = {
     title,
     description,
     categoryId: categoryId || undefined,
   }
 
+  if (thumbnail) {
+    updateData.thumbnail = thumbnail
+  }
+  if (colorImages !== undefined) {
+    updateData.colorImages = colorImages
+  }
   if (priceStr) {
     updateData.price = parseFloat(priceStr)
   }

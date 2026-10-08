@@ -4,10 +4,11 @@ import { listProducts } from "@lib/data/products"
 import { getRegion, listRegions } from "@lib/data/regions"
 import ProductTemplate from "@modules/products/templates"
 import { HttpTypes } from "@medusajs/types"
+import { normalizeImageUrl } from "@lib/util/normalize-image-url"
 
 type Props = {
   params: Promise<{ countryCode: string; handle: string }>
-  searchParams: Promise<{ v_id?: string }>
+  searchParams: Promise<{ v_id?: string; color?: string }>
 }
 
 export async function generateStaticParams() {
@@ -54,24 +55,56 @@ export async function generateStaticParams() {
 
 function getImagesForVariant(
   product: HttpTypes.StoreProduct,
-  selectedVariantId?: string
+  selectedVariantId?: string,
+  colorParam?: string
 ) {
-  let images = product.images || []
+  let images = product.images ? [...product.images] : []
+
+  // If a color is specified in URL query, place that color's image first
+  if (colorParam) {
+    const metaColorImgs = (product.metadata as any)?.color_images || {}
+    const matchedColorKey = Object.keys(metaColorImgs).find(
+      (k) => k.toLowerCase() === colorParam.toLowerCase()
+    )
+    if (matchedColorKey && metaColorImgs[matchedColorKey]?.length) {
+      const colorUrls = metaColorImgs[matchedColorKey]
+      const colorNormSet = new Set(colorUrls.map((u: string) => normalizeImageUrl(u)))
+      const matched = colorUrls.map((url: string, i: number) => ({
+        id: `color-${matchedColorKey}-${i}`,
+        url: normalizeImageUrl(url),
+      })) as HttpTypes.StoreProductImage[]
+      const remainder = images.filter((img) => !colorNormSet.has(normalizeImageUrl(img.url)))
+      return [...matched, ...remainder]
+    }
+  }
 
   if (selectedVariantId && product.variants) {
     const variant = product.variants.find((v) => v.id === selectedVariantId)
     if (variant && variant.images?.length) {
       const imageIdsMap = new Map((variant.images || []).map((i) => [i.id, true]))
-      images = (product.images || []).filter((i) => imageIdsMap.has(i.id))
+      const variantMatched = (product.images || []).filter((i) => imageIdsMap.has(i.id))
+      if (variantMatched.length > 0) {
+        images = variantMatched
+      }
     }
   }
 
-  // Return latest uploaded image as first
-  return [...images].sort((a: any, b: any) => {
-    const timeA = a.created_at ? new Date(a.created_at).getTime() : 0
-    const timeB = b.created_at ? new Date(b.created_at).getTime() : 0
-    return timeB - timeA
-  })
+  // Ensure the main featured cover image is FIRST in the gallery
+  const featured = product.thumbnail || (product.metadata as any)?.featured_image
+  if (featured && images.length > 0) {
+    const normFeatured = normalizeImageUrl(featured)
+    const existingIndex = images.findIndex(
+      (img) => normalizeImageUrl(img.url) === normFeatured
+    )
+    if (existingIndex > 0) {
+      const [featImg] = images.splice(existingIndex, 1)
+      images.unshift(featImg)
+    } else if (existingIndex === -1) {
+      images.unshift({ id: "featured-cover", url: featured } as any)
+    }
+  }
+
+  return images
 }
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
@@ -120,6 +153,7 @@ export default async function ProductPage(props: Props) {
   const searchParams = await props.searchParams
 
   const selectedVariantId = searchParams.v_id
+  const selectedColorParam = searchParams.color
 
   if (!region) {
     notFound()
@@ -139,7 +173,7 @@ export default async function ProductPage(props: Props) {
     notFound()
   }
 
-  const images = getImagesForVariant(pricedProduct, selectedVariantId)
+  const images = getImagesForVariant(pricedProduct, selectedVariantId, selectedColorParam)
 
   // JSON-LD Structured Data for Google rich results
   const jsonLd = {

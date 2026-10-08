@@ -11,6 +11,35 @@ import Image from "next/image"
 type ProductDetailPanelProps = {
   product: HttpTypes.StoreProduct
   region: HttpTypes.StoreRegion
+  initialColor?: string
+  onOptionChange?: (
+    optionId: string,
+    value: string,
+    allOptions: Record<string, string>
+  ) => void
+}
+
+const COLOR_SWATCH_GRADIENTS: Record<string, string> = {
+  silver: "linear-gradient(135deg, #F8FAFC 0%, #CBD5E1 50%, #64748B 100%)",
+  gold: "linear-gradient(135deg, #FFF2A3 0%, #D4AF37 50%, #8C6510 100%)",
+  black: "linear-gradient(135deg, #374151 0%, #1F2937 50%, #0B0B0E 100%)",
+}
+
+function getExactColorGradient(colorName: string): string {
+  const c = colorName.toLowerCase()
+  if (c.includes("rose")) {
+    return "linear-gradient(135deg, #FAD0C4 0%, #E5989B 50%, #B56576 100%)"
+  }
+  if (c.includes("gold")) {
+    return COLOR_SWATCH_GRADIENTS.gold
+  }
+  if (c.includes("silver") || c.includes("steel") || c.includes("white")) {
+    return COLOR_SWATCH_GRADIENTS.silver
+  }
+  if (c.includes("black") || c.includes("onyx")) {
+    return COLOR_SWATCH_GRADIENTS.black
+  }
+  return "linear-gradient(135deg, #D4AF37 0%, #8C6510 100%)"
 }
 
 const optionsAsKeymap = (
@@ -29,6 +58,8 @@ const optionsAsKeymap = (
 export default function ProductDetailPanel({
   product,
   region,
+  initialColor,
+  onOptionChange,
 }: ProductDetailPanelProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -43,22 +74,42 @@ export default function ProductDetailPanel({
 
   const hasMultipleVariants = (product.variants?.length ?? 0) > 1
 
-  // Pre-select first available variant or URL parameter so user can immediately add to cart
+  // Identify the color option
+  const colorOption = useMemo(() => {
+    return (product.options || []).find((opt) => {
+      const t = (opt.title || "").toLowerCase()
+      return t === "color" || t.includes("color") || t === "metal" || t.includes("finish")
+    })
+  }, [product.options])
+
+  // Initialize options state with initialColor or searchParams or first variant
   const [options, setOptions] = useState<Record<string, string>>(() => {
-    const urlVariantId = searchParams.get("v_id")
-    if (urlVariantId && product.variants) {
-      const match = product.variants.find((v) => v.id === urlVariantId)
-      if (match?.options) {
-        return optionsAsKeymap(match.options)
+    const initialMap: Record<string, string> = {}
+
+    // Check URL parameters ?color=...
+    const urlColor = searchParams.get("color")
+    const targetColor =
+      urlColor || initialColor
+
+    if (colorOption && targetColor) {
+      const matchVal = colorOption.values?.find(
+        (v: any) => v.value.toLowerCase() === targetColor.toLowerCase()
+      )
+      if (matchVal) {
+        initialMap[colorOption.id] = matchVal.value
       }
     }
 
-    // Default to first variant's options so "Add to Cart" is immediately ready
+    // Default to first variant's options for any other option
     if (product.variants && product.variants.length > 0) {
-      return optionsAsKeymap(product.variants[0].options)
+      const firstMap = optionsAsKeymap(product.variants[0].options)
+      return {
+        ...firstMap,
+        ...initialMap,
+      }
     }
 
-    return {}
+    return initialMap
   })
 
   const [quantity, setQuantity] = useState(1)
@@ -80,11 +131,6 @@ export default function ProductDetailPanel({
       return undefined
     }
 
-    // Single variant product
-    if (!hasMultipleVariants) {
-      return product.variants[0]
-    }
-
     // If options need to be chosen, match them
     if (requiredOptionIds.length > 0) {
       const allSelected = requiredOptionIds.every((id) => !!options[id])
@@ -97,29 +143,45 @@ export default function ProductDetailPanel({
       }
     }
 
-    // Fallback to first variant if no specific match
-    return product.variants[0]
-  }, [product.variants, hasMultipleVariants, requiredOptionIds, options])
-
-  // Sync URL shallowly with window.history.replaceState
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const url = new URL(window.location.href)
-      if (selectedVariant?.id) {
-        url.searchParams.set("v_id", selectedVariant.id)
-      } else {
-        url.searchParams.delete("v_id")
-      }
-      window.history.replaceState({}, "", url.toString())
+    // Match by color if color option is set
+    if (colorOption && options[colorOption.id]) {
+      const chosenColor = options[colorOption.id].toLowerCase()
+      const match = product.variants.find((v) => {
+        const vColor =
+          (v.metadata as any)?.color?.toLowerCase() ||
+          v.title?.toLowerCase()
+        return vColor && vColor.includes(chosenColor)
+      })
+      if (match) return match
     }
-  }, [selectedVariant])
 
-  // Update option value when user clicks a pill
+    // Fallback to first variant
+    return product.variants[0]
+  }, [product.variants, requiredOptionIds, options, colorOption])
+
+  // Sync URL search params shallowly with selected color
+  useEffect(() => {
+    if (typeof window !== "undefined" && colorOption && options[colorOption.id]) {
+      const currentUrlColor = searchParams.get("color")
+      const newColor = options[colorOption.id].toLowerCase()
+      if (currentUrlColor !== newColor) {
+        const url = new URL(window.location.href)
+        url.searchParams.set("color", newColor)
+        window.history.replaceState({}, "", url.toString())
+      }
+    }
+  }, [options, colorOption, searchParams])
+
+  // Update option value when user clicks a swatch or pill
   const handleSelectOption = (optionId: string, value: string) => {
-    setOptions((prev) => ({
-      ...prev,
-      [optionId]: value,
-    }))
+    setOptions((prev) => {
+      const next = {
+        ...prev,
+        [optionId]: value,
+      }
+      onOptionChange?.(optionId, value, next)
+      return next
+    })
   }
 
   // Stock assessment
@@ -130,7 +192,7 @@ export default function ProductDetailPanel({
     return (selectedVariant.inventory_quantity || 0) > 0
   }, [selectedVariant])
 
-  // Price calculation
+  // Price calculation for selected variant
   const priceInfo = useMemo(() => {
     try {
       const { cheapestPrice, variantPrice } = getProductPrice({
@@ -143,7 +205,7 @@ export default function ProductDetailPanel({
     }
   }, [product, selectedVariant])
 
-  // Fallback description if product has none entered in Medusa
+  // Fallback description
   const displayDescription = useMemo(() => {
     if (product.description && product.description.trim().length > 0) {
       return product.description.trim()
@@ -202,13 +264,10 @@ export default function ProductDetailPanel({
 
   return (
     <div className="w-full flex flex-col gap-6 lg:gap-7 relative">
-      {/* ============================================================ */}
-      {/* 1. FLOATING TOAST NOTIFICATION ON ADD TO CART */}
-      {/* ============================================================ */}
+      {/* 1. Floating Notification Toast */}
       {showToast && (
         <div className="fixed bottom-6 right-4 sm:right-6 z-50 max-w-md w-[calc(100vw-32px)] bg-[#141418]/95 border border-[#E5C378]/50 shadow-[0_10px_40px_rgba(0,0,0,0.8)] rounded-2xl p-4 backdrop-blur-xl animate-fadeIn">
           <div className="flex items-start gap-3">
-            {/* Thumbnail */}
             <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-neutral-900 border border-white/10 shrink-0">
               {product.thumbnail ? (
                 <Image
@@ -234,6 +293,7 @@ export default function ProductDetailPanel({
               </div>
               <p className="text-white font-serif font-bold text-sm truncate">
                 {product.title}
+                {selectedVariant?.title && ` – ${selectedVariant.title}`}
               </p>
               <p className="text-xs text-neutral-400 font-mono">
                 Qty: {quantity} • {priceInfo?.calculated_price || "EUR"}
@@ -266,9 +326,7 @@ export default function ProductDetailPanel({
         </div>
       )}
 
-      {/* ============================================================ */}
-      {/* 2. CATEGORY / EYEBROW BADGE */}
-      {/* ============================================================ */}
+      {/* 2. Category / Eyebrow */}
       <div className="flex items-center gap-2">
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.05] border border-white/15 text-[#E5C378] text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.25em]">
           <span className="w-1.5 h-1.5 rounded-full bg-[#E5C378] animate-pulse" />
@@ -281,9 +339,7 @@ export default function ProductDetailPanel({
         )}
       </div>
 
-      {/* ============================================================ */}
-      {/* 3. HIGH-CONTRAST BOLD SERIF TITLE */}
-      {/* ============================================================ */}
+      {/* 3. Product Title */}
       <div>
         <h1
           className="font-serif font-bold text-3xl sm:text-4xl lg:text-5xl text-[#FDFBF7] tracking-tight leading-[1.1] drop-shadow-sm"
@@ -302,9 +358,7 @@ export default function ProductDetailPanel({
         </div>
       </div>
 
-      {/* ============================================================ */}
-      {/* 4. PROMINENT PRICE & STOCK STATUS BAR */}
-      {/* ============================================================ */}
+      {/* 4. Price & Stock Status Bar */}
       <div className="flex flex-wrap items-baseline gap-4 py-3.5 border-y border-white/10">
         <div className="flex items-baseline gap-3">
           <span
@@ -333,9 +387,7 @@ export default function ProductDetailPanel({
         </div>
       </div>
 
-      {/* ============================================================ */}
-      {/* 5. HIGH-CONTRAST PRODUCT DESCRIPTION */}
-      {/* ============================================================ */}
+      {/* 5. Product Description */}
       <div className="space-y-2 py-1">
         <span className="text-[10px] uppercase font-mono tracking-[0.2em] text-[#E5C378] font-bold block">
           The Piece
@@ -345,16 +397,18 @@ export default function ProductDetailPanel({
         </div>
       </div>
 
-      {/* ============================================================ */}
-      {/* 6. VARIANT SELECTORS (IF MULTIPLE OPTIONS EXIST) */}
-      {/* ============================================================ */}
+      {/* 6. Color & Variant Swatch Selectors */}
       {hasMultipleVariants && visibleOptions.length > 0 && (
-        <div className="flex flex-col gap-4 py-2 border-t border-white/10">
+        <div className="flex flex-col gap-5 py-3 border-t border-white/10">
           {visibleOptions.map((option) => {
             const currentVal = options[option.id]
+            const isColorOption =
+              (option.title || "").toLowerCase().includes("color") ||
+              (option.title || "").toLowerCase().includes("metal") ||
+              (option.title || "").toLowerCase().includes("finish")
 
             return (
-              <div key={option.id} className="flex flex-col gap-2">
+              <div key={option.id} className="flex flex-col gap-2.5">
                 <div className="flex items-center justify-between text-xs uppercase tracking-wider font-semibold select-none">
                   <span className="text-neutral-300 tracking-[0.18em]">
                     {option.title}
@@ -366,27 +420,78 @@ export default function ProductDetailPanel({
                   )}
                 </div>
 
-                {/* Variant Pill Buttons */}
-                <div className="flex flex-wrap gap-2.5">
-                  {(option.values ?? []).map((v) => {
-                    const isSelected = currentVal === v.value
+                {/* Elegant 3 Color Swatches (Round Dots: Silver, Gold, Black with Gold Ring) */}
+                {isColorOption ? (
+                  <div className="flex flex-wrap items-center gap-3 pt-0.5">
+                    {(option.values ?? []).map((v) => {
+                      const isSelected = currentVal === v.value
+                      const lower = v.value.toLowerCase()
+                      const gradient = getExactColorGradient(v.value)
 
-                    return (
-                      <button
-                        key={v.id || v.value}
-                        type="button"
-                        onClick={() => handleSelectOption(option.id, v.value)}
-                        className={`px-5 py-2.5 rounded-full text-xs font-semibold tracking-wider transition-all duration-200 active:scale-95 cursor-pointer select-none ${
-                          isSelected
-                            ? "bg-[#E5C378]/25 border-2 border-[#E5C378] text-[#F3D798] ring-2 ring-[#E5C378]/40 shadow-[0_0_15px_rgba(229,195,120,0.25)] font-bold"
-                            : "bg-white/5 hover:bg-white/10 border border-white/20 text-neutral-200 hover:text-white hover:border-white/40"
-                        }`}
-                      >
-                        {v.value}
-                      </button>
-                    )
-                  })}
-                </div>
+                      return (
+                        <button
+                          key={v.id || v.value}
+                          type="button"
+                          onClick={() => handleSelectOption(option.id, v.value)}
+                          className={`group relative flex items-center gap-3 px-4.5 py-2.5 rounded-full border transition-all duration-200 cursor-pointer select-none ${
+                            isSelected
+                              ? "bg-[#16161D] border-[#D4AF37] ring-2 ring-[#D4AF37] ring-offset-2 ring-offset-[#0A0A0E] shadow-[0_0_20px_rgba(212,175,55,0.35)] font-bold"
+                              : "bg-[#0E0E12] border-white/15 hover:border-white/35 hover:bg-white/5 opacity-80 hover:opacity-100"
+                          }`}
+                          data-testid={`color-swatch-${lower}`}
+                        >
+                          {/* Round Color Swatch Dot */}
+                          <span
+                            className={`w-6 h-6 rounded-full inline-block shrink-0 shadow-md transition-transform duration-200 border ${
+                              isSelected
+                                ? "scale-110 border-white/60"
+                                : "border-black/50 group-hover:scale-105"
+                            }`}
+                            style={{ background: gradient }}
+                          />
+
+                          {/* Color Name */}
+                          <span
+                            className={`text-xs font-semibold uppercase tracking-wider transition-colors ${
+                              isSelected
+                                ? "text-[#F5F0E8] font-bold"
+                                : "text-neutral-300 group-hover:text-white"
+                            }`}
+                          >
+                            {v.value}
+                          </span>
+
+                          {/* Gold Ring Indicator Dot */}
+                          {isSelected && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-pulse" />
+                          )}
+                        </button>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  /* Standard Variant Pills for Size/Length */
+                  <div className="flex flex-wrap gap-2.5">
+                    {(option.values ?? []).map((v) => {
+                      const isSelected = currentVal === v.value
+
+                      return (
+                        <button
+                          key={v.id || v.value}
+                          type="button"
+                          onClick={() => handleSelectOption(option.id, v.value)}
+                          className={`px-5 py-2.5 rounded-full text-xs font-semibold tracking-wider transition-all duration-200 active:scale-95 cursor-pointer select-none flex items-center gap-2 ${
+                            isSelected
+                              ? "bg-[#E5C378]/25 border-2 border-[#E5C378] text-[#F3D798] ring-2 ring-[#E5C378]/40 shadow-[0_0_15px_rgba(229,195,120,0.25)] font-bold"
+                              : "bg-white/5 hover:bg-white/10 border border-white/20 text-neutral-200 hover:text-white hover:border-white/40"
+                          }`}
+                        >
+                          <span>{v.value}</span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
               </div>
             )
           })}
@@ -403,11 +508,8 @@ export default function ProductDetailPanel({
         </div>
       )}
 
-      {/* ============================================================ */}
-      {/* 7. QUANTITY STEPPER & ADD TO CART CTA */}
-      {/* ============================================================ */}
-      <div className="flex flex-col sm:flex-row items-stretch gap-3.5 pt-2">
-        {/* Quantity Stepper */}
+      {/* 7. Quantity Stepper & Add to Cart Button */}
+      <div className="flex flex-col sm:flex-row items-stretch gap-3.5 pt-1">
         <div className="inline-flex items-center justify-between border border-white/20 bg-white/[0.04] rounded-full px-4 py-2 sm:py-3 shrink-0">
           <button
             type="button"
@@ -432,7 +534,6 @@ export default function ProductDetailPanel({
           </button>
         </div>
 
-        {/* Add to Cart Button */}
         <button
           type="button"
           onClick={handleAddToCart}
@@ -476,10 +577,7 @@ export default function ProductDetailPanel({
         </button>
       </div>
 
-
-      {/* ============================================================ */}
-      {/* 8. TRUST BADGES ROW */}
-      {/* ============================================================ */}
+      {/* 8. Trust Badges */}
       <div className="grid grid-cols-3 gap-2.5 py-4 border-y border-white/10 text-center font-sans">
         <div className="flex flex-col items-center gap-1.5 p-2 rounded-xl bg-white/[0.02]">
           <svg className="w-4 h-4 text-[#E5C378]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
@@ -512,11 +610,8 @@ export default function ProductDetailPanel({
         </div>
       </div>
 
-      {/* ============================================================ */}
-      {/* 9. LUXURY ACCORDION SECTIONS */}
-      {/* ============================================================ */}
+      {/* 9. Accordions */}
       <div className="flex flex-col divide-y divide-white/10 border-b border-white/10 font-sans">
-        {/* Accordion Item 1: Product Specifications */}
         <div className="py-3">
           <button
             type="button"
@@ -561,7 +656,6 @@ export default function ProductDetailPanel({
           )}
         </div>
 
-        {/* Accordion Item 2: Shipping & Returns */}
         <div className="py-3">
           <button
             type="button"
@@ -597,7 +691,6 @@ export default function ProductDetailPanel({
           )}
         </div>
 
-        {/* Accordion Item 3: Heritage & Authenticity */}
         <div className="py-3">
           <button
             type="button"

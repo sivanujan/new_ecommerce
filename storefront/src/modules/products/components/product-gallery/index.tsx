@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import { HttpTypes } from "@medusajs/types"
 import { normalizeImageUrl } from "@lib/util/normalize-image-url"
@@ -16,12 +16,23 @@ export default function ProductGallery({
   title,
   thumbnail,
 }: ProductGalleryProps) {
-  // Consolidate images list, falling back to thumbnail if empty
-  const rawImages = images && images.length > 0 
-    ? images 
-    : thumbnail 
-      ? [{ id: "thumb", url: thumbnail } as HttpTypes.StoreProductImage] 
-      : []
+  // Consolidate images list, ensuring featured thumbnail is first
+  let rawImages: HttpTypes.StoreProductImage[] = images && images.length > 0 
+    ? [...images] 
+    : []
+
+  if (thumbnail) {
+    const normThumb = normalizeImageUrl(thumbnail)
+    const existingIndex = rawImages.findIndex(
+      (img) => normalizeImageUrl(img.url) === normThumb
+    )
+    if (existingIndex > 0) {
+      const [thumbImg] = rawImages.splice(existingIndex, 1)
+      rawImages.unshift(thumbImg)
+    } else if (existingIndex === -1) {
+      rawImages.unshift({ id: "featured-thumb", url: thumbnail } as any)
+    }
+  }
 
   const allImages = rawImages.map((img) => ({
     ...img,
@@ -30,6 +41,12 @@ export default function ProductGallery({
 
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [errorIndices, setErrorIndices] = useState<Record<number, boolean>>({})
+
+  // When images change (e.g. Color option clicked), reset to main cover
+  useEffect(() => {
+    setSelectedIndex(0)
+  }, [images])
+
   const currentImage = allImages[selectedIndex] || allImages[0]
 
   const handlePrev = () => {

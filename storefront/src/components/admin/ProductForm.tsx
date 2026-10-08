@@ -21,6 +21,11 @@ import {
   Save,
   Image as ImageIcon,
   Sliders,
+  Star,
+  Palette,
+  Ruler,
+  Check,
+  Tag,
 } from "lucide-react"
 import {
   createProductAction,
@@ -32,6 +37,50 @@ import { useToast } from "@/components/admin/ToastProvider"
 interface ProductFormProps {
   product?: any
   categories: any[]
+}
+
+const COLOR_PRESETS = [
+  { name: "Gold", gradient: "linear-gradient(135deg, #FFE082 0%, #D4AF37 50%, #996515 100%)" },
+  { name: "Silver", gradient: "linear-gradient(135deg, #F8FAFC 0%, #CBD5E1 50%, #64748B 100%)" },
+  { name: "Rose Gold", gradient: "linear-gradient(135deg, #FAD0C4 0%, #E5989B 50%, #B56576 100%)" },
+  { name: "White Gold", gradient: "linear-gradient(135deg, #FFFFFF 0%, #E2E8F0 50%, #94A3B8 100%)" },
+  { name: "Platinum", gradient: "linear-gradient(135deg, #E2E8F0 0%, #CBD5E1 50%, #475569 100%)" },
+  { name: "Black", gradient: "linear-gradient(135deg, #374151 0%, #1F2937 50%, #111827 100%)" },
+]
+
+const SIZE_PRESETS_BY_TYPE: Record<string, string[]> = {
+  "Chain Length": ["40 cm", "45 cm", "50 cm", "55 cm", "60 cm"],
+  "Ring Size": ["US 5", "US 6", "US 7", "US 8", "US 9"],
+  "Standard": ["XS", "S", "M", "L", "XL", "One Size"],
+}
+
+function getColorSwatchGradient(colorName: string): string {
+  const c = colorName.toLowerCase()
+  if (c.includes("gold") && c.includes("rose")) {
+    return "linear-gradient(135deg, #FAD0C4 0%, #E5989B 50%, #B56576 100%)"
+  }
+  if (c.includes("white gold") || c.includes("platinum")) {
+    return "linear-gradient(135deg, #FFFFFF 0%, #E2E8F0 50%, #94A3B8 100%)"
+  }
+  if (c.includes("gold") || c.includes("yellow")) {
+    return "linear-gradient(135deg, #FFE082 0%, #D4AF37 50%, #996515 100%)"
+  }
+  if (c.includes("silver")) {
+    return "linear-gradient(135deg, #F8FAFC 0%, #CBD5E1 50%, #64748B 100%)"
+  }
+  if (c.includes("black") || c.includes("onyx")) {
+    return "linear-gradient(135deg, #374151 0%, #1F2937 50%, #111827 100%)"
+  }
+  if (c.includes("blue") || c.includes("sapphire")) {
+    return "linear-gradient(135deg, #60A5FA 0%, #2563EB 50%, #1E3A8A 100%)"
+  }
+  if (c.includes("emerald") || c.includes("green")) {
+    return "linear-gradient(135deg, #34D399 0%, #059669 50%, #064E3B 100%)"
+  }
+  if (c.includes("ruby") || c.includes("red")) {
+    return "linear-gradient(135deg, #F87171 0%, #DC2626 50%, #7F1D1D 100%)"
+  }
+  return "linear-gradient(135deg, #D4AF37 0%, #AA771C 100%)"
 }
 
 export default function ProductForm({ product, categories }: ProductFormProps) {
@@ -60,10 +109,28 @@ export default function ProductForm({ product, categories }: ProductFormProps) {
     ? [product.thumbnail]
     : []
 
-  const existingOption = product?.options?.[0]
-  const existingOptionTitle = existingOption?.title || "Option"
-  const existingOptionValues = existingOption?.values?.map((v: any) => v.value) || []
+  // Detect existing color and size options
+  const existingColorOpt = product?.options?.find((o: any) =>
+    /^(color|colour|metal|finish)$/i.test(o.title || "")
+  )
+  const existingSizeOpt = product?.options?.find((o: any) =>
+    /^(size|length|chain length|ring size)$/i.test(o.title || "")
+  )
+  const existingFallbackOpt = !existingColorOpt && !existingSizeOpt ? product?.options?.[0] : null
 
+  const initialColors: string[] =
+    existingColorOpt?.values?.map((v: any) => v.value) || []
+  const initialSizes: string[] =
+    existingSizeOpt?.values?.map((v: any) => v.value) ||
+    existingFallbackOpt?.values?.map((v: any) => v.value) ||
+    []
+
+  const initialFeatured =
+    product?.metadata?.featured_image ||
+    product?.thumbnail ||
+    (defaultImages.length > 0 ? defaultImages[0] : "")
+
+  // Form Basic States
   const [title, setTitle] = useState(product?.title || "")
   const [description, setDescription] = useState(product?.description || "")
   const [price, setPrice] = useState(defaultPrice)
@@ -75,14 +142,40 @@ export default function ProductForm({ product, categories }: ProductFormProps) {
   const [isPublished, setIsPublished] = useState(
     isEditing ? product.status === "published" : true
   )
-  const [images, setImages] = useState<string[]>(defaultImages)
 
-  const [showOptions, setShowOptions] = useState(existingOptionValues.length > 1)
-  const [optionTitle, setOptionTitle] = useState(existingOptionTitle)
-  const [optionValuesInput, setOptionValuesInput] = useState(
-    existingOptionValues.length > 0 ? existingOptionValues.join(", ") : ""
+  // Media & Featured Image State
+  const [images, setImages] = useState<string[]>(defaultImages)
+  const [featuredImage, setFeaturedImage] = useState<string>(initialFeatured)
+
+  // Color & Size Options State
+  const [enableColors, setEnableColors] = useState(initialColors.length > 0)
+  const [colorTitle, setColorTitle] = useState(existingColorOpt?.title || "Color")
+  const [colors, setColors] = useState<string[]>(initialColors)
+  const [colorInput, setColorInput] = useState("")
+
+  const [enableSizes, setEnableSizes] = useState(initialSizes.length > 0)
+  const [sizeTitle, setSizeTitle] = useState(
+    existingSizeOpt?.title || existingFallbackOpt?.title || "Chain Length"
+  )
+  const [sizes, setSizes] = useState<string[]>(initialSizes)
+  const [sizeInput, setSizeInput] = useState("")
+  const [activeSizeCategory, setActiveSizeCategory] = useState<string>(
+    sizeTitle.toLowerCase().includes("ring")
+      ? "Ring Size"
+      : sizeTitle.toLowerCase().includes("chain") || sizeTitle.toLowerCase().includes("length")
+      ? "Chain Length"
+      : "Standard"
   )
 
+  // Color Image Mapping: { [colorName: string]: string[] }
+  const [colorImageMap, setColorImageMap] = useState<Record<string, string[]>>(() => {
+    if (product?.metadata?.color_images && typeof product.metadata.color_images === "object") {
+      return product.metadata.color_images
+    }
+    return {}
+  })
+
+  // Action states
   const [isUploading, setIsUploading] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -91,6 +184,87 @@ export default function ProductForm({ product, categories }: ProductFormProps) {
   const [createdProduct, setCreatedProduct] = useState<any | null>(null)
   const [dragActive, setDragActive] = useState(false)
 
+  // ---------------------------------------------------------------------------
+  // Color Helpers
+  // ---------------------------------------------------------------------------
+  const addColor = (name: string) => {
+    const trimmed = name.trim()
+    if (!trimmed) return
+    if (!colors.includes(trimmed)) {
+      setColors((prev) => [...prev, trimmed])
+      if (!enableColors) setEnableColors(true)
+    }
+    setColorInput("")
+  }
+
+  const removeColor = (colorToRemove: string) => {
+    setColors((prev) => prev.filter((c) => c !== colorToRemove))
+    setColorImageMap((prev) => {
+      const copy = { ...prev }
+      delete copy[colorToRemove]
+      return copy
+    })
+  }
+
+  // ---------------------------------------------------------------------------
+  // Size Helpers
+  // ---------------------------------------------------------------------------
+  const addSize = (val: string) => {
+    const trimmed = val.trim()
+    if (!trimmed) return
+    if (!sizes.includes(trimmed)) {
+      setSizes((prev) => [...prev, trimmed])
+      if (!enableSizes) setEnableSizes(true)
+    }
+    setSizeInput("")
+  }
+
+  const removeSize = (sizeToRemove: string) => {
+    setSizes((prev) => prev.filter((s) => s !== sizeToRemove))
+  }
+
+  // ---------------------------------------------------------------------------
+  // Image & Color Mapping Helpers
+  // ---------------------------------------------------------------------------
+  const getImageAssignedColor = (url: string): string => {
+    for (const [colorName, urls] of Object.entries(colorImageMap)) {
+      if (urls.includes(url)) return colorName
+    }
+    return ""
+  }
+
+  const setImageAssignedColor = (url: string, newColor: string) => {
+    setColorImageMap((prev) => {
+      const updated: Record<string, string[]> = {}
+      // Remove url from any existing assignments
+      for (const [col, list] of Object.entries(prev)) {
+        const filtered = list.filter((u) => u !== url)
+        if (filtered.length > 0) {
+          updated[col] = filtered
+        }
+      }
+      // If newColor is selected, add url to that color
+      if (newColor.trim()) {
+        const currentList = updated[newColor] || []
+        updated[newColor] = [...currentList, url]
+      }
+      return updated
+    })
+  }
+
+  const handleSetFeaturedImage = (url: string) => {
+    setFeaturedImage(url)
+    // Also move to first position in array for immediate visual satisfaction
+    setImages((prev) => {
+      const without = prev.filter((u) => u !== url)
+      return [url, ...without]
+    })
+    toast.success("Designated as Main Featured Cover Image ★")
+  }
+
+  // ---------------------------------------------------------------------------
+  // Upload & File Handling
+  // ---------------------------------------------------------------------------
   const handleUploadFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return
     setIsUploading(true)
@@ -113,7 +287,11 @@ export default function ProductForm({ product, categories }: ProductFormProps) {
       }
 
       if (data.urls && data.urls.length > 0) {
-        setImages((prev) => [...data.urls, ...prev])
+        setImages((prev) => [...prev, ...data.urls])
+        // If no featured image is currently set, make the first uploaded image featured
+        if (!featuredImage) {
+          setFeaturedImage(data.urls[0])
+        }
         toast.success(
           `Successfully uploaded ${data.urls.length} image${
             data.urls.length > 1 ? "s" : ""
@@ -162,9 +340,29 @@ export default function ProductForm({ product, categories }: ProductFormProps) {
   }
 
   const removeImage = (indexToRemove: number) => {
-    setImages((prev) => prev.filter((_, i) => i !== indexToRemove))
+    const urlToRemove = images[indexToRemove]
+    const updatedImages = images.filter((_, i) => i !== indexToRemove)
+    setImages(updatedImages)
+
+    // Remove from color mapping
+    setColorImageMap((prev) => {
+      const updated: Record<string, string[]> = {}
+      for (const [col, list] of Object.entries(prev)) {
+        const filtered = list.filter((u) => u !== urlToRemove)
+        if (filtered.length > 0) updated[col] = filtered
+      }
+      return updated
+    })
+
+    // If removed image was featured, pick the first remaining image
+    if (featuredImage === urlToRemove) {
+      setFeaturedImage(updatedImages[0] || "")
+    }
   }
 
+  // ---------------------------------------------------------------------------
+  // Form Submit
+  // ---------------------------------------------------------------------------
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setFormError(null)
@@ -193,15 +391,46 @@ export default function ProductForm({ product, categories }: ProductFormProps) {
       formData.set("categoryId", categoryId)
       formData.set("stock", stock)
       formData.set("isPublished", isPublished ? "true" : "false")
-      formData.set("images", JSON.stringify(images))
 
-      if (showOptions && optionValuesInput.trim()) {
-        formData.set("optionTitle", optionTitle.trim() || "Option")
-        const parsedVals = optionValuesInput
-          .split(",")
-          .map((v) => v.trim())
-          .filter(Boolean)
-        formData.set("optionValues", JSON.stringify(parsedVals))
+      // Ensure featured image is explicitly prioritized at index 0 of images list
+      const finalFeatured =
+        featuredImage && images.includes(featuredImage)
+          ? featuredImage
+          : images[0] || ""
+
+      const orderedImages = [...images]
+      if (finalFeatured && orderedImages.includes(finalFeatured)) {
+        const idx = orderedImages.indexOf(finalFeatured)
+        if (idx > 0) {
+          orderedImages.splice(idx, 1)
+          orderedImages.unshift(finalFeatured)
+        }
+      }
+
+      formData.set("thumbnail", finalFeatured)
+      formData.set("images", JSON.stringify(orderedImages))
+      formData.set("colorImages", JSON.stringify(colorImageMap))
+
+      // Build options array (Color + Size / Length)
+      const optionsArray: { title: string; values: string[] }[] = []
+      if (enableColors && colors.length > 0) {
+        optionsArray.push({
+          title: colorTitle.trim() || "Color",
+          values: colors,
+        })
+      }
+      if (enableSizes && sizes.length > 0) {
+        optionsArray.push({
+          title: sizeTitle.trim() || "Size",
+          values: sizes,
+        })
+      }
+
+      if (optionsArray.length > 0) {
+        formData.set("options", JSON.stringify(optionsArray))
+        // Backwards compatibility for single option endpoints
+        formData.set("optionTitle", optionsArray[0].title)
+        formData.set("optionValues", JSON.stringify(optionsArray[0].values))
       }
 
       if (isEditing) {
@@ -253,6 +482,23 @@ export default function ProductForm({ product, categories }: ProductFormProps) {
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // Variant Combinations Calculator for Live Preview
+  // ---------------------------------------------------------------------------
+  const activeColorCount = enableColors ? colors.length : 0
+  const activeSizeCount = enableSizes ? sizes.length : 0
+  const totalCombinations =
+    activeColorCount > 0 && activeSizeCount > 0
+      ? activeColorCount * activeSizeCount
+      : activeColorCount > 0
+      ? activeColorCount
+      : activeSizeCount > 0
+      ? activeSizeCount
+      : 1
+
+  // ---------------------------------------------------------------------------
+  // Success Screen
+  // ---------------------------------------------------------------------------
   if (createdProduct) {
     const storefrontUrl = `/fr/products/${createdProduct.handle}`
 
@@ -274,8 +520,8 @@ export default function ProductForm({ product, categories }: ProductFormProps) {
             Product Successfully Created!
           </h2>
           <p className="text-sm text-[#9CA3AF] max-w-md mx-auto mt-2 leading-relaxed">
-            "{createdProduct.title}" is configured with European pricing, automatic
-            channel routing, and is immediately available for customer orders.
+            "{createdProduct.title}" is configured with European pricing, color & size variants,
+            and is immediately available for customer orders.
           </p>
         </div>
 
@@ -298,7 +544,9 @@ export default function ProductForm({ product, categories }: ProductFormProps) {
             <p className="text-xs text-[#D4AF37] font-semibold mt-0.5">
               €{parseFloat(price).toFixed(2)} EUR
             </p>
-            <p className="text-[11px] text-[#9CA3AF]">Stock: {stock} units</p>
+            <p className="text-[11px] text-[#9CA3AF]">
+              {totalCombinations} variant{totalCombinations > 1 ? "s" : ""} • Stock: {stock} units
+            </p>
           </div>
         </div>
 
@@ -322,8 +570,12 @@ export default function ProductForm({ product, categories }: ProductFormProps) {
               setPrice("49.00")
               setCompareAtPrice("")
               setImages([])
-              setShowOptions(false)
-              setOptionValuesInput("")
+              setFeaturedImage("")
+              setEnableColors(false)
+              setColors([])
+              setEnableSizes(false)
+              setSizes([])
+              setColorImageMap({})
             }}
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-[#F5F0E8] font-medium text-sm hover:bg-white/10 transition-colors"
           >
@@ -344,6 +596,7 @@ export default function ProductForm({ product, categories }: ProductFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
+      {/* Header Bar */}
       <div className="flex items-center justify-between pb-2">
         <Link
           href="/admin/products"
@@ -388,7 +641,9 @@ export default function ProductForm({ product, categories }: ProductFormProps) {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left Column (2 Cols): Form inputs */}
         <div className="lg:col-span-2 space-y-6">
+          {/* 1. Basic Information */}
           <div className="bg-[#121217] rounded-3xl p-6 sm:p-7 border border-white/10 space-y-5 shadow-xl">
             <div className="flex items-center justify-between border-b border-white/5 pb-4">
               <h3 className="font-serif font-bold text-lg text-[#F5F0E8] flex items-center gap-2">
@@ -429,6 +684,7 @@ export default function ProductForm({ product, categories }: ProductFormProps) {
             </div>
           </div>
 
+          {/* 2. Pricing & Stock */}
           <div className="bg-[#121217] rounded-3xl p-6 sm:p-7 border border-white/10 space-y-5 shadow-xl">
             <div className="flex items-center justify-between border-b border-white/5 pb-4">
               <h3 className="font-serif font-bold text-lg text-[#F5F0E8] flex items-center gap-2">
@@ -544,17 +800,24 @@ export default function ProductForm({ product, categories }: ProductFormProps) {
             </div>
           </div>
 
+          {/* 3. Product Media & Gallery with Featured Image & Color Tagging */}
           <div className="bg-[#121217] rounded-3xl p-6 sm:p-7 border border-white/10 space-y-5 shadow-xl">
             <div className="flex items-center justify-between border-b border-white/5 pb-4">
-              <h3 className="font-serif font-bold text-lg text-[#F5F0E8] flex items-center gap-2">
-                <ImageIcon className="h-5 w-5 text-[#D4AF37]" />
-                <span>Product Media & Gallery</span>
-              </h3>
-              <span className="text-xs text-[#9CA3AF]">
-                {images.length} {images.length === 1 ? "image" : "images"} uploaded
+              <div>
+                <h3 className="font-serif font-bold text-lg text-[#F5F0E8] flex items-center gap-2">
+                  <ImageIcon className="h-5 w-5 text-[#D4AF37]" />
+                  <span>Product Media & Gallery</span>
+                </h3>
+                <p className="text-xs text-[#9CA3AF] mt-0.5">
+                  Add multiple photos, choose the Main Featured Cover, and tag images to specific Colors.
+                </p>
+              </div>
+              <span className="text-xs text-[#9CA3AF] shrink-0 font-medium bg-white/5 px-2.5 py-1 rounded-full border border-white/10">
+                {images.length} {images.length === 1 ? "photo" : "photos"}
               </span>
             </div>
 
+            {/* Drag & Drop Upload Zone */}
             <div
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
@@ -595,160 +858,582 @@ export default function ProductForm({ product, categories }: ProductFormProps) {
                   )}
                 </p>
                 <p className="text-xs text-[#9CA3AF]">
-                  High-res PNG, JPG, or WEBP photography (multi-file supported)
+                  High-resolution PNG, JPG, or WEBP photography (multi-file supported)
                 </p>
               </div>
             </div>
 
+            {/* Image Gallery Cards */}
             {images.length > 0 && (
               <div className="space-y-3 pt-2">
-                <div className="flex items-center justify-between text-xs text-[#9CA3AF]">
-                  <span>First photo will be used as the primary catalog cover</span>
-                  <span>Use arrows to reorder</span>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs text-[#9CA3AF] gap-2 pb-1">
+                  <div className="flex items-center gap-1.5 text-[#D4AF37]">
+                    <Star className="h-3.5 w-3.5 fill-[#D4AF37]" />
+                    <span>Click "Set as Main" on any photo to make it the Featured Cover</span>
+                  </div>
+                  <span>Use arrows to reorder gallery position</span>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  {images.map((url, index) => (
-                    <div
-                      key={url + index}
-                      className="group relative rounded-2xl overflow-hidden bg-[#0D0D12] border border-white/10 aspect-square shadow-md"
-                    >
-                      <img
-                        src={url}
-                        alt={`Product image ${index + 1}`}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  {images.map((url, index) => {
+                    const isFeatured =
+                      url === featuredImage ||
+                      (index === 0 && (!featuredImage || !images.includes(featuredImage)))
+                    const assignedColor = getImageAssignedColor(url)
 
-                      {index === 0 && (
-                        <div className="absolute top-2 left-2 px-2 py-0.5 rounded-lg bg-[#D4AF37] text-black text-[10px] font-bold uppercase tracking-wider shadow">
-                          Cover
+                    return (
+                      <div
+                        key={url + index}
+                        className={`group relative rounded-2xl overflow-hidden bg-[#0D0D12] border transition-all shadow-md flex flex-col ${
+                          isFeatured
+                            ? "border-[#D4AF37] ring-1 ring-[#D4AF37]/50"
+                            : "border-white/10 hover:border-white/20"
+                        }`}
+                      >
+                        {/* Image Preview */}
+                        <div className="relative aspect-square w-full overflow-hidden bg-black/40">
+                          <img
+                            src={url}
+                            alt={`Product image ${index + 1}`}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+
+                          {/* Featured Cover Badge */}
+                          {isFeatured && (
+                            <div className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-xl bg-[#D4AF37] text-black text-[11px] font-bold uppercase tracking-wider shadow-lg flex items-center gap-1 z-10">
+                              <Star className="h-3 w-3 fill-black" />
+                              <span>Main Featured</span>
+                            </div>
+                          )}
+
+                          {/* Top Controls Overlay */}
+                          <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 z-10">
+                            {!isFeatured && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleSetFeaturedImage(url)
+                                }}
+                                className="px-2 py-1 rounded-xl bg-black/75 hover:bg-[#D4AF37] text-white hover:text-black text-[10px] font-semibold border border-white/20 transition-all backdrop-blur-md flex items-center gap-1 opacity-90 group-hover:opacity-100"
+                                title="Set as Main Featured Image"
+                              >
+                                <Star className="h-3 w-3" />
+                                <span>Set as Main</span>
+                              </button>
+                            )}
+
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                removeImage(index)
+                              }}
+                              className="p-1.5 rounded-xl bg-rose-950/80 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/30 transition-colors backdrop-blur-md"
+                              title="Remove image"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+
+                          {/* Position Reorder Overlay on Hover */}
+                          <div className="absolute bottom-2 left-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-between gap-1 bg-black/75 backdrop-blur-md rounded-xl p-1 border border-white/10 z-10">
+                            <button
+                              type="button"
+                              disabled={index === 0}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                moveImage(index, "left")
+                              }}
+                              className="p-1 rounded-lg hover:bg-white/20 text-[#F5F0E8] disabled:opacity-20 disabled:hover:bg-transparent"
+                              title="Move left"
+                            >
+                              <ChevronLeft className="h-3.5 w-3.5" />
+                            </button>
+                            <span className="text-[10px] font-mono text-[#D4AF37]">
+                              Position #{index + 1}
+                            </span>
+                            <button
+                              type="button"
+                              disabled={index === images.length - 1}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                moveImage(index, "right")
+                              }}
+                              className="p-1 rounded-lg hover:bg-white/20 text-[#F5F0E8] disabled:opacity-20 disabled:hover:bg-transparent"
+                              title="Move right"
+                            >
+                              <ChevronRight className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
                         </div>
-                      )}
 
-                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-2.5">
-                        <div className="flex justify-end">
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              removeImage(index)
-                            }}
-                            className="p-1.5 rounded-xl bg-rose-600/80 hover:bg-rose-600 text-white transition-colors"
-                            title="Remove image"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
+                        {/* Color Variant Assignment Dropdown */}
+                        <div className="p-3 bg-[#121217] border-t border-white/5 space-y-1.5">
+                          <label className="text-[10px] font-semibold uppercase tracking-wider text-[#9CA3AF] flex items-center gap-1">
+                            <Palette className="h-3 w-3 text-[#D4AF37]" />
+                            <span>Color Variant</span>
+                          </label>
 
-                        <div className="flex items-center justify-between gap-1 bg-black/60 backdrop-blur-md rounded-xl p-1 border border-white/10">
-                          <button
-                            type="button"
-                            disabled={index === 0}
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              moveImage(index, "left")
-                            }}
-                            className="p-1 rounded-lg hover:bg-white/20 text-[#F5F0E8] disabled:opacity-20 disabled:hover:bg-transparent"
-                            title="Move left"
-                          >
-                            <ChevronLeft className="h-4 w-4" />
-                          </button>
-                          <span className="text-[10px] font-mono text-[#D4AF37]">
-                            #{index + 1}
-                          </span>
-                          <button
-                            type="button"
-                            disabled={index === images.length - 1}
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              moveImage(index, "right")
-                            }}
-                            className="p-1 rounded-lg hover:bg-white/20 text-[#F5F0E8] disabled:opacity-20 disabled:hover:bg-transparent"
-                            title="Move right"
-                          >
-                            <ChevronRight className="h-4 w-4" />
-                          </button>
+                          {enableColors && colors.length > 0 ? (
+                            <select
+                              value={assignedColor}
+                              onChange={(e) => setImageAssignedColor(url, e.target.value)}
+                              className="w-full text-xs px-2.5 py-1.5 rounded-xl bg-[#0D0D12] border border-white/10 text-[#F5F0E8] focus:border-[#D4AF37] outline-none transition-colors cursor-pointer"
+                            >
+                              <option value="">All Colors (General)</option>
+                              {colors.map((c) => (
+                                <option key={c} value={c} className="bg-[#121217] text-[#F5F0E8]">
+                                  {c}
+                                </option>
+                              ))}
+                            </select>
+                          ) : (
+                            <p className="text-[11px] text-[#9CA3AF]/60 italic">
+                              Enable Colors below to assign photo
+                            </p>
+                          )}
+
+                          {assignedColor && (
+                            <div className="flex items-center gap-1.5 pt-0.5">
+                              <span
+                                className="w-2.5 h-2.5 rounded-full border border-white/20 shadow-sm shrink-0"
+                                style={{ background: getColorSwatchGradient(assignedColor) }}
+                              />
+                              <span className="text-[10px] font-medium text-[#D4AF37] truncate">
+                                Shows when "{assignedColor}" is selected
+                              </span>
+                            </div>
+                          )}
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
             )}
           </div>
 
-          <div className="bg-[#121217] rounded-3xl p-6 sm:p-7 border border-white/10 space-y-4 shadow-xl">
-            <div className="flex items-center justify-between">
+          {/* 4. Product Variations (Colors & Sizes) */}
+          <div className="bg-[#121217] rounded-3xl p-6 sm:p-7 border border-white/10 space-y-6 shadow-xl">
+            <div className="flex items-center justify-between border-b border-white/5 pb-4">
               <div>
                 <h3 className="font-serif font-bold text-lg text-[#F5F0E8] flex items-center gap-2">
                   <Sliders className="h-5 w-5 text-[#D4AF37]" />
-                  <span>Product Options</span>
+                  <span>Product Options & Variants</span>
                 </h3>
                 <p className="text-xs text-[#9CA3AF] mt-0.5">
-                  Optional choices like chain length, ring size, or metal finish.
+                  Configure Color and Size options. Different images switch dynamically as clients browse colors.
                 </p>
               </div>
 
-              {!showOptions && (
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-[#D4AF37] bg-[#D4AF37]/10 px-2.5 py-1 rounded-full border border-[#D4AF37]/30">
+                  {totalCombinations} Variant{totalCombinations > 1 ? "s" : ""}
+                </span>
+              </div>
+            </div>
+
+            {/* Section A: Colors & Metal Finishes */}
+            <div className="p-5 rounded-2xl bg-[#0D0D12] border border-white/10 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] flex items-center justify-center">
+                    <Palette className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-[#F5F0E8]">
+                      Color & Metal Finishes
+                    </h4>
+                    <p className="text-[11px] text-[#9CA3AF]">
+                      Enables color pills on the product page and links photos to client selections.
+                    </p>
+                  </div>
+                </div>
+
                 <button
                   type="button"
-                  onClick={() => setShowOptions(true)}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-[#D4AF37] bg-[#D4AF37]/10 hover:bg-[#D4AF37]/20 border border-[#D4AF37]/30 transition-colors"
+                  onClick={() => {
+                    const next = !enableColors
+                    setEnableColors(next)
+                    if (next && colors.length === 0) {
+                      setColors(["Gold", "Silver"])
+                    }
+                  }}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
+                    enableColors
+                      ? "bg-[#D4AF37] text-black border-[#D4AF37]"
+                      : "bg-white/5 text-[#9CA3AF] border-white/10 hover:border-white/20"
+                  }`}
                 >
-                  <Plus className="h-3.5 w-3.5" />
-                  <span>Add Options</span>
+                  {enableColors ? "Enabled ✓" : "+ Enable Colors"}
                 </button>
+              </div>
+
+              {enableColors && (
+                <div className="pt-3 border-t border-white/5 space-y-4 animate-in fade-in duration-200">
+                  {/* Color Option Title Input */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#9CA3AF] mb-1.5">
+                        Option Label
+                      </label>
+                      <input
+                        type="text"
+                        value={colorTitle}
+                        onChange={(e) => setColorTitle(e.target.value)}
+                        placeholder="e.g. Color or Finish"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-[#121217] border border-white/10 text-xs text-[#F5F0E8] focus:border-[#D4AF37] outline-none transition-all"
+                      />
+                    </div>
+
+                    <div className="sm:col-span-2">
+                      <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#9CA3AF] mb-1.5">
+                        Add Custom Color
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={colorInput}
+                          onChange={(e) => setColorInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault()
+                              addColor(colorInput)
+                            }
+                          }}
+                          placeholder="e.g. Rose Gold, Emerald Green"
+                          className="flex-1 px-3.5 py-2.5 rounded-xl bg-[#121217] border border-white/10 text-xs text-[#F5F0E8] focus:border-[#D4AF37] outline-none transition-all"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => addColor(colorInput)}
+                          className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-[#D4AF37] text-[#F5F0E8] hover:text-black font-semibold text-xs border border-white/10 transition-colors whitespace-nowrap"
+                        >
+                          + Add
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Quick Color Presets */}
+                  <div>
+                    <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#9CA3AF]/80 mb-2">
+                      Quick Luxury Presets:
+                    </label>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {COLOR_PRESETS.map((preset) => {
+                        const isAdded = colors.includes(preset.name)
+                        return (
+                          <button
+                            key={preset.name}
+                            type="button"
+                            onClick={() => {
+                              if (isAdded) {
+                                removeColor(preset.name)
+                              } else {
+                                addColor(preset.name)
+                              }
+                            }}
+                            className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-medium border transition-all ${
+                              isAdded
+                                ? "bg-[#D4AF37]/15 border-[#D4AF37] text-[#F5F0E8]"
+                                : "bg-[#121217] border-white/10 text-[#9CA3AF] hover:border-white/25 hover:text-[#F5F0E8]"
+                            }`}
+                          >
+                            <span
+                              className="w-3 h-3 rounded-full border border-white/20 shadow-sm shrink-0"
+                              style={{ background: preset.gradient }}
+                            />
+                            <span>{preset.name}</span>
+                            {isAdded ? (
+                              <Check className="h-3 w-3 text-[#D4AF37]" />
+                            ) : (
+                              <Plus className="h-3 w-3 text-[#9CA3AF]" />
+                            )}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Active Colors Chips */}
+                  {colors.length > 0 && (
+                    <div className="pt-2">
+                      <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#9CA3AF]/80 mb-2">
+                        Active Colors ({colors.length}):
+                      </label>
+                      <div className="flex flex-wrap items-center gap-2.5">
+                        {colors.map((c) => {
+                          const assignedImgs = colorImageMap[c] || []
+                          return (
+                            <div
+                              key={c}
+                              className="inline-flex items-center gap-2 pl-2.5 pr-2 py-1.5 rounded-xl bg-[#121217] border border-white/15 text-xs text-[#F5F0E8] shadow-sm"
+                            >
+                              <span
+                                className="w-3.5 h-3.5 rounded-full border border-white/20 shadow-sm shrink-0"
+                                style={{ background: getColorSwatchGradient(c) }}
+                              />
+                              <span className="font-semibold text-xs">{c}</span>
+                              <span className="text-[10px] font-medium text-[#D4AF37] bg-[#D4AF37]/10 px-2 py-0.5 rounded-lg border border-[#D4AF37]/20">
+                                {assignedImgs.length} {assignedImgs.length === 1 ? "photo" : "photos"}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => removeColor(c)}
+                                className="p-0.5 rounded-lg hover:bg-white/10 text-white/40 hover:text-rose-400 transition-colors ml-1"
+                                title="Remove color"
+                              >
+                                <X className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
 
-            {showOptions && (
-              <div className="pt-2 border-t border-white/5 space-y-4 animate-in fade-in duration-300">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* Section B: Sizes & Lengths */}
+            <div className="p-5 rounded-2xl bg-[#0D0D12] border border-white/10 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-400 flex items-center justify-center">
+                    <Ruler className="h-4 w-4" />
+                  </div>
                   <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-[#9CA3AF] mb-2">
-                      Option Name
-                    </label>
-                    <input
-                      type="text"
-                      value={optionTitle}
-                      onChange={(e) => setOptionTitle(e.target.value)}
-                      placeholder="e.g. Chain Length or Size"
-                      className="w-full px-4 py-3 rounded-2xl bg-[#0D0D12] border border-white/10 text-sm text-[#F5F0E8] placeholder-white/20 focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none transition-all"
-                    />
-                  </div>
-
-                  <div className="sm:col-span-2">
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-[#9CA3AF] mb-2">
-                      Available Choices (comma separated)
-                    </label>
-                    <input
-                      type="text"
-                      value={optionValuesInput}
-                      onChange={(e) => setOptionValuesInput(e.target.value)}
-                      placeholder="e.g. 40 cm, 45 cm, 50 cm"
-                      className="w-full px-4 py-3 rounded-2xl bg-[#0D0D12] border border-white/10 text-sm text-[#F5F0E8] placeholder-white/20 focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none transition-all"
-                    />
+                    <h4 className="text-sm font-semibold text-[#F5F0E8]">
+                      Sizes & Lengths
+                    </h4>
+                    <p className="text-[11px] text-[#9CA3AF]">
+                      Provide chain lengths (40cm, 45cm), ring sizes (US 6, 7), or dimensions.
+                    </p>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between text-[11px] text-[#9CA3AF] pt-1">
-                  <span>TamZen automatically generates individual choices for the client.</span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowOptions(false)
-                      setOptionValuesInput("")
-                    }}
-                    className="text-rose-400 hover:underline"
-                  >
-                    Remove options
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = !enableSizes
+                    setEnableSizes(next)
+                    if (next && sizes.length === 0) {
+                      setSizes(["40 cm", "45 cm", "50 cm"])
+                    }
+                  }}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
+                    enableSizes
+                      ? "bg-purple-500 text-black border-purple-500"
+                      : "bg-white/5 text-[#9CA3AF] border-white/10 hover:border-white/20"
+                  }`}
+                >
+                  {enableSizes ? "Enabled ✓" : "+ Enable Sizes"}
+                </button>
               </div>
-            )}
+
+              {enableSizes && (
+                <div className="pt-3 border-t border-white/5 space-y-4 animate-in fade-in duration-200">
+                  {/* Category Type Picker */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    {["Chain Length", "Ring Size", "Standard"].map((cat) => (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() => {
+                          setActiveSizeCategory(cat)
+                          setSizeTitle(cat === "Standard" ? "Size" : cat)
+                        }}
+                        className={`px-3 py-1 rounded-xl text-xs font-medium border transition-all ${
+                          activeSizeCategory === cat
+                            ? "bg-purple-500/15 border-purple-400 text-purple-300"
+                            : "bg-[#121217] border-white/10 text-[#9CA3AF] hover:text-[#F5F0E8]"
+                        }`}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Size Title & Custom Add */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#9CA3AF] mb-1.5">
+                        Option Label
+                      </label>
+                      <input
+                        type="text"
+                        value={sizeTitle}
+                        onChange={(e) => setSizeTitle(e.target.value)}
+                        placeholder="e.g. Chain Length"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-[#121217] border border-white/10 text-xs text-[#F5F0E8] focus:border-[#D4AF37] outline-none transition-all"
+                      />
+                    </div>
+
+                    <div className="sm:col-span-2">
+                      <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#9CA3AF] mb-1.5">
+                        Add Custom Size / Length
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={sizeInput}
+                          onChange={(e) => setSizeInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault()
+                              addSize(sizeInput)
+                            }
+                          }}
+                          placeholder="e.g. 45 cm, US 7, Large"
+                          className="flex-1 px-3.5 py-2.5 rounded-xl bg-[#121217] border border-white/10 text-xs text-[#F5F0E8] focus:border-[#D4AF37] outline-none transition-all"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => addSize(sizeInput)}
+                          className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-purple-500 text-[#F5F0E8] hover:text-black font-semibold text-xs border border-white/10 transition-colors whitespace-nowrap"
+                        >
+                          + Add
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Presets by Category */}
+                  {SIZE_PRESETS_BY_TYPE[activeSizeCategory] && (
+                    <div>
+                      <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#9CA3AF]/80 mb-2">
+                        Presets for {activeSizeCategory}:
+                      </label>
+                      <div className="flex flex-wrap items-center gap-2">
+                        {SIZE_PRESETS_BY_TYPE[activeSizeCategory].map((preset) => {
+                          const isAdded = sizes.includes(preset)
+                          return (
+                            <button
+                              key={preset}
+                              type="button"
+                              onClick={() => {
+                                if (isAdded) {
+                                  removeSize(preset)
+                                } else {
+                                  addSize(preset)
+                                }
+                              }}
+                              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border transition-all ${
+                                isAdded
+                                  ? "bg-purple-500/15 border-purple-400 text-purple-200"
+                                  : "bg-[#121217] border-white/10 text-[#9CA3AF] hover:border-white/25 hover:text-[#F5F0E8]"
+                              }`}
+                            >
+                              <span>{preset}</span>
+                              {isAdded ? (
+                                <Check className="h-3 w-3 text-purple-400" />
+                              ) : (
+                                <Plus className="h-3 w-3 text-[#9CA3AF]" />
+                              )}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Active Sizes Chips */}
+                  {sizes.length > 0 && (
+                    <div className="pt-2">
+                      <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#9CA3AF]/80 mb-2">
+                        Active Sizes ({sizes.length}):
+                      </label>
+                      <div className="flex flex-wrap items-center gap-2.5">
+                        {sizes.map((s) => (
+                          <div
+                            key={s}
+                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#121217] border border-white/15 text-xs text-[#F5F0E8] shadow-sm"
+                          >
+                            <span className="font-semibold text-xs">{s}</span>
+                            <button
+                              type="button"
+                              onClick={() => removeSize(s)}
+                              className="p-0.5 rounded-lg hover:bg-white/10 text-white/40 hover:text-rose-400 transition-colors ml-1"
+                              title="Remove size"
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Section C: Variant Combinations Preview */}
+            {(enableColors && colors.length > 0) || (enableSizes && sizes.length > 0) ? (
+              <div className="p-4 rounded-2xl bg-[#D4AF37]/5 border border-[#D4AF37]/20 space-y-2.5">
+                <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2 text-[#D4AF37] font-semibold">
+                    <Sparkles className="h-4 w-4" />
+                    <span>Variant Matrix Generation</span>
+                  </div>
+                  <span className="text-[#9CA3AF] font-mono text-[11px]">
+                    {totalCombinations} Total Combinations
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 max-h-36 overflow-y-auto pr-1">
+                  {enableColors && colors.length > 0 && enableSizes && sizes.length > 0 ? (
+                    colors.flatMap((c) =>
+                      sizes.map((s) => (
+                        <span
+                          key={`${c}-${s}`}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#121217] border border-white/10 text-[11px] text-[#F5F0E8]"
+                        >
+                          <span
+                            className="w-2 h-2 rounded-full shrink-0"
+                            style={{ background: getColorSwatchGradient(c) }}
+                          />
+                          <span className="font-medium text-[#D4AF37]">{c}</span>
+                          <span className="text-white/40">/</span>
+                          <span className="text-[#9CA3AF]">{s}</span>
+                        </span>
+                      ))
+                    )
+                  ) : enableColors && colors.length > 0 ? (
+                    colors.map((c) => (
+                      <span
+                        key={c}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#121217] border border-white/10 text-[11px] text-[#F5F0E8]"
+                      >
+                        <span
+                          className="w-2 h-2 rounded-full shrink-0"
+                          style={{ background: getColorSwatchGradient(c) }}
+                        />
+                        <span className="font-medium text-[#D4AF37]">{c}</span>
+                      </span>
+                    ))
+                  ) : (
+                    sizes.map((s) => (
+                      <span
+                        key={s}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#121217] border border-white/10 text-[11px] text-[#9CA3AF]"
+                      >
+                        {s}
+                      </span>
+                    ))
+                  )}
+                </div>
+
+                <p className="text-[11px] text-[#9CA3AF]/70 pt-1">
+                  TamZen automatically creates distinct SKUs in Medusa. Clients can select both color and size on the storefront product page.
+                </p>
+              </div>
+            ) : null}
           </div>
         </div>
 
+        {/* Right Column (1 Col): Visibility & Actions */}
         <div className="space-y-6">
           <div className="bg-[#121217] rounded-3xl p-6 sm:p-7 border border-white/10 space-y-6 shadow-xl sticky top-24">
             <div className="border-b border-white/5 pb-4">
@@ -805,6 +1490,41 @@ export default function ProductForm({ product, categories }: ProductFormProps) {
               </div>
             </div>
 
+            {/* Featured Image Summary Card */}
+            <div className="p-4 rounded-2xl bg-[#0D0D12] border border-white/10 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-[#9CA3AF] flex items-center gap-1.5">
+                  <Star className="h-3.5 w-3.5 text-[#D4AF37] fill-[#D4AF37]" />
+                  <span>Main Featured Cover</span>
+                </span>
+                {featuredImage && (
+                  <span className="text-[10px] text-emerald-400 font-medium">Selected ✓</span>
+                )}
+              </div>
+
+              {featuredImage ? (
+                <div className="flex items-center gap-3 pt-1">
+                  <img
+                    src={featuredImage}
+                    alt="Main Cover"
+                    className="w-14 h-14 rounded-xl object-cover border border-[#D4AF37]/40 shrink-0"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-semibold text-[#F5F0E8] truncate">
+                      Primary Catalog Cover
+                    </p>
+                    <p className="text-[11px] text-[#9CA3AF] mt-0.5">
+                      Displays first on product details & collection cards.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-xs text-[#9CA3AF]/60 italic py-1">
+                  No images uploaded yet. Upload photos to set the main cover.
+                </p>
+              )}
+            </div>
+
             <div className="p-4 rounded-2xl bg-[#D4AF37]/5 border border-[#D4AF37]/20 space-y-2">
               <div className="flex items-center gap-2 text-xs font-semibold text-[#D4AF37]">
                 <Sparkles className="h-4 w-4" />
@@ -845,6 +1565,7 @@ export default function ProductForm({ product, categories }: ProductFormProps) {
         </div>
       </div>
 
+      {/* Delete Confirmation Modal */}
       {confirmDeleteModal && (
         <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-[#121217] rounded-3xl max-w-sm w-full p-6 border border-white/10 shadow-2xl space-y-4 text-center">

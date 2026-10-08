@@ -2,8 +2,7 @@ import React, { Suspense } from "react"
 import { notFound } from "next/navigation"
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
-import ProductGallery from "@modules/products/components/product-gallery"
-import ProductDetailPanel from "@modules/products/components/product-detail-panel"
+import ProductOverview from "@modules/products/components/product-overview"
 import RelatedProducts from "@modules/products/components/related-products"
 
 type ProductTemplateProps = {
@@ -50,24 +49,11 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
 
       {/* 2. Main Product Area: Balanced 2-Column Luxury Layout */}
       <div className="content-container py-8 sm:py-12 lg:py-16">
-        <div
-          className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 xl:gap-16 items-start"
-          data-testid="product-container"
-        >
-          {/* Left Column (7 cols): Interactive Luxury Image Gallery */}
-          <div className="lg:col-span-7 w-full">
-            <ProductGallery
-              images={images}
-              title={product.title}
-              thumbnail={product.thumbnail}
-            />
-          </div>
-
-          {/* Right Column (5 cols): Sticky Product Info & Purchase Panel */}
-          <div className="lg:col-span-5 w-full lg:sticky lg:top-28">
-            <ProductDetailPanel product={product} region={region} />
-          </div>
-        </div>
+        <ProductOverview
+          product={product}
+          region={region}
+          initialImages={images}
+        />
       </div>
 
       {/* 3. Related Products Section: "You May Also Like" */}
