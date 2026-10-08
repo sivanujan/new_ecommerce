@@ -13,12 +13,11 @@ import LanguageSelect from "../language-select"
 import { HttpTypes } from "@medusajs/types"
 import { Locale } from "@lib/data/locales"
 
-const SideMenuItems = {
+const MainMenuItems = {
   Home: "/",
   Collection: "/store",
   FAQ: "/faq",
   Contact: "/contact",
-  Account: "/account",
   Cart: "/cart",
 }
 
@@ -26,9 +25,10 @@ type SideMenuProps = {
   regions: HttpTypes.StoreRegion[] | null
   locales: Locale[] | null
   currentLocale: string | null
+  customer?: HttpTypes.StoreCustomer | null
 }
 
-const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
+const SideMenu = ({ regions, locales, currentLocale, customer }: SideMenuProps) => {
   const countryToggleState = useToggleState()
   const languageToggleState = useToggleState()
   const pathname = usePathname()
@@ -45,11 +45,9 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
     if (href === "/store") return isCollection
     if (href === "/faq") return pathname.startsWith(`/${countryCode}/faq`)
     if (href === "/contact") return pathname.startsWith(`/${countryCode}/contact`)
-    if (href === "/account") return pathname.startsWith(`/${countryCode}/account`)
     if (href === "/cart") return pathname.startsWith(`/${countryCode}/cart`)
     return false
   }
-
 
   return (
     <div className="h-full">
@@ -127,7 +125,7 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
                       <button
                         data-testid="close-menu-button"
                         onClick={close}
-                        className="w-8 h-8 rounded-full border border-white/15 bg-white/5 hover:bg-white/10 hover:border-white/30 flex items-center justify-center text-neutral-400 hover:text-white transition-all focus:outline-none"
+                        className="w-8 h-8 rounded-full border border-white/15 bg-white/5 hover:bg-white/10 hover:border-white/30 flex items-center justify-center text-neutral-400 hover:text-white transition-all focus:outline-none cursor-pointer"
                         aria-label="Close menu"
                       >
                         <XMark className="w-4 h-4" />
@@ -135,8 +133,8 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
                     </div>
 
                     {/* Navigation Menu Links */}
-                    <ul className="flex flex-col gap-2 my-6">
-                      {Object.entries(SideMenuItems).map(([name, href]) => {
+                    <ul className="flex flex-col gap-1.5 my-4">
+                      {Object.entries(MainMenuItems).map(([name, href]) => {
                         const isActive = getIsActive(href)
 
                         return (
@@ -144,7 +142,7 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
                             <LocalizedClientLink
                               href={href}
                               className={clx(
-                                "text-lg sm:text-xl py-2.5 px-3 rounded-lg transition-all duration-200 flex items-center justify-between group",
+                                "text-base sm:text-lg py-2.5 px-3 rounded-lg transition-all duration-200 flex items-center justify-between group",
                                 isActive
                                   ? "text-[#E5C378] font-semibold bg-[#E5C378]/10 border-l-2 border-[#E5C378]"
                                   : "text-neutral-300 hover:text-white hover:bg-white/5 hover:translate-x-1"
@@ -167,8 +165,75 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
                       })}
                     </ul>
 
+                    {/* Customer Account / Client Access Section */}
+                    {customer ? (
+                      <div className="my-3 p-4 rounded-xl bg-white/[0.04] border border-[#E5C378]/20 flex flex-col gap-2.5">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-full bg-[#E5C378]/15 border border-[#E5C378]/30 flex items-center justify-center text-[#E5C378] shrink-0">
+                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                              <circle cx="12" cy="7" r="4" />
+                            </svg>
+                          </div>
+                          <div className="flex flex-col min-w-0">
+                            <span className="text-[10px] font-mono uppercase tracking-widest text-[#E5C378]">Member</span>
+                            <span className="text-sm font-semibold text-white truncate">
+                              {customer.first_name ? `${customer.first_name} ${customer.last_name || ""}` : customer.email}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 pt-2 border-t border-white/10">
+                          <LocalizedClientLink
+                            href="/account"
+                            onClick={close}
+                            className="text-xs py-2 px-3 rounded-lg bg-white/5 hover:bg-white/10 hover:text-[#E5C378] text-neutral-200 text-center font-medium transition-colors"
+                          >
+                            Dashboard
+                          </LocalizedClientLink>
+                          <LocalizedClientLink
+                            href="/account/orders"
+                            onClick={close}
+                            className="text-xs py-2 px-3 rounded-lg bg-white/5 hover:bg-white/10 hover:text-[#E5C378] text-neutral-200 text-center font-medium transition-colors"
+                          >
+                            My Orders
+                          </LocalizedClientLink>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="my-3 p-4 rounded-xl bg-gradient-to-b from-[#E5C378]/10 to-transparent border border-[#E5C378]/25 flex flex-col gap-2.5">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-[#E5C378] animate-pulse" />
+                          <span className="text-[11px] font-mono uppercase tracking-widest text-[#E5C378] font-bold">
+                            Client Access
+                          </span>
+                        </div>
+                        <p className="text-xs text-neutral-300 leading-relaxed">
+                          Sign in to access your bespoke orders, wishlist, and profile.
+                        </p>
+                        <div className="grid grid-cols-2 gap-2 pt-1">
+                          <LocalizedClientLink
+                            href="/account"
+                            onClick={close}
+                            className="text-xs py-2.5 px-3 rounded-lg bg-[#E5C378] hover:bg-[#F3D798] text-[#0B0B0C] font-bold text-center uppercase tracking-wider transition-colors shadow-sm cursor-pointer"
+                            data-testid="side-menu-sign-in"
+                          >
+                            Sign In
+                          </LocalizedClientLink>
+                          <LocalizedClientLink
+                            href="/register"
+                            onClick={close}
+                            className="text-xs py-2.5 px-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/15 text-white font-semibold text-center uppercase tracking-wider transition-colors cursor-pointer"
+                            data-testid="side-menu-register"
+                          >
+                            Register
+                          </LocalizedClientLink>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Footer: Language, Region, and Copyright */}
-                    <div className="mt-auto pt-5 border-t border-white/10 flex flex-col gap-y-4">
+                    <div className="mt-auto pt-4 border-t border-white/10 flex flex-col gap-y-3">
                       {!!locales?.length && (
                         <div
                           className="flex justify-between items-center py-2 px-3 rounded-lg bg-white/5 border border-white/5 hover:border-white/15 transition-all text-sm"
@@ -206,7 +271,7 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
                           )}
                         />
                       </div>
-                      <Text className="text-center text-xs text-neutral-500 pt-2 tracking-wide font-sans">
+                      <Text className="text-center text-xs text-neutral-500 pt-1 tracking-wide font-sans">
                         © {new Date().getFullYear()} TamZen. All rights reserved.
                       </Text>
                     </div>

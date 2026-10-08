@@ -15,11 +15,11 @@ export const metadata: Metadata = {
 }
 
 export default async function Profile() {
-  const customer = await retrieveCustomer()
-  const regions = await listRegions()
+  const customer = await retrieveCustomer().catch(() => null)
+  const regions = await listRegions().catch(() => null)
 
   if (!customer || !regions) {
-    notFound()
+    return null
   }
 
   return (

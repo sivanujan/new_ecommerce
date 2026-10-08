@@ -240,6 +240,10 @@ export async function sendRegistrationOtp(formData: {
     // Send the email with the 6-digit OTP code
     const sent = await dispatchOtpEmail(email, firstName, otp)
     if (!sent) {
+      if (process.env.NODE_ENV !== "production") {
+        console.warn(`\n========================================\n[DEV OTP] Verification code for ${email} is: ${otp}\n========================================\n`)
+        return { success: true, email }
+      }
       return {
         success: false,
         error: "Failed to dispatch verification email. Please check the address or try again.",
@@ -294,6 +298,10 @@ export async function resendRegistrationOtp(): Promise<{ success: boolean; error
 
     const sent = await dispatchOtpEmail(pending.email, pending.first_name, newOtp)
     if (!sent) {
+      if (process.env.NODE_ENV !== "production") {
+        console.warn(`\n========================================\n[DEV OTP RESEND] New verification code for ${pending.email} is: ${newOtp}\n========================================\n`)
+        return { success: true }
+      }
       return { success: false, error: "Could not send verification email. Please try again." }
     }
 
