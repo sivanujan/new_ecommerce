@@ -1,11 +1,14 @@
 import Navbar from "@/components/admin/Navbar"
 import PromotionsClient from "@/components/admin/PromotionsClient"
-import { listPromotions } from "@/lib/admin/medusa"
+import { listPromotions, listProducts } from "@/lib/admin/medusa"
 
 export const dynamic = "force-dynamic"
 
 export default async function PromotionsPage() {
-  const promotions = await listPromotions()
+  const [promotions, products] = await Promise.all([
+    listPromotions(),
+    listProducts(),
+  ])
 
   return (
     <div>
@@ -15,7 +18,7 @@ export default async function PromotionsPage() {
       />
 
       <div className="p-6 sm:p-8 max-w-7xl mx-auto">
-        <PromotionsClient initialPromotions={promotions} />
+        <PromotionsClient initialPromotions={promotions} products={products} />
       </div>
     </div>
   )

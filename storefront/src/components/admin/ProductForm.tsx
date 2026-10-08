@@ -496,10 +496,10 @@ export default function ProductForm({ product, categories }: ProductFormProps) {
                 </span>
               </div>
               <Link
-                href="/admin/promotions"
+                href={product?.id ? `/admin/promotions?new=true&productId=${product.id}` : "/admin/promotions"}
                 className="text-xs font-semibold text-[#D4AF37] hover:text-[#E5C158] hover:underline whitespace-nowrap shrink-0"
               >
-                Manage Promo Codes →
+                {product?.id ? "Create Promo for This Piece →" : "Manage Promo Codes →"}
               </Link>
             </div>
 

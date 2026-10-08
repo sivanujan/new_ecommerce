@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import {
   Tag,
   Plus,
@@ -16,6 +16,9 @@ import {
   Power,
   Sparkles,
   Ticket,
+  Package,
+  Globe,
+  ShoppingBag,
 } from "lucide-react"
 import {
   createPromotionAction,
@@ -27,10 +30,13 @@ import { useToast } from "@/components/admin/ToastProvider"
 
 export default function PromotionsClient({
   initialPromotions,
+  products = [],
 }: {
   initialPromotions: any[]
+  products?: any[]
 }) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const toast = useToast()
 
   const [promotions, setPromotions] = useState<any[]>(initialPromotions)
@@ -51,9 +57,34 @@ export default function PromotionsClient({
   const [code, setCode] = useState("")
   const [discountType, setDiscountType] = useState<"percentage" | "fixed">("percentage")
   const [value, setValue] = useState("10")
+  const [targetScope, setTargetScope] = useState<"all" | "products">("all")
+  const [selectedProductIds, setSelectedProductIds] = useState<string[]>([])
+  const [productSearch, setProductSearch] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
+
+  // Automatically trigger modal if linked with ?new=true
+  useEffect(() => {
+    if (searchParams?.get("new") === "true") {
+      setShowAddModal(true)
+      const paramProductId = searchParams.get("productId")
+      if (paramProductId) {
+        setTargetScope("products")
+        setSelectedProductIds([paramProductId])
+      }
+    }
+  }, [searchParams])
+
+  const filteredProducts = products.filter((p) => {
+    const titleMatch = (p.title || "").toLowerCase().includes(productSearch.toLowerCase())
+    const catMatch = (
+      p.categories?.[0]?.name ||
+      p.collection?.title ||
+      ""
+    ).toLowerCase().includes(productSearch.toLowerCase())
+    return titleMatch || catMatch
+  })
 
   const filteredPromotions = promotions.filter((p) =>
     (p.code || "").toLowerCase().includes(search.toLowerCase())
@@ -111,12 +142,19 @@ export default function PromotionsClient({
       return
     }
 
+    if (targetScope === "products" && selectedProductIds.length === 0) {
+      setFormError("Please select at least one product for this promo code.")
+      return
+    }
+
     setIsSubmitting(true)
     try {
       const formData = new FormData()
       formData.set("code", code.trim().toUpperCase())
       formData.set("discountType", discountType)
       formData.set("value", value)
+      formData.set("targetScope", targetScope)
+      formData.set("selectedProductIds", JSON.stringify(selectedProductIds))
 
       const res = await createPromotionAction(formData)
       if (res.error) {
@@ -130,6 +168,9 @@ export default function PromotionsClient({
         setShowAddModal(false)
         setCode("")
         setValue("10")
+        setTargetScope("all")
+        setSelectedProductIds([])
+        setProductSearch("")
         router.refresh()
       }
     } catch (err: any) {
@@ -348,9 +389,62 @@ export default function PromotionsClient({
 
                       {/* Scope */}
                       <td className="py-4 px-6 text-[#9CA3AF] text-xs">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white/5 border border-white/10 text-[#F5F0E8]">
-                          Entire Order
-                        </span>
+                        {(() => {
+                          const targetType = p.application_method?.target_type
+                          const targetRules = p.application_method?.target_rules || []
+                          const productRule = targetRules.find(
+                            (r: any) => r.attribute === "items.product.id"
+                          )
+                          const targetProductIds: string[] =
+                            productRule?.values?.map((v: any) =>
+                              typeof v === "string" ? v : v.value
+                            ) || []
+                          const matchedProducts = products.filter((prod) =>
+                            targetProductIds.includes(prod.id)
+                          )
+
+                          if (targetType === "items" || targetProductIds.length > 0) {
+                            return (
+                              <div className="flex flex-col gap-1">
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/35 text-[#D4AF37] font-semibold text-[11px] w-fit shadow-sm">
+                                  <Package className="h-3 w-3" />
+                                  <span>
+                                    {targetProductIds.length > 0
+                                      ? `${targetProductIds.length} ${
+                                          targetProductIds.length === 1
+                                            ? "Product"
+                                            : "Products"
+                                        }`
+                                      : "Specific Products"}
+                                  </span>
+                                </span>
+                                {matchedProducts.length > 0 && (
+                                  <span
+                                    className="text-[10px] text-[#9CA3AF] truncate max-w-[180px] block"
+                                    title={matchedProducts
+                                      .map((prod) => prod.title)
+                                      .join(", ")}
+                                  >
+                                    {matchedProducts
+                                      .map((prod) => prod.title)
+                                      .slice(0, 2)
+                                      .join(", ")}
+                                    {matchedProducts.length > 2
+                                      ? ` +${matchedProducts.length - 2} more`
+                                      : ""}
+                                  </span>
+                                )}
+                              </div>
+                            )
+                          }
+
+                          return (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white/5 border border-white/10 text-[#F5F0E8] text-[11px] font-medium">
+                              <Globe className="h-3 w-3 text-neutral-400" />
+                              <span>All Products</span>
+                            </span>
+                          )
+                        })()}
                       </td>
 
                       {/* Usage */}
@@ -461,7 +555,7 @@ export default function PromotionsClient({
       {/* Create Promo Code Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#121217] rounded-3xl max-w-lg w-full p-6 sm:p-7 border border-white/10 shadow-2xl space-y-6">
+          <div className="bg-[#121217] rounded-3xl max-w-xl w-full p-6 sm:p-7 border border-white/10 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-white/5">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-xl bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] flex items-center justify-center">
@@ -567,6 +661,210 @@ export default function PromotionsClient({
                     {discountType === "percentage" ? "%" : "EUR"}
                   </div>
                 </div>
+              </div>
+
+              {/* Target Scope: All Products vs Specific Products */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-[#9CA3AF]">
+                    Applies To
+                  </label>
+                  <span className="text-[11px] text-[#D4AF37] font-medium">
+                    {targetScope === "all"
+                      ? "Whole Cart (All Products)"
+                      : `${selectedProductIds.length} ${
+                          selectedProductIds.length === 1 ? "Product" : "Products"
+                        } Selected`}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 mb-3">
+                  <button
+                    type="button"
+                    onClick={() => setTargetScope("all")}
+                    className={`py-3 px-4 rounded-2xl border text-xs font-semibold transition-all flex items-center justify-center gap-2 ${
+                      targetScope === "all"
+                        ? "bg-[#D4AF37]/15 border-[#D4AF37] text-[#D4AF37] shadow-lg shadow-[#D4AF37]/10"
+                        : "bg-[#0D0D12] border-white/10 text-[#9CA3AF] hover:border-white/20 hover:text-white"
+                    }`}
+                  >
+                    <Globe className="h-4 w-4" />
+                    <span>All Products</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setTargetScope("products")}
+                    className={`py-3 px-4 rounded-2xl border text-xs font-semibold transition-all flex items-center justify-center gap-2 ${
+                      targetScope === "products"
+                        ? "bg-[#D4AF37]/15 border-[#D4AF37] text-[#D4AF37] shadow-lg shadow-[#D4AF37]/10"
+                        : "bg-[#0D0D12] border-white/10 text-[#9CA3AF] hover:border-white/20 hover:text-white"
+                    }`}
+                  >
+                    <Package className="h-4 w-4" />
+                    <span>Specific Products</span>
+                  </button>
+                </div>
+
+                {/* Specific Products Picker */}
+                {targetScope === "products" && (
+                  <div className="p-3.5 rounded-2xl bg-[#0D0D12] border border-white/10 space-y-3">
+                    {/* Search & Bulk Select Controls */}
+                    <div className="flex items-center gap-2">
+                      <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-neutral-500" />
+                        <input
+                          type="text"
+                          value={productSearch}
+                          onChange={(e) => setProductSearch(e.target.value)}
+                          placeholder="Search products by title..."
+                          className="w-full pl-9 pr-3 py-2 rounded-xl bg-white/5 border border-white/10 text-xs text-[#F5F0E8] placeholder-neutral-500 focus:border-[#D4AF37] outline-none"
+                        />
+                        {productSearch && (
+                          <button
+                            type="button"
+                            onClick={() => setProductSearch("")}
+                            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        )}
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const filteredIds = filteredProducts.map((p) => p.id)
+                          const allSelected =
+                            filteredProducts.length > 0 &&
+                            filteredIds.every((id) => selectedProductIds.includes(id))
+                          if (allSelected) {
+                            setSelectedProductIds((prev) =>
+                              prev.filter((id) => !filteredIds.includes(id))
+                            )
+                          } else {
+                            setSelectedProductIds((prev) =>
+                              Array.from(new Set([...prev, ...filteredIds]))
+                            )
+                          }
+                        }}
+                        className="px-2.5 py-2 rounded-xl border border-white/10 text-[11px] font-medium text-[#D4AF37] hover:bg-white/5 transition-colors whitespace-nowrap"
+                      >
+                        {filteredProducts.length > 0 &&
+                        filteredProducts.every((p) => selectedProductIds.includes(p.id))
+                          ? "Deselect Filtered"
+                          : "Select All Filtered"}
+                      </button>
+                    </div>
+
+                    {/* Selected Products Pills */}
+                    {selectedProductIds.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto py-1">
+                        {selectedProductIds.map((id) => {
+                          const prod = products.find((p) => p.id === id)
+                          return (
+                            <span
+                              key={id}
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#D4AF37]/15 border border-[#D4AF37]/30 text-[#D4AF37] text-[11px] font-medium"
+                            >
+                              <span className="truncate max-w-[140px]">
+                                {prod?.title || id}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setSelectedProductIds((prev) =>
+                                    prev.filter((item) => item !== id)
+                                  )
+                                }
+                                className="hover:text-rose-400 transition-colors"
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </span>
+                          )
+                        })}
+                      </div>
+                    )}
+
+                    {/* Product List */}
+                    <div className="max-h-52 overflow-y-auto divide-y divide-white/5 border border-white/5 rounded-xl bg-black/30">
+                      {filteredProducts.length === 0 ? (
+                        <div className="py-6 text-center text-xs text-neutral-500">
+                          {products.length === 0
+                            ? "No products available in catalog."
+                            : `No products matching "${productSearch}"`}
+                        </div>
+                      ) : (
+                        filteredProducts.map((p) => {
+                          const isChecked = selectedProductIds.includes(p.id)
+                          const thumbnail = p.thumbnail || p.images?.[0]?.url
+                          const rawPrice = p.variants?.[0]?.prices?.[0]?.amount
+                          const price =
+                            rawPrice !== undefined && rawPrice !== null
+                              ? `€${(rawPrice / 100).toFixed(2)}`
+                              : ""
+
+                          return (
+                            <div
+                              key={p.id}
+                              onClick={() => {
+                                setSelectedProductIds((prev) =>
+                                  isChecked
+                                    ? prev.filter((id) => id !== p.id)
+                                    : [...prev, p.id]
+                                );
+                              }}
+                              className={`flex items-center gap-3 p-2.5 cursor-pointer transition-colors ${
+                                isChecked
+                                  ? "bg-[#D4AF37]/10"
+                                  : "hover:bg-white/[0.03]"
+                              }`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={() => {}}
+                                className="w-4 h-4 rounded border-white/20 bg-neutral-900 text-[#D4AF37] focus:ring-[#D4AF37] accent-[#D4AF37] cursor-pointer"
+                              />
+
+                              <div className="w-9 h-9 rounded-lg bg-neutral-900 border border-white/10 overflow-hidden relative shrink-0">
+                                {thumbnail ? (
+                                  <img
+                                    src={thumbnail}
+                                    alt={p.title}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-[10px] text-[#D4AF37] font-serif">
+                                    TZ
+                                  </div>
+                                )}
+                              </div>
+
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-semibold text-[#F5F0E8] truncate">
+                                  {p.title}
+                                </p>
+                                <p className="text-[10px] text-neutral-400 truncate">
+                                  {p.collection?.title ||
+                                    p.categories?.[0]?.name ||
+                                    "Product"}
+                                </p>
+                              </div>
+
+                              {price && (
+                                <span className="text-xs font-mono text-[#D4AF37] font-semibold shrink-0">
+                                  {price}
+                                </span>
+                              )}
+                            </div>
+                          )
+                        })
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Action Buttons */}

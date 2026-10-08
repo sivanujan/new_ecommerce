@@ -487,6 +487,15 @@ export async function createPromotionAction(formData: FormData) {
   const discountType = formData.get("discountType")?.toString() || "percentage"
   const valueStr = formData.get("value")?.toString() || "10"
   const value = parseFloat(valueStr)
+  const targetScope = formData.get("targetScope")?.toString() || "all" // "all" | "products"
+  const selectedProductIdsJson = formData.get("selectedProductIds")?.toString() || "[]"
+
+  let selectedProductIds: string[] = []
+  try {
+    selectedProductIds = JSON.parse(selectedProductIdsJson)
+  } catch {
+    selectedProductIds = []
+  }
 
   if (!code) {
     return { error: "Promo code is required." }
@@ -500,6 +509,10 @@ export async function createPromotionAction(formData: FormData) {
     return { error: "Percentage discount cannot exceed 100%." }
   }
 
+  if (targetScope === "products" && selectedProductIds.length === 0) {
+    return { error: "Please select at least one product for this promo code." }
+  }
+
   const result = await createPromotion({
     code,
     type: "standard",
@@ -509,7 +522,8 @@ export async function createPromotionAction(formData: FormData) {
       value: value,
       currencyCode: "eur",
       allocation: "across",
-      targetType: "order",
+      targetType: targetScope === "products" ? "items" : "order",
+      targetProductIds: targetScope === "products" ? selectedProductIds : undefined,
     },
   })
 

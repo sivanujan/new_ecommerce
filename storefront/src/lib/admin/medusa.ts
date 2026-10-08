@@ -321,7 +321,7 @@ export async function updateProductStatus(id: string, status: "published" | "dra
 // Promotions
 export async function listPromotions() {
   const res = await adminFetch<{ promotions: any[] }>(
-    "/admin/promotions?limit=100&fields=*application_method,*campaign&order=-created_at"
+    "/admin/promotions?limit=100&fields=*application_method,*application_method.target_rules,*application_method.target_rules.values,*campaign&order=-created_at"
   )
   return res.data?.promotions || []
 }
@@ -337,20 +337,44 @@ export async function createPromotion(input: {
     value: number
     currencyCode?: string
     allocation?: "across" | "each"
+    targetProductIds?: string[]
   }
 }) {
+  const targetType =
+    input.applicationMethod.targetType ||
+    (input.applicationMethod.targetProductIds &&
+    input.applicationMethod.targetProductIds.length > 0
+      ? "items"
+      : "order")
+
+  const appMethod: any = {
+    type: input.applicationMethod.type,
+    target_type: targetType,
+    value: Number(input.applicationMethod.value),
+    currency_code: input.applicationMethod.currencyCode || "eur",
+    allocation: input.applicationMethod.allocation || "across",
+  }
+
+  if (
+    targetType === "items" &&
+    input.applicationMethod.targetProductIds &&
+    input.applicationMethod.targetProductIds.length > 0
+  ) {
+    appMethod.target_rules = [
+      {
+        attribute: "items.product.id",
+        operator: "in",
+        values: input.applicationMethod.targetProductIds,
+      },
+    ]
+  }
+
   const payload: any = {
     code: input.code.toUpperCase().trim(),
     type: input.type || "standard",
     status: input.status || "active",
     is_automatic: !!input.isAutomatic,
-    application_method: {
-      type: input.applicationMethod.type,
-      target_type: input.applicationMethod.targetType || "order",
-      value: Number(input.applicationMethod.value),
-      currency_code: input.applicationMethod.currencyCode || "eur",
-      allocation: input.applicationMethod.allocation || "across",
-    },
+    application_method: appMethod,
   }
 
   return adminFetch<{ promotion: any }>("/admin/promotions", {
