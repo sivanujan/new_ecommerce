@@ -9,7 +9,7 @@ import { transferCart } from "./customer"
 
 const OTP_COOKIE_NAME = "_tamzen_reg_otp"
 const OTP_SECRET = process.env.REVALIDATE_SECRET || "tamzen-heritage-secure-otp-key-2026"
-const RESEND_API_KEY = process.env.RESEND_API_KEY || "re_Muh9RHSr_DDXVY3DfFnshEmvtVBHTpUGt"
+const RESEND_API_KEY = process.env.RESEND_API_KEY || ""
 
 interface PendingRegistration {
   email: string

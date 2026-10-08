@@ -13,8 +13,7 @@ export async function sendEmail({
   html,
   text,
 }: SendEmailOptions): Promise<{ success: boolean; id?: string; error?: any }> {
-  const apiKey =
-    process.env.RESEND_API_KEY || "re_Muh9RHSr_DDXVY3DfFnshEmvtVBHTpUGt"
+  const apiKey = process.env.RESEND_API_KEY || ""
 
   const recipientList = Array.isArray(to) ? to : [to]
 
