@@ -113,7 +113,7 @@ export default function ProductForm({ product, categories }: ProductFormProps) {
       }
 
       if (data.urls && data.urls.length > 0) {
-        setImages((prev) => [...prev, ...data.urls])
+        setImages((prev) => [...data.urls, ...prev])
         toast.success(
           `Successfully uploaded ${data.urls.length} image${
             data.urls.length > 1 ? "s" : ""

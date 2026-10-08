@@ -56,17 +56,22 @@ function getImagesForVariant(
   product: HttpTypes.StoreProduct,
   selectedVariantId?: string
 ) {
-  if (!selectedVariantId || !product.variants) {
-    return product.images || []
+  let images = product.images || []
+
+  if (selectedVariantId && product.variants) {
+    const variant = product.variants.find((v) => v.id === selectedVariantId)
+    if (variant && variant.images?.length) {
+      const imageIdsMap = new Map((variant.images || []).map((i) => [i.id, true]))
+      images = (product.images || []).filter((i) => imageIdsMap.has(i.id))
+    }
   }
 
-  const variant = product.variants.find((v) => v.id === selectedVariantId)
-  if (!variant || !variant.images?.length) {
-    return product.images || []
-  }
-
-  const imageIdsMap = new Map((variant.images || []).map((i) => [i.id, true]))
-  return (product.images || []).filter((i) => imageIdsMap.has(i.id))
+  // Return latest uploaded image as first
+  return [...images].sort((a: any, b: any) => {
+    const timeA = a.created_at ? new Date(a.created_at).getTime() : 0
+    const timeB = b.created_at ? new Date(b.created_at).getTime() : 0
+    return timeB - timeA
+  })
 }
 
 export async function generateMetadata(props: Props): Promise<Metadata> {

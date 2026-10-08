@@ -37,23 +37,29 @@ export default function ProductListClient({
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [confirmDeleteProduct, setConfirmDeleteProduct] = useState<any | null>(null)
 
-  // Filter products
-  const filteredProducts = products.filter((p) => {
-    const matchesSearch =
-      p.title.toLowerCase().includes(search.toLowerCase()) ||
-      (p.description || "").toLowerCase().includes(search.toLowerCase())
+  // Filter and sort products (latest uploaded piece first)
+  const filteredProducts = products
+    .filter((p) => {
+      const matchesSearch =
+        p.title.toLowerCase().includes(search.toLowerCase()) ||
+        (p.description || "").toLowerCase().includes(search.toLowerCase())
 
-    const matchesCategory =
-      selectedCategory === "all" ||
-      p.categories?.some((c: any) => c.id === selectedCategory)
+      const matchesCategory =
+        selectedCategory === "all" ||
+        p.categories?.some((c: any) => c.id === selectedCategory)
 
-    const matchesStatus =
-      selectedStatus === "all" ||
-      (selectedStatus === "published" && p.status === "published") ||
-      (selectedStatus === "draft" && p.status !== "published")
+      const matchesStatus =
+        selectedStatus === "all" ||
+        (selectedStatus === "published" && p.status === "published") ||
+        (selectedStatus === "draft" && p.status !== "published")
 
-    return matchesSearch && matchesCategory && matchesStatus
-  })
+      return matchesSearch && matchesCategory && matchesStatus
+    })
+    .sort((a, b) => {
+      const timeA = a.created_at ? new Date(a.created_at).getTime() : 0
+      const timeB = b.created_at ? new Date(b.created_at).getTime() : 0
+      return timeB - timeA
+    })
 
   // Pagination calculation
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE) || 1
@@ -186,7 +192,15 @@ export default function ProductListClient({
               </thead>
               <tbody className="divide-y divide-white/5 bg-transparent">
                 {paginatedProducts.map((p) => {
-                  const thumbnail = p.thumbnail || p.images?.[0]?.url
+                  // Prioritize the latest uploaded image as thumbnail
+                  const latestImg = p.images && p.images.length > 0
+                    ? [...p.images].sort((a: any, b: any) => {
+                        const tA = a.created_at ? new Date(a.created_at).getTime() : 0
+                        const tB = b.created_at ? new Date(b.created_at).getTime() : 0
+                        return tB - tA
+                      })[0]?.url
+                    : null
+                  const thumbnail = latestImg || p.thumbnail || p.images?.[0]?.url
                   const price = p.variants?.[0]?.prices?.[0]?.amount
                   const stock =
                     p.variants?.[0]?.metadata?.stock_quantity ??

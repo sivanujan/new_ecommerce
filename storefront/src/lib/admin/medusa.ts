@@ -143,9 +143,14 @@ export async function deleteCategory(id: string) {
 // Products
 export async function listProducts() {
   const res = await adminFetch<{ products: any[] }>(
-    "/admin/products?limit=100&fields=*variants.prices,*categories,*images"
+    "/admin/products?limit=100&fields=*variants.prices,*categories,*images&order=-created_at"
   )
-  return res.data?.products || []
+  const products = res.data?.products || []
+  return [...products].sort((a, b) => {
+    const timeA = a.created_at ? new Date(a.created_at).getTime() : 0
+    const timeB = b.created_at ? new Date(b.created_at).getTime() : 0
+    return timeB - timeA
+  })
 }
 
 export async function getProduct(id: string) {
