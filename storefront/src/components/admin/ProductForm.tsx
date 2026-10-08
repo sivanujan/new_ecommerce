@@ -775,7 +775,7 @@ export default function ProductForm({ product, categories }: ProductFormProps) {
                 <button
                   type="button"
                   onClick={() => setIsPublished(!isPublished)}
-                  className={`w-13 h-7 rounded-full p-1 transition-colors duration-200 ease-in-out relative ${
+                  className={`w-12 h-6 rounded-full p-0.5 transition-colors duration-200 ease-in-out relative ${
                     isPublished ? "bg-[#D4AF37]" : "bg-white/10"
                   }`}
                   aria-pressed={isPublished}

@@ -173,7 +173,7 @@ export default function ProductListClient({
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+            <table className="w-full text-left text-xs bg-transparent">
               <thead className="bg-[#181820] border-b border-white/5 text-[#9CA3AF] font-bold uppercase tracking-widest text-[10px]">
                 <tr>
                   <th className="py-4 px-6">Piece & Details</th>
@@ -184,7 +184,7 @@ export default function ProductListClient({
                   <th className="py-4 px-6 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-white/5 bg-transparent">
                 {paginatedProducts.map((p) => {
                   const thumbnail = p.thumbnail || p.images?.[0]?.url
                   const price = p.variants?.[0]?.prices?.[0]?.amount
@@ -198,20 +198,20 @@ export default function ProductListClient({
                   return (
                     <tr
                       key={p.id}
-                      className="hover:bg-white/[0.02] transition-colors group"
+                      className="hover:bg-white/[0.04] transition-colors group bg-transparent"
                     >
                       {/* Thumbnail & Title */}
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-3.5">
-                          <div className="w-13 h-13 rounded-2xl bg-[#0D0D12] border border-white/10 overflow-hidden shrink-0 flex items-center justify-center shadow-md">
+                          <div className="w-12 h-12 min-w-[48px] min-h-[48px] max-w-[48px] max-h-[48px] rounded-xl bg-[#0D0D12] border border-white/10 overflow-hidden shrink-0 flex items-center justify-center shadow-md">
                             {thumbnail ? (
                               <img
                                 src={thumbnail}
                                 alt={p.title}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                className="w-12 h-12 max-w-[48px] max-h-[48px] object-cover group-hover:scale-105 transition-transform duration-300 rounded-xl shrink-0"
                               />
                             ) : (
-                              <Package className="h-6 w-6 text-white/30" />
+                              <Package className="h-5 w-5 text-white/30" />
                             )}
                           </div>
 

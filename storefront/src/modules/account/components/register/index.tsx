@@ -567,7 +567,7 @@ export default function Register({ setCurrentView }: Props) {
                 onKeyDown={(e) => handleOtpKeyDown(index, e)}
                 onPaste={handleOtpPaste}
                 data-testid={`otp-input-${index}`}
-                className="w-11 sm:w-13 h-14 sm:h-16 text-center text-xl sm:text-2xl font-mono font-bold text-[#FDFBF7] bg-[#18181D] border border-white/20 rounded-xl focus:border-[#E5C378] focus:ring-2 focus:ring-[#E5C378]/30 focus:outline-none transition-all shadow-[0_4px_15px_rgba(0,0,0,0.5)]"
+                className="w-11 sm:w-12 h-14 sm:h-16 text-center text-xl sm:text-2xl font-mono font-bold text-[#FDFBF7] bg-[#18181D] border border-white/20 rounded-xl focus:border-[#E5C378] focus:ring-2 focus:ring-[#E5C378]/30 focus:outline-none transition-all shadow-[0_4px_15px_rgba(0,0,0,0.5)]"
               />
             ))}
           </div>

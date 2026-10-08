@@ -39,7 +39,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
   return (
     <html
       lang="en"
-      className={`${cinzel.variable} ${montserrat.variable}`}
+      className={`${cinzel.variable} ${montserrat.variable} dark`}
       data-mode="dark"
     >
       <body className="bg-bg-base text-neutral-100 antialiased selection:bg-white/20 selection:text-white">
