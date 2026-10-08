@@ -14,10 +14,11 @@ export default function NavLinks() {
   const isHomePath =
     pathname === `/${countryCode}` || pathname === `/${countryCode}/`
 
-  // Collection is active on /store, /collections, or /products
+  // Collection is active on /store, /collections, /categories, or /products
   const isCollection =
     pathname.startsWith(`/${countryCode}/store`) ||
     pathname.startsWith(`/${countryCode}/collections`) ||
+    pathname.startsWith(`/${countryCode}/categories`) ||
     pathname.startsWith(`/${countryCode}/products`)
 
   // Listen to hash changes and scroll position on homepage

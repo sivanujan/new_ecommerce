@@ -38,6 +38,7 @@ const SideMenu = ({ regions, locales, currentLocale, customer }: SideMenuProps) 
   const isCollection =
     pathname.startsWith(`/${countryCode}/store`) ||
     pathname.startsWith(`/${countryCode}/collections`) ||
+    pathname.startsWith(`/${countryCode}/categories`) ||
     pathname.startsWith(`/${countryCode}/products`)
 
   const getIsActive = (href: string) => {
